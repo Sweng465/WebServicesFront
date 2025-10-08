@@ -1,0 +1,1 @@
+The files contained in this folder were generated from our Figma prototype using the Figma plugin Anima.
