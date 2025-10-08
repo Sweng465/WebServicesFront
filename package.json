@@ -12,6 +12,8 @@
   "pre-commit": "check",
   "dependencies": {
     "@tailwindcss/vite": "^4.1.13",
+    "cookie": "^1.0.2",
+    "cross-spawn": "^7.0.6",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-error-boundary": "^6.0.0",
@@ -25,7 +27,7 @@
     "eslint-plugin-react": "^7.34.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.6",
-    "pre-commit": "^1.2.2",
+    "pre-commit": "^1.0.10",
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^4.1.13",
