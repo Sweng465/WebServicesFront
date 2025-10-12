@@ -1,3 +1,5 @@
 export const RoutePaths = {
-  HOME: '/',
+  HOMEPAGE: '/',
+  SIGNIN: '/signin',
+  REGISTRATION: '/registration'
 };

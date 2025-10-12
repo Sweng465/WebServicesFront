@@ -1,17 +1,36 @@
 import { Route, Routes } from "react-router-dom";
 
 import { RoutePaths } from "./RoutePaths.jsx";
-import { Home } from "../home/Home.jsx";
+//import { Home } from "../home/Home.jsx";
+import { Homepage } from "../pages/Homepage.jsx";
+import { SignIn } from "../pages/SignIn.jsx";
+import { Registration } from "../pages/Registration.jsx";
 import { NotFound } from "./NotFound.jsx";
 import { Layout } from "./Layout.jsx";
 
 export const Router = () => (
   <Routes>
     <Route
-      path={RoutePaths.HOME}
+      path={RoutePaths.HOMEPAGE}
       element={
         <Layout>
-          <Home />
+          <Homepage />
+        </Layout>
+      }
+    />
+    <Route
+      path={RoutePaths.SIGNIN}
+      element={
+        <Layout>
+          <SignIn />
+        </Layout>
+      }
+    />
+    <Route
+      path={RoutePaths.REGISTRATION}
+      element={
+        <Layout>
+          <Registration />
         </Layout>
       }
     />
