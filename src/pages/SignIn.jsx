@@ -94,7 +94,7 @@ export const SignIn = () => {
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-700">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link
             to="/registration"
             className="font-semibold text-blue-600 hover:underline"
