@@ -4,7 +4,7 @@ import { RoutePaths } from "./RoutePaths.jsx";
 //import { Home } from "../home/Home.jsx";
 import { Homepage } from "../pages/Homepage.jsx";
 import { SignIn } from "../pages/SignIn.jsx";
-import { Registration } from "../pages/Registration.jsx";
+import { SignUp } from "../pages/SignUp.jsx";
 import { NotFound } from "./NotFound.jsx";
 import { Layout } from "./Layout.jsx";
 
@@ -27,10 +27,10 @@ export const Router = () => (
       }
     />
     <Route
-      path={RoutePaths.REGISTRATION}
+      path={RoutePaths.SIGNUP}
       element={
         <Layout>
-          <Registration />
+          <SignUp />
         </Layout>
       }
     />

@@ -96,7 +96,7 @@ export const SignIn = () => {
         <p className="mt-6 text-center text-sm text-gray-700">
           Don&apos;t have an account?{" "}
           <Link
-            to="/registration"
+            to="/signup"
             className="font-semibold text-blue-600 hover:underline"
           >
             Create Account
