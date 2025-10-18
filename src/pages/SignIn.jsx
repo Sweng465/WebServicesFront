@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
 
 export const SignIn = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +29,9 @@ export const SignIn = () => {
         console.log("Login successful:", data);
         //localStorage.setItem("token", data.token); // store token locally
         localStorage.setItem("user", JSON.stringify({ token: data.token }));
+        login(data.user, data.token);  // update auth context state
         navigate("/"); // send user to homepage on successful login
+        //setTimeout(() => navigate("/"), 0);
       } else {
         console.error("Login failed:", data.message);
       }
