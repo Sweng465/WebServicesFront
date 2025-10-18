@@ -4,13 +4,13 @@ import { Link, useNavigate } from "react-router-dom";
 export const SignIn = () => {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const payload = { email, password };
+    const payload = { username, password }; // CHANGE BACK TO EMAIL
 
     try {
       const response = await fetch("http://localhost:3000/api/auth/signin", {
@@ -25,7 +25,8 @@ export const SignIn = () => {
 
       if (response.ok) {
         console.log("Login successful:", data);
-        localStorage.setItem("token", data.token); // store token locally
+        //localStorage.setItem("token", data.token); // store token locally
+        localStorage.setItem("user", JSON.stringify({ token: data.token }));
         navigate("/"); // send user to homepage on successful login
       } else {
         console.error("Login failed:", data.message);
@@ -49,20 +50,20 @@ export const SignIn = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
-              htmlFor="email"
+              htmlFor="username"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Email Address
+              Username
             </label>
             <input
-              id="email"
-              name="email"
-              type="email"
+              id="username"
+              name="username"
+              type="text" // CHANGE BACK TO EMAIL
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder="youremail@example.com"
+              placeholder="burger1983"
             />
           </div>
 
