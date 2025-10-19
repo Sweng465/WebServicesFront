@@ -9,8 +9,9 @@ export const PageWithHeader = ({children}) => (
 );
 
 export const App = () => (
-  <AuthProvider>
+  
     <BrowserRouter>
+    <AuthProvider>
       <Suspense
         fallback={
           <PageWithHeader>
@@ -22,6 +23,7 @@ export const App = () => (
             <Router/>
           </div>
       </Suspense>
+      </AuthProvider>
     </BrowserRouter>
-  </AuthProvider>
+  
 );

@@ -1,13 +1,17 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
 export const SignIn = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
-
+  const { user, login } = useAuth();
+  
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,6 +25,7 @@ export const SignIn = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
+        credentials: "include",
       });
 
       const data = await response.json();
@@ -28,8 +33,8 @@ export const SignIn = () => {
       if (response.ok) {
         console.log("Login successful:", data);
         //localStorage.setItem("token", data.token); // store token locally
-        localStorage.setItem("user", JSON.stringify({ token: data.token }));
-        login(data.user, data.token);  // update auth context state
+        //localStorage.setItem("user", JSON.stringify({ token: data.token }));
+        login(data.user, data.accessToken);  // update auth context state
         navigate("/"); // send user to homepage on successful login
         //setTimeout(() => navigate("/"), 0);
       } else {
