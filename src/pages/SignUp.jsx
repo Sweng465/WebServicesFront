@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
 
 export const SignUp = () => {
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
@@ -20,13 +22,16 @@ export const SignUp = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
+        credentials: "include",
       });
 
       const data = await response.json();
+      console.log("Login response data:", data);  // <-- add here
 
       if (response.ok) {
         console.log("Registration successful:", data);
-        localStorage.setItem("token", data.token);
+        //localStorage.setItem("token", data.token);
+        login(data.user, data.accessToken);
         navigate("/");
       } else {
         console.error("Registration failed:", data.message);

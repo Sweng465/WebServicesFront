@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
 
 const navItems = [
   { label: "Browse Cars", href: "/browse-cars" },
@@ -8,6 +9,8 @@ const navItems = [
 ];
 
 const Header = () => {
+  const { user, logout } = useAuth();
+
   return (
     <header className="w-full bg-white bg-opacity-40 backdrop-blur-sm px-6 py-4 shadow-md flex justify-between items-center">
       <Link to="/" className="flex items-center gap-2">
@@ -28,12 +31,30 @@ const Header = () => {
       </nav>
 
       <div className="flex gap-4">
-        <Link
-          to="/signin"
-          className="bg-white text-black px-4 py-2 rounded-md border border-black hover:shadow"
-        >
-          Sign In
-        </Link>
+        {user ? (
+          <>
+            <Link
+              to="/profile"
+              className="self-center text-black font-semibold hover:text-blue-700"
+            >
+              {user.username}
+            </Link>
+            <button
+              onClick={logout}
+              className="bg-white text-black px-4 py-2 rounded-md border border-black hover:shadow"
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <Link
+            to="/signin"
+            className="bg-white text-black px-4 py-2 rounded-md border border-black hover:shadow"
+          >
+            Sign In
+          </Link>
+        )}
+
         <Link
           to="/cart"
           className="bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-blue-800"

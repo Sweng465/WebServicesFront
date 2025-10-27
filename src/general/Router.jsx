@@ -7,6 +7,8 @@ import { SignIn } from "../pages/SignIn.jsx";
 import { SignUp } from "../pages/SignUp.jsx";
 import { NotFound } from "./NotFound.jsx";
 import { Layout } from "./Layout.jsx";
+import Profile from "../pages/Profile.jsx";
+import ProtectedRoute from "../components/ProtectedRoute.jsx";
 
 export const Router = () => (
   <Routes>
@@ -32,6 +34,16 @@ export const Router = () => (
         <Layout>
           <SignUp />
         </Layout>
+      }
+    />
+    <Route
+      path={RoutePaths.PROFILE}
+      element={
+        <ProtectedRoute>
+          <Layout>
+            <Profile />
+          </Layout>
+        </ProtectedRoute>
       }
     />
     <Route
