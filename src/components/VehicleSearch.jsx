@@ -41,9 +41,9 @@ const VehicleSearch = ({ filters, setFilters }) => {
   };
 
   return (
-    <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-4 flex flex-wrap gap-4 justify-center text-gray-800">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       <select
-        className="px-3 py-2 border border-gray-300 rounded-md"
+        className="px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-700 font-medium text-sm sm:text-base"
         value={filters.yearId}
         onChange={(e) => handleChange("yearId", e.target.value)}
         style={{
@@ -51,7 +51,7 @@ const VehicleSearch = ({ filters, setFilters }) => {
           overflowY: "auto"
         }}
       >
-        <option value="">All Years</option>
+        <option value="">📅 All Years</option>
         {years.map((y) => (
           <option key={y.yearId} value={y.yearId}>
             {y.value}
@@ -60,12 +60,12 @@ const VehicleSearch = ({ filters, setFilters }) => {
       </select>
 
       <select
-        className="px-3 py-2 border border-gray-300 rounded-md"
+        className="px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-700 font-medium text-sm sm:text-base disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         value={filters.makeId}
         onChange={(e) => handleChange("makeId", e.target.value)}
         disabled={!filters.yearId}
       >
-        <option value="">All Makes</option>
+        <option value="">🏭 All Makes</option>
         {makes.map((m) => (
           <option key={m.makeId} value={m.makeId}>
             {m.value}
@@ -74,12 +74,12 @@ const VehicleSearch = ({ filters, setFilters }) => {
       </select>
 
       <select
-        className="px-3 py-2 border border-gray-300 rounded-md"
+        className="px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-700 font-medium text-sm sm:text-base disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         value={filters.modelId}
         onChange={(e) => handleChange("modelId", e.target.value)}
         disabled={!filters.makeId}
       >
-        <option value="">All Models</option>
+        <option value="">🚗 All Models</option>
         {models.map((model) => (
           <option key={model.modelId} value={model.modelId}>
             {model.value}
@@ -87,11 +87,21 @@ const VehicleSearch = ({ filters, setFilters }) => {
         ))}
       </select>
 
+      {/* Submodel if needed */}
+      <select
+        className="px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-700 font-medium text-sm sm:text-base disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+        value={filters.submodelId}
+        onChange={(e) => setFilters({ ...filters, submodelId: e.target.value })}
+        disabled={!filters.modelId}
+      >
+        <option value="">⚙️ All Submodels</option>
+      </select>
+
       <button
         onClick={() => setFilters({ ...filters })}
-        className="bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition"
+        className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all font-semibold shadow-md text-sm sm:text-base"
       >
-        Search
+        🔍 Search
       </button>
     </div>
   );
