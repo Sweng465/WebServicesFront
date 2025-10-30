@@ -10,7 +10,7 @@ export const PageWithHeader = ({children}) => (
 
 export const App = () => (
   
-    <BrowserRouter>
+  <BrowserRouter>
     <AuthProvider>
       <Suspense
         fallback={
@@ -19,11 +19,8 @@ export const App = () => (
           </PageWithHeader>
         }
       >
-          <div className="h-full bg-indigo-50 p-4 lg:p-24">
-            <Router/>
-          </div>
+      <Router/>
       </Suspense>
-      </AuthProvider>
-    </BrowserRouter>
-  
+    </AuthProvider>
+  </BrowserRouter>
 );

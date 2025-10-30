@@ -5,9 +5,12 @@ import { RoutePaths } from "./RoutePaths.jsx";
 import { Homepage } from "../pages/Homepage.jsx";
 import { SignIn } from "../pages/SignIn.jsx";
 import { SignUp } from "../pages/SignUp.jsx";
+//import { BrowseCars } from "../pages/BrowseCars.jsx";
+import BrowseCars from "../pages/BrowseCars.jsx";
 import { NotFound } from "./NotFound.jsx";
 import { Layout } from "./Layout.jsx";
 import Profile from "../pages/Profile.jsx";
+import SellItems from "../pages/SellItems.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 
 export const Router = () => (
@@ -44,6 +47,24 @@ export const Router = () => (
             <Profile />
           </Layout>
         </ProtectedRoute>
+      }
+    />
+    <Route
+      path={RoutePaths.SELLITEMS}
+      element={
+        <ProtectedRoute>
+          <Layout>
+            <SellItems />
+          </Layout>
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path={RoutePaths.BROWSECARS}
+      element={
+        <Layout>
+          <BrowseCars />
+        </Layout>
       }
     />
     <Route
