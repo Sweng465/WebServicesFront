@@ -19,9 +19,7 @@ export const App = () => (
           </PageWithHeader>
         }
       >
-          <div className="h-full bg-indigo-50 p-4 lg:p-24">
             <Router/>
-          </div>
       </Suspense>
       </AuthProvider>
     </BrowserRouter>
