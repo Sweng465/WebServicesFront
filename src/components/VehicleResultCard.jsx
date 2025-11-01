@@ -1,16 +1,16 @@
-const VehicleResultCard = ({ car }) => {
+const VehicleResultCard = ({ vehicle }) => {
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl hover:scale-105 transition-all duration-300 flex flex-col h-full">
       {/* Image Container */}
       <div className="relative overflow-hidden bg-gray-200 h-48 sm:h-56">
         <img
-          src={car.imageUrl || "../assets/hot-listing-frame-1.png"}
-          alt={car.value}
+          src={vehicle.imageUrl || "../assets/hot-listing-frame-1.png"}
+          alt={vehicle.value}
           className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
         />
-        {car.price && (
+        {vehicle.price && (
           <div className="absolute top-3 right-3 bg-blue-600 text-white font-bold px-3 py-1 rounded-lg text-sm sm:text-base">
-            ${car.price}
+            ${vehicle.price}
           </div>
         )}
       </div>
@@ -19,27 +19,27 @@ const VehicleResultCard = ({ car }) => {
       <div className="p-4 sm:p-5 flex-1 flex flex-col">
         {/* Title */}
         <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-          {car.value}
+          {vehicle.value}
         </h3>
 
         {/* Details */}
         <div className="space-y-1 mb-3 flex-1">
-          {car.year && (
+          {vehicle.year && (
             <p className="text-sm text-gray-600 font-medium">
-              📅 {car.year.value}
+              📅 {vehicle.year.value}
             </p>
           )}
-          {car.make && (
+          {vehicle.make && (
             <p className="text-sm text-gray-600 font-medium">
-              🏭 {car.make.value}
+              🏭 {vehicle.make.value}
             </p>
           )}
         </div>
 
         {/* Description */}
-        {car.description && (
+        {vehicle.description && (
           <p className="text-xs sm:text-sm text-gray-500 line-clamp-2 mb-4">
-            {car.description}
+            {vehicle.description}
           </p>
         )}
 

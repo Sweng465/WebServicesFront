@@ -25,8 +25,8 @@ import vector23 from "./vector-23.svg";
 import vector24 from "./vector-24.svg";
 import vector25 from "./vector-25.svg";
 
-export const CarListingSection = () => {
-  const carListings = [
+export const VehicleListingSection = () => {
+  const vehicleListings = [
     {
       id: 1,
       title: "2018 Toyota Camry",
@@ -180,7 +180,7 @@ export const CarListingSection = () => {
       price: "$16,800",
       mileage: "32,000 mi",
       distance: "5.1 miles away",
-      description: "Compact car in great condition, perfect for\ncommuting",
+      description: "Compact vehicle in great condition, perfect for\ncommuting",
       seller: "Downtown Salvage",
       sellerType: "Junkyard",
       position: { top: "448px", left: "-left-px" },
@@ -215,133 +215,133 @@ export const CarListingSection = () => {
     },
   ];
 
-  const renderCarCard = (car) => {
+  const renderVehicleCard = (vehicle) => {
     const cardWidth =
-      car.id === 2 || car.id === 5
+      vehicle.id === 2 || vehicle.id === 5
         ? "w-[calc(100%_-_1042px)]"
-        : car.id === 1 || car.id === 3
+        : vehicle.id === 1 || vehicle.id === 3
           ? "w-[calc(100%_-_1037px)]"
           : "w-[calc(100%_-_1042px)]";
     const cardLeft =
-      car.position.left === "-left-px" ? "-left-px" : car.position.left;
-    const cardTop = car.position.top;
+      vehicle.position.left === "-left-px" ? "-left-px" : vehicle.position.left;
+    const cardTop = vehicle.position.top;
 
     return (
       <article
-        key={car.id}
-        className={`${cardWidth} top-${cardTop} left-[${cardLeft}] ${car.height} absolute bg-white rounded-xl overflow-hidden border border-solid border-[#dee0e3] shadow-[0px_1px_2px_#0000000d]`}
+        key={vehicle.id}
+        className={`${cardWidth} top-${cardTop} left-[${cardLeft}] ${vehicle.height} absolute bg-white rounded-xl overflow-hidden border border-solid border-[#dee0e3] shadow-[0px_1px_2px_#0000000d]`}
         role="article"
-        aria-label={`Car listing for ${car.title}`}
+        aria-label={`Vehicle listing for ${vehicle.title}`}
       >
         <header className="absolute top-[258px] left-[17px] w-[145px] h-6 flex items-center justify-center">
-          <h3 className="[font-family:'Inter-Bold',Helvetica] font-bold text-[#21262c] ${car.titleFontSize} tracking-[0] leading-6 whitespace-nowrap">
-            {car.title}
+          <h3 className="[font-family:'Inter-Bold',Helvetica] font-bold text-[#21262c] ${vehicle.titleFontSize} tracking-[0] leading-6 whitespace-nowrap">
+            {vehicle.title}
           </h3>
         </header>
 
         <div className="absolute top-[264px] left-[242px] w-[65px] h-[18px] flex items-center justify-center">
-          <span className="[font-family:'Inter-Bold',Helvetica] font-bold text-[#233c5c] ${car.priceFontSize} tracking-[0] leading-7 whitespace-nowrap">
-            {car.price}
+          <span className="[font-family:'Inter-Bold',Helvetica] font-bold text-[#233c5c] ${vehicle.priceFontSize} tracking-[0] leading-7 whitespace-nowrap">
+            {vehicle.price}
           </span>
         </div>
 
         <div
-          className={`absolute ${car.iconTop} left-[17px] w-3 h-3`}
+          className={`absolute ${vehicle.iconTop} left-[17px] w-3 h-3`}
           aria-hidden="true"
         >
           <img
             className="absolute w-[16.67%] h-[16.67%] top-[41.67%] left-[50.00%]"
             alt=""
-            src={car.mileageIcon1}
+            src={vehicle.mileageIcon1}
           />
           <img
             className="absolute w-[83.33%] h-[62.50%] top-[16.66%] left-[8.33%]"
             alt=""
-            src={car.mileageIcon2}
+            src={vehicle.mileageIcon2}
           />
         </div>
 
         <div
-          className={`absolute ${car.mileageTop} left-[33px] w-[62px] h-3.5 flex items-center justify-center`}
+          className={`absolute ${vehicle.mileageTop} left-[33px] w-[62px] h-3.5 flex items-center justify-center`}
         >
-          <span className="[font-family:'Inter-Regular',Helvetica] font-normal text-[#67737e] ${car.mileageFontSize} tracking-[0] leading-5 whitespace-nowrap">
-            {car.mileage}
+          <span className="[font-family:'Inter-Regular',Helvetica] font-normal text-[#67737e] ${vehicle.mileageFontSize} tracking-[0] leading-5 whitespace-nowrap">
+            {vehicle.mileage}
           </span>
         </div>
 
         <div
-          className={`absolute ${car.iconTop} left-[110px] w-3 h-3`}
+          className={`absolute ${vehicle.iconTop} left-[110px] w-3 h-3`}
           aria-hidden="true"
         >
           <img
             className="absolute w-[66.67%] h-[83.33%] top-[8.33%] left-[16.67%]"
             alt=""
-            src={car.locationIcon1}
+            src={vehicle.locationIcon1}
           />
           <img
             className="absolute w-[25.00%] h-[25.00%] top-[29.17%] left-[37.50%]"
             alt=""
-            src={car.locationIcon2}
+            src={vehicle.locationIcon2}
           />
         </div>
 
         <div
-          className={`absolute ${car.distanceTop} left-[126px] w-[92px] h-5 flex items-center justify-center`}
+          className={`absolute ${vehicle.distanceTop} left-[126px] w-[92px] h-5 flex items-center justify-center`}
         >
-          <span className="[font-family:'Inter-Regular',Helvetica] font-normal text-[#67737e] ${car.distanceFontSize} tracking-[0] leading-5 whitespace-nowrap">
-            {car.distance}
+          <span className="[font-family:'Inter-Regular',Helvetica] font-normal text-[#67737e] ${vehicle.distanceFontSize} tracking-[0] leading-5 whitespace-nowrap">
+            {vehicle.distance}
           </span>
         </div>
 
         <div
-          className={`absolute w-[calc(100%_-_34px)] top-[326px] left-[17px] ${car.descriptionHeight} flex`}
+          className={`absolute w-[calc(100%_-_34px)] top-[326px] left-[17px] ${vehicle.descriptionHeight} flex`}
         >
           <p
-            className={`flex items-center justify-center ${car.descriptionMarginTop} ${car.descriptionWidth} ${car.descriptionHeight === "h-10" ? "h-[34px]" : "h-3.5"} [font-family:'Inter-Regular',Helvetica] font-normal text-[#67737e] ${car.descriptionFontSize} tracking-[0] ${car.descriptionLineHeight} ${car.descriptionHeight === "h-10" ? "" : "whitespace-nowrap"}`}
+            className={`flex items-center justify-center ${vehicle.descriptionMarginTop} ${vehicle.descriptionWidth} ${vehicle.descriptionHeight === "h-10" ? "h-[34px]" : "h-3.5"} [font-family:'Inter-Regular',Helvetica] font-normal text-[#67737e] ${vehicle.descriptionFontSize} tracking-[0] ${vehicle.descriptionLineHeight} ${vehicle.descriptionHeight === "h-10" ? "" : "whitespace-nowrap"}`}
           >
-            {car.description.includes("\n") ? (
+            {vehicle.description.includes("\n") ? (
               <>
-                {car.description.split("\n")[0]}
+                {vehicle.description.split("\n")[0]}
                 <br />
-                {car.description.split("\n")[1]}
+                {vehicle.description.split("\n")[1]}
               </>
             ) : (
-              car.description
+              vehicle.description
             )}
           </p>
         </div>
 
         <div
-          className={`${car.sellerTop} left-[17px] ${car.sellerWidth} absolute h-[22px] flex items-center ${car.sellerBorder ? `bg-white rounded-full border border-solid ${car.sellerBorder}` : "rounded-full border border-solid border-[#dee0e3]"}`}
+          className={`${vehicle.sellerTop} left-[17px] ${vehicle.sellerWidth} absolute h-[22px] flex items-center ${vehicle.sellerBorder ? `bg-white rounded-full border border-solid ${vehicle.sellerBorder}` : "rounded-full border border-solid border-[#dee0e3]"}`}
         >
           <div
-            className={`flex items-center justify-center ${car.sellerTop.includes("159") ? "mt-px" : car.sellerTop.includes("170") ? "" : "-mt-px"} h-3 ${car.sellerMarginLeft} ${car.sellerTextWidth} [font-family:'Inter-Bold',Helvetica] font-bold text-[#21262c] text-xs tracking-[0] leading-4 whitespace-nowrap`}
+            className={`flex items-center justify-center ${vehicle.sellerTop.includes("159") ? "mt-px" : vehicle.sellerTop.includes("170") ? "" : "-mt-px"} h-3 ${vehicle.sellerMarginLeft} ${vehicle.sellerTextWidth} [font-family:'Inter-Bold',Helvetica] font-bold text-[#21262c] text-xs tracking-[0] leading-4 whitespace-nowrap`}
           >
-            {car.seller}
+            {vehicle.seller}
           </div>
         </div>
 
         <div
-          className={`absolute ${car.sellerTypeTop} ${car.sellerTypeLeft || "left-[229px]"} ${car.sellerTypeWidth || "w-[78px]"} h-[22px] flex items-center rounded-full border border-solid border-[#dee0e3]`}
+          className={`absolute ${vehicle.sellerTypeTop} ${vehicle.sellerTypeLeft || "left-[229px]"} ${vehicle.sellerTypeWidth || "w-[78px]"} h-[22px] flex items-center rounded-full border border-solid border-[#dee0e3]`}
         >
           <div
-            className={`flex items-center justify-center ${car.sellerTypeTop.includes("159") ? "mt-px" : car.sellerTypeTop.includes("170") ? "" : "-mt-px"} h-3 ${car.sellerTypeMarginLeft} ${car.sellerTypeTextWidth} [font-family:'Inter-Bold',Helvetica] font-bold text-[#21262c] text-xs tracking-[0] leading-4 whitespace-nowrap`}
+            className={`flex items-center justify-center ${vehicle.sellerTypeTop.includes("159") ? "mt-px" : vehicle.sellerTypeTop.includes("170") ? "" : "-mt-px"} h-3 ${vehicle.sellerTypeMarginLeft} ${vehicle.sellerTypeTextWidth} [font-family:'Inter-Bold',Helvetica] font-bold text-[#21262c] text-xs tracking-[0] leading-4 whitespace-nowrap`}
           >
-            {car.sellerType}
+            {vehicle.sellerType}
           </div>
         </div>
 
         <div className="absolute w-[calc(100%_-_2px)] top-px left-px h-[242px] flex justify-end">
           <button
             className="mt-2 w-10 h-10 mr-2 flex items-center justify-center bg-[#ffffff33] rounded-[10px] backdrop-blur-[2px] backdrop-brightness-[100%] [-webkit-backdrop-filter:blur(2px)_brightness(100%)] hover:bg-[#ffffff4d] transition-colors"
-            aria-label={`Add ${car.title} to favorites`}
+            aria-label={`Add ${vehicle.title} to favorites`}
             type="button"
           >
             <div className="h-4 w-4 relative">
               <img
                 className="absolute w-[83.33%] h-[75.00%] top-[12.50%] left-[8.33%]"
                 alt=""
-                src={car.favoriteIcon}
+                src={vehicle.favoriteIcon}
               />
             </div>
           </button>
@@ -354,9 +354,9 @@ export const CarListingSection = () => {
     <section
       className="ml-[17px] w-[1366px] h-[865px] relative mt-2 overflow-hidden"
       role="region"
-      aria-label="Car listings"
+      aria-label="Vehicle listings"
     >
-      {carListings.map(renderCarCard)}
+      {vehicleListings.map(renderVehicleCard)}
     </section>
   );
 };

@@ -7,7 +7,7 @@ export const NavbarSection = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const navigationItems = [
-    { label: "Browse Cars", href: "#browse-cars" },
+    { label: "Browse Vehicles", href: "#browse-vehicles" },
     { label: "Auto Parts", href: "#auto-parts" },
     { label: "Sell Items", href: "#sell-items" },
     { label: "About", href: "#about" },
@@ -86,14 +86,14 @@ export const NavbarSection = () => {
         role="search"
       >
         <label htmlFor="search-input" className="sr-only">
-          Search for auto parts and cars
+          Search for auto parts and vehicles
         </label>
         <input
           id="search-input"
           type="search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search for auto parts and cars..."
+          placeholder="Search for auto parts and vehicles..."
           className="w-full h-full rounded-[10px] border border-gray-300 px-4 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           style={{
             backgroundImage: `url(${rectangle9})`,

@@ -8,8 +8,8 @@ import vector16 from "./vector-16.svg";
 import vector17 from "./vector-17.svg";
 import vector18 from "./vector-18.svg";
 
-export const CarTitleSection = () => {
-  const carData = {
+export const VehicleTitleSection = () => {
+  const vehicleData = {
     title: "2018 Toyota Camry",
     year: "2018",
     mileage: "45,000 miles",
@@ -21,14 +21,14 @@ export const CarTitleSection = () => {
     <section
       className="absolute top-[107px] left-[700px] w-[668px] h-[159px] bg-white rounded-[10px]"
       role="region"
-      aria-label="Car listing details"
+      aria-label="Vehicle listing details"
     >
       <header className="absolute top-[22px] left-[11px] w-[272px] h-9 flex items-center justify-center [font-family:'Inter-Bold',Helvetica] font-bold text-[#21262c] text-[28.5px] tracking-[0] leading-9 whitespace-nowrap">
-        <h1>{carData.title}</h1>
+        <h1>{vehicleData.title}</h1>
       </header>
 
       <div className="absolute top-[70px] left-[229px] w-[105px] h-6 flex items-center justify-center [font-family:'Inter-Regular',Helvetica] font-normal text-[#67737e] text-[15px] tracking-[0] leading-6 whitespace-nowrap">
-        {carData.distance}
+        {vehicleData.distance}
       </div>
 
       <div
@@ -62,7 +62,7 @@ export const CarTitleSection = () => {
       </div>
 
       <div className="absolute top-[70px] left-[31px] w-9 h-6 flex items-center justify-center [font-family:'Inter-Regular',Helvetica] font-normal text-[#67737e] text-[15.4px] tracking-[0] leading-6 whitespace-nowrap">
-        <span aria-label="Year">{carData.year}</span>
+        <span aria-label="Year">{vehicleData.year}</span>
       </div>
 
       <div
@@ -84,7 +84,7 @@ export const CarTitleSection = () => {
       </div>
 
       <div className="absolute top-[74px] left-[103px] w-[91px] h-4 flex items-center justify-center [font-family:'Inter-Regular',Helvetica] font-normal text-[#67737e] text-[14.9px] tracking-[0] leading-6 whitespace-nowrap">
-        <span aria-label="Mileage">{carData.mileage}</span>
+        <span aria-label="Mileage">{vehicleData.mileage}</span>
       </div>
 
       <div
@@ -106,7 +106,7 @@ export const CarTitleSection = () => {
       </div>
 
       <div className="top-28 left-[11px] w-[130px] h-9 text-[31.6px] leading-10 absolute flex items-center justify-center [font-family:'Inter-Bold',Helvetica] font-bold text-[#233c5c] tracking-[0] whitespace-nowrap">
-        <span aria-label="Price">{carData.price}</span>
+        <span aria-label="Price">{vehicleData.price}</span>
       </div>
     </section>
   );

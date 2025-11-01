@@ -3,7 +3,7 @@ import { useAuth } from "../context/useAuth";
 import { useState } from "react";
 
 const navItems = [
-  { label: "Browse Cars", href: "/browse-cars" },
+  { label: "Browse Vehicles", href: "/browse-vehicles" },
   { label: "Auto Parts", href: "/auto-parts" },
   { label: "Sell Items", href: "/sell-items" },
   { label: "About", href: "/about" },

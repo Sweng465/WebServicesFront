@@ -74,11 +74,11 @@ export const SearchBarSection = () => {
     <section
       className="ml-[17px] w-[1367px] h-[213px] relative mt-[19px] overflow-hidden"
       role="search"
-      aria-label="Car search and filters"
+      aria-label="Vehicle search and filters"
     >
       <header className="absolute top-px left-[487px] w-[329px] h-[88px] bg-white rounded-[5px]">
         <h1 className="absolute top-3 left-[54px] w-[219px] h-10 flex items-center justify-center [font-family:'Inter-Bold',Helvetica] font-bold text-[#233c5c] text-[35.4px] tracking-[0] leading-10 whitespace-nowrap">
-          Browse Cars
+          Browse Vehicles
         </h1>
 
         <p className="absolute top-[54px] left-[28px] w-[271px] h-6 flex items-center justify-center [font-family:'Inter-Regular',Helvetica] font-normal text-[#67737e] text-[14.8px] tracking-[0] leading-6 whitespace-nowrap">
@@ -158,20 +158,20 @@ export const SearchBarSection = () => {
 
       <div className="absolute w-[calc(100%_+_1px)] top-[117px] -left-px h-10 flex bg-white rounded-[10px] overflow-hidden border border-solid border-[#e9ebec]">
         <div className="mt-[11.5px] ml-[41px] w-[1314px] mb-[11.5px] flex">
-          <label htmlFor="car-search" className="sr-only">
-            Search for cars
+          <label htmlFor="vehicle-search" className="sr-only">
+            Search for vehicles
           </label>
           <input
-            id="car-search"
+            id="vehicle-search"
             type="search"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
-            placeholder="Search cars..."
+            placeholder="Search vehicles..."
             className="flex items-center justify-start mt-px w-full h-3.5 [font-family:'Inter-Regular',Helvetica] font-normal text-[#67737e] text-[13.5px] tracking-[0] leading-[normal] bg-transparent border-none outline-none placeholder:text-[#67737e]"
             aria-describedby="search-help"
           />
           <div id="search-help" className="sr-only">
-            Enter keywords to search for cars by make, model, or other features
+            Enter keywords to search for vehicles by make, model, or other features
           </div>
         </div>
       </div>
