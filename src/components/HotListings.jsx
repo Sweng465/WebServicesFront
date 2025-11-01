@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import VehicleCard from "./VehicleCard";
+import VehicleCard from "./vehicle/VehicleCard";
 
 import hotListingFrame1 from "../assets/hot-listing-frame-1.png";
 import hotListingFrame2 from "../assets/hot-listing-frame-2.png";

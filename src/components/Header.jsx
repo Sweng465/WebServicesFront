@@ -1,12 +1,13 @@
+import { RoutePaths } from "../general/RoutePaths.jsx";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { useState } from "react";
 
 const navItems = [
-  { label: "Browse Vehicles", href: "/browse-vehicles" },
-  { label: "Auto Parts", href: "/auto-parts" },
-  { label: "Sell Items", href: "/sell-items" },
-  { label: "About", href: "/about" },
+  { label: "Browse Vehicles", href: RoutePaths.BROWSECARS },
+  { label: "Auto Parts", href: RoutePaths.BROWSEPARTS },
+  { label: "Sell Items", href: RoutePaths.SELLITEMS },
+  { label: "About", href: RoutePaths.ABOUT },
 ];
 
 const Header = () => {
