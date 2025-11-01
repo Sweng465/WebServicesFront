@@ -1,12 +1,11 @@
 import { Route, Routes } from "react-router-dom";
 
 import { RoutePaths } from "./RoutePaths.jsx";
-//import { Home } from "../home/Home.jsx";
 import { Homepage } from "../pages/Homepage.jsx";
 import { SignIn } from "../pages/SignIn.jsx";
 import { SignUp } from "../pages/SignUp.jsx";
-//import { BrowseVehicles } from "../pages/BrowseVehicles.jsx";
 import BrowseVehicles from "../pages/BrowseVehicles.jsx";
+import BrowseParts from "../pages/BrowseParts.jsx";
 import { NotFound } from "./NotFound.jsx";
 import { Layout } from "./Layout.jsx";
 import Profile from "../pages/Profile.jsx";
@@ -64,6 +63,14 @@ export const Router = () => (
       element={
         <Layout>
           <BrowseVehicles />
+        </Layout>
+      }
+    />
+    <Route
+      path={RoutePaths.BROWSEPARTS}
+      element={
+        <Layout>
+          <BrowseParts />
         </Layout>
       }
     />
