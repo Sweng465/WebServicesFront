@@ -33,9 +33,15 @@ const BrowseVehicles = () => {
                 const res = await fetch(`http://localhost:3000/api/vehicles?${query}`);
                 const data = await res.json();
 
-                // The backend returns { data: [...], pagination: {...} }
-                setVehicles(data.data || []);
+                console.log("Fetched full response:", data);
+                console.log("Data structure - data.data:", data.data);
+                console.log("Data structure - data.vehicles:", data.vehicles);
+
+                // The backend returns { data: [...], pagination: {...} } or similar structure
+                const vehiclesData = data.data || data.vehicles || data || [];
+                setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
                 setPagination(data.pagination || { totalPages: 1 });
+
 
             } catch (error) {
                 console.error("Error fetching vehicles:", error);

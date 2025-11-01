@@ -7,7 +7,6 @@ const navItems = [
   { label: "Browse Vehicles", href: RoutePaths.BROWSECARS },
   { label: "Auto Parts", href: RoutePaths.BROWSEPARTS },
   { label: "Sell Items", href: RoutePaths.SELLITEMS },
-  { label: "About", href: RoutePaths.ABOUT },
 ];
 
 const Header = () => {
