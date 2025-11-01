@@ -1,7 +1,7 @@
 import React from "react";
 
 export const ImageGallerySection = () => {
-  const carParts = [
+  const vehicleParts = [
     {
       name: "Engine",
       price: "$2,500",
@@ -52,10 +52,10 @@ export const ImageGallerySection = () => {
   return (
     <div className="absolute w-[calc(100%_-_32px)] top-[917px] left-4 h-[302px] bg-white rounded-xl border border-solid border-[#dee0e3] shadow-[0px_1px_2px_#0000000d]">
       <p className="absolute top-[25px] left-[25px] w-[310px] text-[23.4px] tracking-[-0.60px] flex items-center justify-center h-6 [font-family:'Inter-Bold',Helvetica] font-bold text-[#21262c] leading-6 whitespace-nowrap">
-        Available Parts from this Car
+        Available Parts from this Vehicle
       </p>
 
-      {carParts.map((part, index) => {
+      {vehicleParts.map((part, index) => {
         const positions = [
           { top: "73px", left: "25px" },
           { top: "73px", left: "470px" },

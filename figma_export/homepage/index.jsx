@@ -30,7 +30,7 @@ export const Homepage = () => {
   ];
 
   const navigationItems = [
-    { label: "Browse Cars", href: "/browse-cars" },
+    { label: "Browse Vehicles", href: "/browse-vehicles" },
     { label: "Auto Parts", href: "/auto-parts" },
     { label: "Sell Items", href: "/sell-items" },
     { label: "About", href: "/about" },
@@ -44,7 +44,7 @@ export const Homepage = () => {
         <div className="absolute top-[25px] left-[22px] w-[1398px] h-[428px] bg-[#ffffff26] rounded-[20px]" />
 
         <h1 className="absolute top-[76px] left-[385px] w-[669px] [text-shadow:5px_5px_5px_#297ad280] [font-family:'Encode_Sans_Expanded-Bold',Helvetica] font-bold text-white text-[50px] text-center tracking-[0] leading-[normal]">
-          Find Quality Used Cars
+          Find Quality Used Vehicles
           <br />
           and Auto Parts
         </h1>

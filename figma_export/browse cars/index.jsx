@@ -1,10 +1,10 @@
 import React from "react";
-import { CarListingSection } from "./CarListingSection";
+import { VehicleListingSection } from "./VehicleListingSection";
 import { NavigationSection } from "./NavigationSection";
 import { PaginationControlsSection } from "./PaginationControlsSection";
 import { SearchBarSection } from "./SearchBarSection";
 
-export const BrowseCars = () => {
+export const BrowseVehicles = () => {
   return (
     <div className="w-full min-w-[1440px] min-h-[1081px] relative">
       <div className="absolute top-0 left-0 w-[1440px] h-[1413px] bg-white" />
@@ -15,11 +15,11 @@ export const BrowseCars = () => {
             <SearchBarSection />
             <div className="ml-4 w-[189px] h-11 mt-[22px] flex bg-[#07246e] rounded-[10px]">
               <p className="flex items-center justify-center mt-3.5 w-[140.68px] h-4 ml-6 [font-family:'Inter-Regular',Helvetica] font-normal text-white text-[15px] tracking-[0] leading-6 whitespace-nowrap">
-                Showing 5 of 5 cars
+                Showing 5 of 5 vehicles
               </p>
             </div>
 
-            <CarListingSection />
+            <VehicleListingSection />
           </div>
 
           <PaginationControlsSection />

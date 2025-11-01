@@ -110,7 +110,7 @@ const HotListings = () => {
           </p>
         </div>
 
-        {/* Carousel Container */}
+        {/* Vehicleousel Container */}
         <div className="relative">
           {/* Items Display */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 min-h-[400px] sm:min-h-[450px]">

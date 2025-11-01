@@ -6,7 +6,7 @@ import vector from "./vector.svg";
 export const NavigationBarSection = () => {
   const navigationItems = [
     {
-      label: "Browse Cars",
+      label: "Browse Vehicles",
       position: { top: "41px", left: "442px" },
       width: "127px",
     },

@@ -14,7 +14,7 @@ export const ListPageFrame = () => {
     description: "",
     price: "",
     condition: "",
-    itemType: "car", // 'car' or 'part'
+    itemType: "vehicle", // 'vehicle' or 'part'
     photos: [],
   });
 
@@ -188,13 +188,13 @@ export const ListPageFrame = () => {
 
             <label className="flex items-center">
               <span className="flex items-center justify-center mt-0.5 w-[45px] h-[25px] [font-family:'Encode_Sans_Expanded-Bold',Helvetica] font-bold text-black text-xl tracking-[0] leading-[normal]">
-                Car:
+                Vehicle:
               </span>
               <input
                 type="radio"
                 name="itemType"
-                value="car"
-                checked={formData.itemType === "car"}
+                value="vehicle"
+                checked={formData.itemType === "vehicle"}
                 onChange={(e) => handleInputChange("itemType", e.target.value)}
                 className="w-8 h-8 bg-white rounded-2xl ml-1 appearance-none border-2 border-gray-300 checked:bg-blue-500 checked:border-blue-500"
               />
@@ -276,7 +276,7 @@ export const ListPageFrame = () => {
             href="#"
             className="[font-family:'Inter-Bold',Helvetica] font-bold text-black text-xl tracking-[0] leading-[normal] hover:text-blue-600 transition-colors"
           >
-            Browse Cars
+            Browse Vehicles
           </a>
 
           <a

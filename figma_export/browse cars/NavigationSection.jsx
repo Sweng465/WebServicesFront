@@ -6,7 +6,7 @@ import vector from "./vector.svg";
 
 export const NavigationSection = () => {
   const navigationItems = [
-    { label: "Browse Cars", href: "/browse-cars", isLink: true },
+    { label: "Browse Vehicles", href: "/browse-vehicles", isLink: true },
     { label: "Auto Parts", href: "#", isLink: false },
     { label: "Sell Items", href: "#", isLink: false },
     { label: "About", href: "#", isLink: false },

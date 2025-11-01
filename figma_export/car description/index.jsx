@@ -1,5 +1,5 @@
 import React from "react";
-import { CarTitleSection } from "./CarTitleSection";
+import { VehicleTitleSection } from "./VehicleTitleSection";
 import { DescriptionSection } from "./DescriptionSection";
 import { ImageGallerySection } from "./ImageGallerySection";
 import { NavbarSection } from "./NavbarSection";
@@ -13,7 +13,7 @@ import vector4 from "./vector-4.svg";
 import vector19 from "./vector-19.svg";
 import vector20 from "./vector-20.svg";
 
-export const CarDescription = () => {
+export const VehicleDescription = () => {
   return (
     <div className="w-full min-w-[1440px] min-h-[1081px] relative">
       <div className="absolute top-0 left-0 w-[1440px] h-[1413px] bg-white" />
@@ -77,7 +77,7 @@ export const CarDescription = () => {
           <SellerDetailsSection />
           <DescriptionSection />
           <ImageGallerySection />
-          <CarTitleSection />
+          <VehicleTitleSection />
           <div className="absolute top-[34px] left-3.5 w-[152px] h-[38px] flex bg-white rounded-[10px]">
             <div className="-mt-0.5 w-[143.92px] h-10 relative rounded-[10px]">
               <div className="absolute top-[calc(50.00%_-_8px)] left-[calc(50.00%_-_56px)] w-4 h-4">
@@ -95,7 +95,7 @@ export const CarDescription = () => {
               </div>
 
               <div className="absolute top-[calc(50.00%_-_7px)] left-[calc(50.00%_-_24px)] w-20 h-3.5 flex items-center justify-center [font-family:'Inter-Regular',Helvetica] font-normal text-[#21262c] text-[13.2px] text-center tracking-[0] leading-5 whitespace-nowrap">
-                Back to Cars
+                Back to Vehicles
               </div>
             </div>
           </div>
