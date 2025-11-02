@@ -5,5 +5,6 @@ export const RoutePaths = {
   PROFILE: '/profile',
   BROWSECARS: '/browse-vehicles',
   BROWSEPARTS: '/browse-parts',
-  SELLITEMS: '/sell-items'
+  SELLITEMS: '/sell-items',
+  BROWSE_VEHICLE_LISTINGS: '/browse-vehicle-listings/:vehicleId'
 };

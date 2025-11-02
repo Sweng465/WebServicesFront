@@ -5,6 +5,7 @@ import { Homepage } from "../pages/Homepage.jsx";
 import { SignIn } from "../pages/SignIn.jsx";
 import { SignUp } from "../pages/SignUp.jsx";
 import BrowseVehicles from "../pages/BrowseVehicles.jsx";
+import BrowseVehicleListings from "../pages/BrowseVehicleListings.jsx";
 import BrowseParts from "../pages/BrowseParts.jsx";
 import { NotFound } from "./NotFound.jsx";
 import { Layout } from "./Layout.jsx";
@@ -63,6 +64,14 @@ export const Router = () => (
       element={
         <Layout>
           <BrowseVehicles />
+        </Layout>
+      }
+    />
+    <Route
+      path={RoutePaths.BROWSE_VEHICLE_LISTINGS}
+      element={
+        <Layout>
+          <BrowseVehicleListings />
         </Layout>
       }
     />
