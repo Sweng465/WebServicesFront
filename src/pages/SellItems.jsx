@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/useAuth";
 import Header from "../components/Header";
+import VehicleSearch from "../components/vehicle/VehicleSearch";
 import API_ENDPOINTS from "../config/api.js";
 
 const SellItems = () => {
@@ -9,24 +10,19 @@ const SellItems = () => {
 
   // Form state
   const [form, setForm] = useState({
-    title: "",
-    yearId: "",
-    makeId: "",
-    modelId: "",
     description: "",
     conditionId: "",
     price: "",
-    photos: [],
   });
-  
 
-  // Dropdown options
-  const [years, setYears] = useState([]);
-  const [makes, setMakes] = useState([]);
-  const [models, setModels] = useState([]);
+  const [filters, setFilters] = useState({
+    yearId: "",
+    makeId: "",
+    modelId: "",
+    submodelId: "",
+  });
+
   const [conditions, setConditions] = useState([]);
-
-  
 
   useEffect(() => {
     if (!user?.id || !accessToken) return;
@@ -44,19 +40,15 @@ const SellItems = () => {
     fetchProfile();
   }, [user, authFetch, accessToken]);
 
-  // Load years and conditions
+  // Load conditions
   useEffect(() => {
-    fetch(API_ENDPOINTS.YEARS)
-      .then(res => res.json())
-      .then(data => setYears(data.data || []))
-      .catch(err => console.error(err));
     /*
     fetch(API_ENDPOINTS.CONDITIONS)
       .then(res => res.json())
       .then(data => setConditions(data.data || []))
       .catch(err => console.error(err));
       */
-    // Temporarily hardcode conditions if API isn't ready
+    // Temporarily hardcode conditions since no conditions API
     const fallbackConditions = [
         { conditionId: 6, value: "Burnt" },
         { conditionId: 7, value: "Bent Frame" },
@@ -78,43 +70,62 @@ const SellItems = () => {
     setConditions(fallbackConditions);
   }, []);
 
-  // Load makes when year changes
-  useEffect(() => {
-    if (!form.yearId) return;
-    fetch(`${API_ENDPOINTS.MAKES}?yearId=${form.yearId}`)
-      .then(res => res.json())
-      .then(data => setMakes(data.data || []))
-      .catch(err => console.error(err));
-    setForm(prev => ({ ...prev, makeId: "", modelId: "" }));
-  }, [form.yearId]);
+  const fetchVehicleId = async (filters) => {
+    console.log("fetchVehicleId filters:", filters);
+    const query = new URLSearchParams({
+      yearId: filters.yearId,
+      makeId: filters.makeId,
+      modelId: filters.modelId,
+      submodelId: filters.submodelId,
+    });
 
-  // Load models when make changes
-  useEffect(() => {
-    if (!form.makeId) return;
-    fetch(`${API_ENDPOINTS.VEHICLE_MODELS}?makeId=${form.makeId}`)
-      .then(res => res.json())
-      .then(data => setModels(data.data || []))
-      .catch(err => console.error(err));
-    setForm(prev => ({ ...prev, modelId: "" }));
-  }, [form.makeId]);
+    const res = await fetch(`${API_ENDPOINTS.VEHICLES}?${query}`);
+    const data = await res.json();
+    console.log("Vehicle response:", data);
 
-  const handleChange = (key, value) => {
-    setForm(prev => ({ ...prev, [key]: value }));
+    const vehicles = data.data || data.vehicles || data || [];
+    if (!Array.isArray(vehicles) || vehicles.length === 0)
+      throw new Error("No vehicle found for selected combination.");
+
+    return vehicles[0].vehicleId;
+  };
+
+  const handleChange = (field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
+      // Fetch the vehicleId based on selected filters
+      const vehicleId = await fetchVehicleId(filters);
+
+      const payload = {
+        businessId: 1, // 1 for now until we have ability to create businesses
+        date: new Date().toISOString(),
+        price: parseFloat(form.price),
+        description: form.description,
+        isAvailable: 1,
+        conditionId: parseInt(form.conditionId),
+        disabled: 0,
+        listingTypeId: 1, // 1 for now until we implement part listings
+        itemId: vehicleId,
+      };
+
       const res = await authFetch(API_ENDPOINTS.CREATE_LISTING, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
+
       const data = await res.json();
       console.log("Listing created:", data);
-      // maybe redirect or reset form
     } catch (err) {
-      console.error("Failed to create listing", err);
+      console.error("Failed to create listing:", err);
     }
   };
 
@@ -126,50 +137,11 @@ const SellItems = () => {
       <div className="max-w-3xl mx-auto p-6 bg-white bg-opacity-90 text-gray-800 rounded-lg mt-6">
         <h2 className="text-2xl font-bold mb-4">Create Listing</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Title"
-            value={form.title}
-            onChange={(e) => handleChange("title", e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          {/* Year/Make/Model */}
-          <div className="flex gap-2">
-            <select
-              value={form.yearId}
-              onChange={(e) => handleChange("yearId", e.target.value)}
-              className="flex-1 p-2 border rounded"
-              required
-            >
-              <option value="">Select Year</option>
-              {years.map(y => <option key={y.yearId} value={y.yearId}>{y.value}</option>)}
-            </select>
-
-            <select
-              value={form.makeId}
-              onChange={(e) => handleChange("makeId", e.target.value)}
-              className="flex-1 p-2 border rounded"
-              disabled={!form.yearId}
-              required
-            >
-              <option value="">Select Make</option>
-              {makes.map(m => <option key={m.makeId} value={m.makeId}>{m.value}</option>)}
-            </select>
-
-            <select
-              value={form.modelId}
-              onChange={(e) => handleChange("modelId", e.target.value)}
-              className="flex-1 p-2 border rounded"
-              disabled={!form.makeId}
-              required
-            >
-              <option value="">Select Model</option>
-              {models.map(m => <option key={m.modelId} value={m.modelId}>{m.value}</option>)}
-            </select>
+          <div className="bg-gray-50 p-4 rounded-lg border mb-4">
+            <h3 className="text-lg font-semibold mb-2">Select Vehicle</h3>
+            <VehicleSearch filters={filters} setFilters={setFilters} />
           </div>
-
+          
           <textarea
             placeholder="Description"
             value={form.description}
