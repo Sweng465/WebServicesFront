@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/useAuth";
+import API_ENDPOINTS from "../config/api.js";
 
 const Profile = () => {
   const { user, authFetch, accessToken } = useAuth(); // pull in authFetch from context
@@ -9,7 +10,7 @@ const Profile = () => {
     if (!user?.id || !accessToken) return; 
     const fetchProfile = async () => {
       try {
-        const res = await authFetch("http://localhost:3000/api/users/profile");
+        const res = await authFetch(API_ENDPOINTS.USER_PROFILE);
         const data = await res.json();
         console.log("Profile API response data:", data);
         setProfile(data.data);

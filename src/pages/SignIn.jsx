@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import API_ENDPOINTS from "../config/api.js";
 
 export const SignIn = () => {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export const SignIn = () => {
     const payload = { username, password }; // CHANGE BACK TO EMAIL
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/signin", {
+      const response = await fetch(API_ENDPOINTS.SIGN_IN, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

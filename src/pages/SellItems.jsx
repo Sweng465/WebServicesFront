@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/useAuth";
 import Header from "../components/Header";
+import API_ENDPOINTS from "../config/api.js";
 
 const SellItems = () => {
   const { user, authFetch, accessToken } = useAuth();
@@ -32,7 +33,7 @@ const SellItems = () => {
 
     const fetchProfile = async () => {
       try {
-        const res = await authFetch("http://localhost:3000/api/users/profile");
+        const res = await authFetch(API_ENDPOINTS.USER_PROFILE);
         const data = await res.json();
         setProfile(data.data);
       } catch (err) {
@@ -45,12 +46,12 @@ const SellItems = () => {
 
   // Load years and conditions
   useEffect(() => {
-    fetch("http://localhost:3000/api/years")
+    fetch(API_ENDPOINTS.YEARS)
       .then(res => res.json())
       .then(data => setYears(data.data || []))
       .catch(err => console.error(err));
     /*
-    fetch("http://localhost:3000/api/conditions")
+    fetch(API_ENDPOINTS.CONDITIONS)
       .then(res => res.json())
       .then(data => setConditions(data.data || []))
       .catch(err => console.error(err));
@@ -80,7 +81,7 @@ const SellItems = () => {
   // Load makes when year changes
   useEffect(() => {
     if (!form.yearId) return;
-    fetch(`http://localhost:3000/api/makes?yearId=${form.yearId}`)
+    fetch(`${API_ENDPOINTS.MAKES}?yearId=${form.yearId}`)
       .then(res => res.json())
       .then(data => setMakes(data.data || []))
       .catch(err => console.error(err));
@@ -90,7 +91,7 @@ const SellItems = () => {
   // Load models when make changes
   useEffect(() => {
     if (!form.makeId) return;
-    fetch(`http://localhost:3000/api/vehiclemodels?makeId=${form.makeId}`)
+    fetch(`${API_ENDPOINTS.VEHICLE_MODELS}?makeId=${form.makeId}`)
       .then(res => res.json())
       .then(data => setModels(data.data || []))
       .catch(err => console.error(err));
@@ -104,7 +105,7 @@ const SellItems = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await authFetch("http://localhost:3000/api/listing", {
+      const res = await authFetch(API_ENDPOINTS.CREATE_LISTING, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
