@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Pagination from "../components/Pagination";
+import API_ENDPOINTS from "../config/api.js";
 
 const BrowseVehicleListings = () => {
   const { vehicleId } = useParams();
@@ -22,8 +23,7 @@ const BrowseVehicleListings = () => {
           vehicleId: vehicleId || "",
         });
 
-        // Todo: Update the url to not be hardcoded
-        const res = await fetch(`http://localhost:3000/api/listings?${query}`);
+        const res = await fetch(`${API_ENDPOINTS.LISTINGS}?${query}`);
         const data = await res.json();
 
         console.log("Fetched listings data:", data);

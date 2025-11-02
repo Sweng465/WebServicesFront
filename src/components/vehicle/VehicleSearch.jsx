@@ -1,42 +1,66 @@
 import { useEffect, useState } from "react";
+import API_ENDPOINTS from "../../config/api.js";
 
 const VehicleSearch = ({ filters, setFilters }) => {
   const [years, setYears] = useState([]);
   const [makes, setMakes] = useState([]);
   const [models, setModels] = useState([]);
+  const [submodels, setSubmodels] = useState([]);
 
   // Load all years
   useEffect(() => {
-    fetch("http://localhost:3000/api/years")
+    fetch(API_ENDPOINTS.YEARS)
       .then((res) => res.json())
-      .then((data) => setYears(data.data || []))
+      .then((data) => {
+        const yearsArray = Array.isArray(data) ? data : (data.data || []);
+        setYears(yearsArray);
+      })
       .catch((err) => console.error("Error loading years:", err));
   }, []);
 
   // Load makes when year changes
   useEffect(() => {
     if (!filters.yearId) return;
-    fetch(`http://localhost:3000/api/makes?yearId=${filters.yearId}`)
+    fetch(`${API_ENDPOINTS.MAKES}?yearId=${filters.yearId}`)
       .then((res) => res.json())
-      .then((data) => setMakes(data.data || []))
+      .then((data) => {
+        const makesArray = Array.isArray(data) ? data : (data.data || data.makes || []);
+        setMakes(makesArray);
+      })
       .catch((err) => console.error("Error loading makes:", err));
   }, [filters.yearId]);
 
   // Load models when make changes
   useEffect(() => {
     if (!filters.makeId) return;
-    fetch(`http://localhost:3000/api/vehiclemodels?makeId=${filters.makeId}`)
+    fetch(`${API_ENDPOINTS.VEHICLE_MODELS}?makeId=${filters.makeId}`)
       .then((res) => res.json())
-      .then((data) => setModels(data.data || []))
+      .then((data) => {
+        const modelsArray = Array.isArray(data) ? data : (data.data || data.models || []);
+        setModels(modelsArray);
+      })
       .catch((err) => console.error("Error loading models:", err));
   }, [filters.makeId]);
+
+  // Load submodels when model changes
+  useEffect(() => {
+    if (!filters.modelId) return;
+    fetch(`${API_ENDPOINTS.SUBMODELS}?modelId=${filters.modelId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const submodelsArray = Array.isArray(data) ? data : (data.data || data.submodels || []);
+        setSubmodels(submodelsArray);
+      })
+      .catch((err) => console.error("Error loading submodels:", err));
+  }, [filters.modelId]);
 
   const handleChange = (key, value) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
-      ...(key === "yearId" ? { makeId: "", modelId: "" } : {}),
-      ...(key === "makeId" ? { modelId: "" } : {}),
+      ...(key === "yearId" ? { makeId: "", modelId: "", submodelId: "" } : {}),
+      ...(key === "makeId" ? { modelId: "", submodelId: "" } : {}),
+      ...(key === "modelId" ? { submodelId: "" } : {}),
     }));
   };
 
@@ -91,10 +115,15 @@ const VehicleSearch = ({ filters, setFilters }) => {
       <select
         className="px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-700 font-medium text-sm sm:text-base disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         value={filters.submodelId}
-        onChange={(e) => setFilters({ ...filters, submodelId: e.target.value })}
+        onChange={(e) => handleChange("submodelId", e.target.value)}
         disabled={!filters.modelId}
       >
         <option value="">⚙️ All Submodels</option>
+        {submodels.map((submodel) => (
+          <option key={submodel.submodelId} value={submodel.submodelId}>
+            {submodel.value}
+          </option>
+        ))}
       </select>
 
       <button

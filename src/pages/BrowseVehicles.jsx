@@ -3,6 +3,7 @@ import Header from "../components/Header";
 import VehicleSearch from "../components/vehicle/VehicleSearch";
 import VehicleResultCard from "../components/vehicle/VehicleResultCard";
 import Pagination from "../components/Pagination";
+import API_ENDPOINTS from "../config/api.js";
 
 const BrowseVehicles = () => {
     const [vehicles, setVehicles] = useState([]);
@@ -29,19 +30,13 @@ const BrowseVehicles = () => {
                 modelId: filters.modelId || "",
                 submodelId: filters.submodelId || "",
                 });
-                // Todo: Update the url to not be harcoded
-                const res = await fetch(`http://localhost:3000/api/vehicles?${query}`);
+                const res = await fetch(`${API_ENDPOINTS.VEHICLES}?${query}`);
                 const data = await res.json();
-
-                console.log("Fetched full response:", data);
-                console.log("Data structure - data.data:", data.data);
-                console.log("Data structure - data.vehicles:", data.vehicles);
 
                 // The backend returns { data: [...], pagination: {...} } or similar structure
                 const vehiclesData = data.data || data.vehicles || data || [];
                 setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
                 setPagination(data.pagination || { totalPages: 1 });
-
 
             } catch (error) {
                 console.error("Error fetching vehicles:", error);

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import API_ENDPOINTS from "../config/api.js";
 
 export const SignUp = () => {
   const { login } = useAuth();
@@ -16,7 +17,7 @@ export const SignUp = () => {
     const payload = { username, email, password };
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/signup", {
+      const response = await fetch(API_ENDPOINTS.SIGN_UP, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -3,6 +3,7 @@ import Header from "../components/Header";
 import PartSearch from "../components/part/PartSearch";
 import PartResultCard from "../components/part/PartResultCard";
 import Pagination from "../components/Pagination";
+import API_ENDPOINTS from "../config/api.js";
 
 const BrowseParts = () => {
     const [parts, setParts] = useState([]);
@@ -29,8 +30,7 @@ const BrowseParts = () => {
                 modelId: filters.modelId || "",
                 submodelId: filters.submodelId || "",
                 });
-                // Todo: Update the url to not be harcoded
-                const res = await fetch(`http://localhost:3000/api/parts?${query}`);
+                const res = await fetch(`${API_ENDPOINTS.PARTS}?${query}`);
                 const data = await res.json();
 
                 // The backend returns { data: [...], pagination: {...} }
