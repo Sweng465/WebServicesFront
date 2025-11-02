@@ -19,7 +19,7 @@ export const API_ENDPOINTS = {
 
   // Listings endpoints
   LISTINGS: `${API_BASE_URL}/api/listings`,
-  CREATE_LISTING: `${API_BASE_URL}/api/listing`,
+  CREATE_LISTING: `${API_BASE_URL}/api/listings`,
 
   // User endpoints
   USER_PROFILE: `${API_BASE_URL}/api/users/profile`,
