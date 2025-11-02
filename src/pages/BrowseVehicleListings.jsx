@@ -31,7 +31,23 @@ const BrowseVehicleListings = () => {
         // The backend returns { data: [...], pagination: {...} } or similar structure
         const listingsData = data.data || data.listings || data || [];
         setListings(Array.isArray(listingsData) ? listingsData : []);
-        setPagination(data.pagination || { totalPages: 1 });
+        // Normalize pagination from backend to consistent numeric types and keys
+        const raw = data.pagination || {};
+        const paginationData = {
+          page: Number(raw.page || 1),
+          pages: Number(raw.pages ?? raw.totalPages ?? 1),
+          total: Number(raw.total ?? 0),
+          limit: Number(raw.limit ?? 12),
+          hasNextPage: !!raw.hasNextPage,
+          hasPreviousPage: !!raw.hasPreviousPage,
+        };
+        console.log("Pagination data:", paginationData);
+        setPagination(paginationData);
+
+        // Keep local `page` in sync with backend if backend reports a different page
+        if (paginationData.page !== page) {
+          setPage(paginationData.page);
+        }
 
         // If vehicle details are included in response, use them
         if (data.vehicleDetails) {
@@ -154,11 +170,15 @@ const BrowseVehicleListings = () => {
             {/* Pagination Section */}
             {listings.length > 0 && (
               <div className="border-t border-gray-200 p-4 sm:p-6 lg:p-8 bg-gray-50">
-                <Pagination
-                  currentPage={page}
-                  setPage={setPage}
-                  totalPages={pagination.totalPages || 1}
-                />
+                    <Pagination
+                      currentPage={page}
+                      setPage={setPage}
+                      totalPages={pagination.pages || pagination.totalPages || 1}
+                      hasNextPage={pagination.hasNextPage}
+                      hasPreviousPage={pagination.hasPreviousPage}
+                      total={pagination.total}
+                      limit={pagination.limit}
+                    />
               </div>
             )}
           </div>

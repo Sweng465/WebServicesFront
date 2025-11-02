@@ -36,7 +36,22 @@ const BrowseVehicles = () => {
                 // The backend returns { data: [...], pagination: {...} } or similar structure
                 const vehiclesData = data.data || data.vehicles || data || [];
                 setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
-                setPagination(data.pagination || { totalPages: 1 });
+
+                const raw = data.pagination || {};
+                const paginationData = {
+                    page: Number(raw.page || 1),
+                    pages: Number(raw.pages ?? raw.totalPages ?? 1),
+                    total: Number(raw.total ?? 0),
+                    limit: Number(raw.limit ?? 12),
+                    hasNextPage: !!raw.hasNextPage,
+                    hasPreviousPage: !!raw.hasPreviousPage,
+                };
+
+                setPagination(paginationData);
+
+                if (paginationData.page !== page) {
+                    setPage(paginationData.page);
+                }
 
             } catch (error) {
                 console.error("Error fetching vehicles:", error);
@@ -105,7 +120,11 @@ const BrowseVehicles = () => {
                     <Pagination
                     currentPage={page}
                     setPage={setPage}
-                    totalPages={pagination.totalPages || 1}
+                    totalPages={pagination.pages || pagination.totalPages || 1}
+                    hasNextPage={pagination.hasNextPage}
+                    hasPreviousPage={pagination.hasPreviousPage}
+                    total={pagination.total}
+                    limit={pagination.limit}
                     />
                 </div>
                 )}
