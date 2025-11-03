@@ -19,6 +19,8 @@ export const API_ENDPOINTS = {
 
   // Listings endpoints
   LISTINGS: `${API_BASE_URL}/api/listings`,
+  // Listings by vehicle id
+  LISTINGS_BY_VEHICLE: `${API_BASE_URL}/api/listings/vehicle`,
   CREATE_LISTING: `${API_BASE_URL}/api/listings`,
 
   // User endpoints

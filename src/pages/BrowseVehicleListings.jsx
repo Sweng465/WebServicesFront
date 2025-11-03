@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
-import Pagination from "../components/Pagination";
 import API_ENDPOINTS from "../config/api.js";
 
 const BrowseVehicleListings = () => {
@@ -10,43 +9,30 @@ const BrowseVehicleListings = () => {
   const [listings, setListings] = useState([]);
   const [vehicleDetails, setVehicleDetails] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState({ totalPages: 1 });
+  // This view uses the vehicle-specific listings endpoint which returns an
+  // array of listings. Pagination isn't provided by that endpoint in the
+  // current API sample.
 
   useEffect(() => {
     const fetchVehicleListings = async () => {
       setLoading(true);
       try {
-        const query = new URLSearchParams({
-          page,
-          limit: 12,
-          vehicleId: vehicleId || "",
-        });
-
-        const res = await fetch(`${API_ENDPOINTS.LISTINGS}?${query}`);
+        // Call new vehicle-specific endpoint: /api/listings/vehicle/:id
+        const res = await fetch(`${API_ENDPOINTS.LISTINGS_BY_VEHICLE}/${vehicleId}`);
         const data = await res.json();
 
-        console.log("Fetched listings data:", data);
+        console.log("Fetched vehicle listings data:", data);
 
-        // The backend returns { data: [...], pagination: {...} } or similar structure
-        const listingsData = data.data || data.listings || data || [];
-        setListings(Array.isArray(listingsData) ? listingsData : []);
-        // Normalize pagination from backend to consistent numeric types and keys
-        const raw = data.pagination || {};
-        const paginationData = {
-          page: Number(raw.page || 1),
-          pages: Number(raw.pages ?? raw.totalPages ?? 1),
-          total: Number(raw.total ?? 0),
-          limit: Number(raw.limit ?? 12),
-          hasNextPage: !!raw.hasNextPage,
-          hasPreviousPage: !!raw.hasPreviousPage,
-        };
-        console.log("Pagination data:", paginationData);
-        setPagination(paginationData);
+        // The endpoint returns an array of listing objects (see sample).
+        if (Array.isArray(data)) {
+          setListings(data);
+        } else {
+          // If backend wraps results or returns pagination, try to normalize
+          const listingsData = data.data || data.listings || [];
+          setListings(Array.isArray(listingsData) ? listingsData : []);
 
-        // Keep local `page` in sync with backend if backend reports a different page
-        if (paginationData.page !== page) {
-          setPage(paginationData.page);
+          // If the backend returns pagination info, we could wire it up here.
+          // For now, simply keep the listings array parsed above.
         }
 
         // If vehicle details are included in response, use them
@@ -55,6 +41,7 @@ const BrowseVehicleListings = () => {
         }
       } catch (error) {
         console.error("Error fetching vehicle listings:", error);
+        setListings([]);
       } finally {
         setLoading(false);
       }
@@ -63,7 +50,7 @@ const BrowseVehicleListings = () => {
     if (vehicleId) {
       fetchVehicleListings();
     }
-  }, [vehicleId, page]);
+  }, [vehicleId]);
 
   if (!vehicleId) {
     return (
@@ -136,13 +123,13 @@ const BrowseVehicleListings = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
                     {listings.map((listing) => (
                       <div
-                        key={listing.listingId}
+                        key={listing.listingInfoId}
                         className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
                       >
                         {listing.imageUrl && (
                           <img
                             src={listing.imageUrl}
-                            alt={`Listing ${listing.listingId}`}
+                            alt={`Listing ${listing.listingInfoId}`}
                             className="w-full h-48 object-cover"
                           />
                         )}
@@ -151,10 +138,17 @@ const BrowseVehicleListings = () => {
                             ${listing.price?.toLocaleString() || 'N/A'}
                           </h3>
                           <p className="text-gray-600 text-sm mb-2">
-                            {listing.title || 'Listing'}
+                            {listing.description || 'Listing'}
                           </p>
                           <p className="text-gray-500 text-xs mb-3">
-                            {listing.location || 'Location not specified'}
+                            {listing.date ? new Date(listing.date).toLocaleDateString() : 'Date not provided'}
+                          </p>
+                          <p className="text-sm mb-3">
+                            {listing.isAvailable ? (
+                              <span className="text-green-600 font-medium">Available</span>
+                            ) : (
+                              <span className="text-red-600 font-medium">Not available</span>
+                            )}
                           </p>
                           <button className="w-full bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800 font-semibold">
                             View Details
@@ -167,20 +161,7 @@ const BrowseVehicleListings = () => {
               )}
             </div>
 
-            {/* Pagination Section */}
-            {listings.length > 0 && (
-              <div className="border-t border-gray-200 p-4 sm:p-6 lg:p-8 bg-gray-50">
-                    <Pagination
-                      currentPage={page}
-                      setPage={setPage}
-                      totalPages={pagination.pages || pagination.totalPages || 1}
-                      hasNextPage={pagination.hasNextPage}
-                      hasPreviousPage={pagination.hasPreviousPage}
-                      total={pagination.total}
-                      limit={pagination.limit}
-                    />
-              </div>
-            )}
+            {/* No pagination shown for vehicle-specific listings (endpoint returns an array in current API). */}
           </div>
         </div>
       </main>
