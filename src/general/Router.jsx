@@ -12,6 +12,7 @@ import { Layout } from "./Layout.jsx";
 import Profile from "../pages/Profile.jsx";
 import SellItems from "../pages/SellItems.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
+import SellerRegistration from "../pages/SellerRegistration.jsx";
 
 export const Router = () => (
   <Routes>
@@ -55,6 +56,16 @@ export const Router = () => (
         <ProtectedRoute>
           <Layout>
             <SellItems />
+          </Layout>
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path={RoutePaths.SELLERREGISTRATION}
+      element={
+        <ProtectedRoute>
+          <Layout>
+            <SellerRegistration />
           </Layout>
         </ProtectedRoute>
       }

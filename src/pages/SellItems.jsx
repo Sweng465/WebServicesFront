@@ -3,10 +3,13 @@ import { useAuth } from "../context/useAuth";
 import Header from "../components/Header";
 import VehicleSearch from "../components/vehicle/VehicleSearch";
 import API_ENDPOINTS from "../config/api.js";
+import { RoutePaths } from "../general/RoutePaths.jsx";
+import { useNavigate } from "react-router-dom";
 
 const SellItems = () => {
   const { user, authFetch, accessToken } = useAuth();
   const [profile, setProfile] = useState(null);
+  const navigate = useNavigate();
 
   // Form state
   const [form, setForm] = useState({
@@ -26,6 +29,7 @@ const SellItems = () => {
 
   useEffect(() => {
     if (!user?.id || !accessToken) return;
+    if (user.roleId != 2) navigate(RoutePaths.SELLERREGISTRATION);
 
     const fetchProfile = async () => {
       try {
@@ -38,7 +42,7 @@ const SellItems = () => {
     };
 
     fetchProfile();
-  }, [user, authFetch, accessToken]);
+  }, [user, authFetch, accessToken, navigate]);
 
   // Load conditions
   useEffect(() => {
