@@ -109,20 +109,46 @@ export const AuthProvider = ({ children }) => {
 
   // Wrapper around fetch to handle 401, refresh tokens, and retry
   const authFetch = async (url, options = {}) => {
-    // Add Authorization header with accessToken
+    let token = accessToken;
+
+    const isExpired = (token) => {
+      if (!token) return true;
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        return payload.exp < Date.now() / 1000;
+      } catch {
+        return true;
+      }
+    };
+
+    // If the token is missing or expired, attempt to refresh it before making the API call.
+    if (isExpired(token)) {
+      try {
+        token = await refreshAccessToken();
+      } catch {
+        logout();
+        throw new Error("Session expired. Please sign in again.");
+      }
+    }
+
     options.headers = {
       ...options.headers,
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${token}`,
     };
 
     let response = await fetch(url, options);
 
     if (response.status === 401) {
-      // Try to refresh token and retry once
-      const newToken = await refreshAccessToken();
-      options.headers.Authorization = `Bearer ${newToken}`;
-      response = await fetch(url, options);
+      try {
+        const newToken = await refreshAccessToken();
+        options.headers.Authorization = `Bearer ${newToken}`;
+        response = await fetch(url, options);
+      } catch {
+        logout();
+        throw new Error("Session expired. Please sign in again.");
+      }
     }
+
     return response;
   };
 
