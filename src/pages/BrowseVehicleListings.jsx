@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import API_ENDPOINTS from "../config/api.js";
 import Base64Image from "../components/Base64Image";
+import { RoutePaths } from "../general/RoutePaths.jsx";
 
 const BrowseVehicleListings = () => {
   const { vehicleId } = useParams();
@@ -124,11 +125,12 @@ const BrowseVehicleListings = () => {
                     </p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
-                    {listings.map((listing) => {
+                    {listings.map((listing, index) => {
                       const firstImage = Array.isArray(listing.images) && listing.images.length ? listing.images[0] : listing.images;
+                      const listingIdValue = listing.listingInfoId || listing.listingId || listing.id;
                       return (
                         <div
-                          key={listing.listingInfoId}
+                          key={listingIdValue ?? `listing-${index}`}
                           className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
                         >
                           <div className="p-4">
@@ -154,7 +156,12 @@ const BrowseVehicleListings = () => {
                                 <span className="text-red-600 font-medium">Not available</span>
                               )}
                             </p>
-                            <button className="w-full bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800 font-semibold">
+                            <button
+                              type="button"
+                              onClick={() => navigate(RoutePaths.LISTING_DETAIL.replace(":listingId", listingIdValue))}
+                              className="w-full bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800 font-semibold"
+                              disabled={!listingIdValue}
+                            >
                               View Details
                             </button>
                           </div>

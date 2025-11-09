@@ -19,7 +19,7 @@ const Header = () => {
       <div className="flex justify-between items-center gap-4">
         {/* Logo Section */}
         <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-700 rounded-md">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-700 rounded-md flex items-center justify-center">
             <Wrench className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-lg sm:text-2xl font-bold text-blue-900 whitespace-nowrap">

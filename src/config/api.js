@@ -31,4 +31,7 @@ export const API_ENDPOINTS = {
   USER_PROFILE: `${API_BASE_URL}/api/users/profile`,
 };
 
+export const buildVehicleDetailUrl = (vehicleId) => `${API_BASE_URL}/api/vehicles/${vehicleId}`;
+export const buildBusinessDetailUrl = (businessId) => `${API_BASE_URL}/api/businesses/${businessId}`;
+
 export default API_ENDPOINTS;
