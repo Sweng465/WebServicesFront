@@ -5,11 +5,14 @@ import VehicleSearch from "../components/vehicle/VehicleSearch";
 import API_ENDPOINTS from "../config/api.js";
 import { RoutePaths } from "../general/RoutePaths.jsx";
 import { useNavigate } from "react-router-dom";
+import Collapsible from "../components/forms/Collapsible";
 
 const SellItems = () => {
-  const { user, authFetch, accessToken } = useAuth();
+  const { user, loading, authFetch, accessToken } = useAuth();
   const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
+  const borderStyle = `border border-gray-300 rounded-lg shadow-sm 
+    focus:outline-none focus:ring-2 focus:ring-blue-700 transition`
 
   // Form state
   const [form, setForm] = useState({
@@ -17,20 +20,80 @@ const SellItems = () => {
     conditionId: "",
     price: "",
   });
-
   const [filters, setFilters] = useState({
     yearId: "",
     makeId: "",
     modelId: "",
     submodelId: "",
   });
-
   const [conditions, setConditions] = useState([]);
 
-  useEffect(() => {
-    if (!user?.id || !accessToken) return;
-    if (user.roleId != 2) navigate(RoutePaths.SELLERREGISTRATION);
+  const requiredFields = [
+    "description",
+    "conditionId",
+    "price",
+  ];
+  const requiredFilters = [
+    "yearId",
+    "makeId",
+    "modelId",
+    "submodelId",
+  ];
 
+  const isFormValid = () => { // check if all required fields are filled
+    return requiredFields.every((field) => {
+      const value = form[field];
+      return value !== "" && value !== null && value !== undefined;
+    });
+  };
+  const isFiltersValid = () => { // check if all required filters are selected
+    return requiredFilters.every((filter) => {
+      const value = filters[filter];
+      return value !== "" && value !== null && value !== undefined;
+    });
+  };
+
+  useEffect(() => {
+    if (!accessToken) return;
+
+    const fetchUserProfile = async () => {
+      try {
+        const res = await fetch(API_ENDPOINTS.USER_PROFILE, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch profile");
+
+        const data = await res.json();
+        const userProfile = data.data;
+
+        setProfile(userProfile);
+
+        if (Number(userProfile.roleId) !== 2) {
+          navigate(RoutePaths.SELLERREGISTRATION);
+        }
+      } catch (err) {
+        console.error(err);
+        // Optionally redirect or show an error
+      }
+    };
+
+    fetchUserProfile();
+  }, [accessToken, navigate]);
+
+
+  /*
+  useEffect(() => {
+    if (!user || !accessToken) return; // wait until user & token are loaded
+    else {
+      if (Number(user.roleId) !== 2) { // can only be accessed if user is seller
+        navigate(RoutePaths.SELLERREGISTRATION);
+        return;
+      }
+    }
     const fetchProfile = async () => {
       try {
         const res = await authFetch(API_ENDPOINTS.USER_PROFILE);
@@ -41,8 +104,18 @@ const SellItems = () => {
       }
     };
 
-    fetchProfile();
+    if (user?.id) fetchProfile();
   }, [user, authFetch, accessToken, navigate]);
+
+
+  if (!profile) return <p>Loading profile...</p>;
+  else {
+    if (Number(user.roleId) !== 2) { // can only be accessed if user is seller
+      navigate(RoutePaths.SELLERREGISTRATION);
+      return;
+    }
+  }     */
+
 
   // Load conditions
   useEffect(() => {
@@ -54,25 +127,29 @@ const SellItems = () => {
       */
     // Temporarily hardcode conditions since no conditions API
     const fallbackConditions = [
-        { conditionId: 6, value: "Burnt" },
-        { conditionId: 7, value: "Bent Frame" },
-        { conditionId: 8, value: "Dent" },
-        { conditionId: 9, value: "Scratched" },
-        { conditionId: 10, value: "Flood Damage" },
-        { conditionId: 11, value: "Hail Damage" },
-        { conditionId: 12, value: "Rust" },
-        { conditionId: 13, value: "Engine Damage" },
-        { conditionId: 14, value: "Transmission Damage" },
-        { conditionId: 15, value: "Electrical Damage" },
-        { conditionId: 16, value: "Interior Damage" },
-        { conditionId: 17, value: "Broken Glass" },
-        { conditionId: 18, value: "Missing Parts" },
-        { conditionId: 19, value: "Suspension Damage" },
-        { conditionId: 20, value: "Totaled" },
+      { conditionId: 6, value: "Burnt" },
+      { conditionId: 7, value: "Bent Frame" },
+      { conditionId: 8, value: "Dent" },
+      { conditionId: 9, value: "Scratched" },
+      { conditionId: 10, value: "Flood Damage" },
+      { conditionId: 11, value: "Hail Damage" },
+      { conditionId: 12, value: "Rust" },
+      { conditionId: 13, value: "Engine Damage" },
+      { conditionId: 14, value: "Transmission Damage" },
+      { conditionId: 15, value: "Electrical Damage" },
+      { conditionId: 16, value: "Interior Damage" },
+      { conditionId: 17, value: "Broken Glass" },
+      { conditionId: 18, value: "Missing Parts" },
+      { conditionId: 19, value: "Suspension Damage" },
+      { conditionId: 20, value: "Totaled" },
     ];
 
     setConditions(fallbackConditions);
   }, []);
+
+  if (!user || loading) return <p>Loading user...</p>; // wait for auth state
+  //if (Number(user.roleId) !== 2) return <p>Redirecting...</p>;
+  if (!profile) return <p>Loading profile...</p>; // wait for auth state
 
   const fetchVehicleId = async (filters) => {
     console.log("fetchVehicleId filters:", filters);
@@ -92,6 +169,15 @@ const SellItems = () => {
       throw new Error("No vehicle found for selected combination.");
 
     return vehicles[0].vehicleId;
+  };
+
+  const PRICE_LIMIT = 18; // maximum digits before decimal (optional)
+
+  const handlePriceChange = (value) => {
+    // Allow only digits and optional decimal point, max 2 decimals
+    if (/^\d*\.?\d{0,2}$/.test(value) && value.length <= PRICE_LIMIT + 3) {
+      handleChange("price", value);
+    }
   };
 
   const handleChange = (field, value) => {
@@ -133,60 +219,95 @@ const SellItems = () => {
     }
   };
 
-  if (!profile) return <p>Loading profile...</p>;
-
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-orange-600 to-blue-600 text-white">
       <Header />
       <div className="max-w-3xl mx-auto p-6 bg-white bg-opacity-90 text-gray-800 rounded-lg mt-6">
-        <h2 className="text-2xl font-bold mb-4">Create Listing</h2>
+        <h2 className="text-center text-2xl font-bold mb-4">Create Listing</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="bg-gray-50 p-4 rounded-lg border mb-4">
+
+          {/* Select Vehicle */}
+          <div className={`p-4 ${borderStyle}`}>
             <h3 className="text-lg font-semibold mb-2">Select Vehicle</h3>
             <VehicleSearch filters={filters} setFilters={setFilters} />
           </div>
-          
-          <textarea
-            placeholder="Description"
-            value={form.description}
-            onChange={(e) => handleChange("description", e.target.value)}
-            className="w-full p-2 border rounded"
-            rows={4}
-          />
 
-          <select
-            value={form.conditionId}
-            onChange={(e) => handleChange("conditionId", e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          >
-            <option value="">Select Condition</option>
-            {conditions.map(c => <option key={c.conditionId} value={c.conditionId}>{c.value}</option>)}
-          </select>
+          <Collapsible title="Listing Information">
+            <div className="space-y-4">
+              {/* Description */}
+              <div>
+                <label className="block mb-1 font-medium">Description</label>
+                <textarea
+                  placeholder="Ex. '02 Ford Ranger, failed inspection x4 due to excessive rust."
+                  maxLength="300"
+                  value={form.description}
+                  onChange={(e) => handleChange("description", e.target.value)}
+                  className={`w-full p-2 ${borderStyle}`}
+                  rows={4}
+                />
+              </div>
 
-          <input
-            type="number"
-            placeholder="Price"
-            value={form.price}
-            onChange={(e) => handleChange("price", e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
+              {/* Condition */}
+              <div>
+                <label className="block mb-1 font-medium">Condition</label>
+                <select
+                  value={form.conditionId}
+                  onChange={(e) => handleChange("conditionId", e.target.value)}
+                  className={`w-full p-2 ${borderStyle}`}
+                  required
+                >
+                  <option value="">Select Condition</option>
+                  {conditions.map(c => <option key={c.conditionId} value={c.conditionId}>{c.value}</option>)}
+                </select>
+              </div>
 
-          {/* Placeholder for photo upload */}
-          <button
-            type="button"
-            className="w-full p-2 bg-gray-300 text-gray-800 rounded"
-          >
-            Upload Photos
-          </button>
+              {/* Price */}
+              <div>
+                <label className="block mb-1 font-medium">Price</label>
+                <input
+                  type="number"
+                  placeholder="Ex. 89.99"
 
-          <button
-            type="submit"
-            className="w-full p-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition"
-          >
-            Create Listing
-          </button>
+                  value={form.price}
+                  onChange={(e) => handlePriceChange(e.target.value)}
+                  className={`w-full p-2 ${borderStyle}`}
+                  inputMode="decimal"
+                  required
+                />
+              </div>
+
+
+              {/* Placeholder for photo upload */}
+              <button
+                type="button"
+                className="w-full p-2 bg-gray-300 text-gray-800 rounded"
+              >
+                Upload Photos
+              </button>
+            </div>
+          </Collapsible>
+
+          {/* Create Listing Button */}
+          <div className="relative group w-full">
+            <button
+              type="submit"
+              disabled={!(isFormValid() && isFiltersValid())}
+              className={`w-full p-2 font-medium rounded-md transition
+                ${isFormValid() && isFiltersValid()
+                  ? "bg-blue-700 text-white hover:bg-blue-800"
+                  : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                }`}
+            >
+              Create Listing
+            </button>
+            {!(isFormValid() && isFiltersValid()) && (
+              <span className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2
+                bg-gray-700 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100
+                transition-opacity whitespace-nowrap pointer-events-none">
+                All required fields and filters must be filled out.
+              </span>
+            )}
+          </div>
         </form>
       </div>
     </div>

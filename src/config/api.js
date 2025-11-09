@@ -24,7 +24,15 @@ export const API_ENDPOINTS = {
   CREATE_LISTING: `${API_BASE_URL}/api/listings`,
 
   // User endpoints
+  USERS: `${API_BASE_URL}/api/users`,
   USER_PROFILE: `${API_BASE_URL}/api/users/profile`,
+
+  // Seller endpoints
+  SELLERS: `${API_BASE_URL}/api/sellers`,
+  BUSINESSES: `${API_BASE_URL}/api/businesses`,
+
+  // Address endpoints
+  ADDRESS: `${API_BASE_URL}/api/address`,
 };
 
 export default API_ENDPOINTS;
