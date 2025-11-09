@@ -16,6 +16,10 @@ export const API_ENDPOINTS = {
   // Parts endpoints
   PARTS: `${API_BASE_URL}/api/parts`,
   CONDITIONS: `${API_BASE_URL}/api/conditions`,
+  BRANDS: `${API_BASE_URL}/api/brands`,
+  CATEGORY1: `${API_BASE_URL}/api/category1`,
+  CATEGORY2: `${API_BASE_URL}/api/category2`,
+  CATEGORY3: `${API_BASE_URL}/api/category3`,
 
   // Listings endpoints
   LISTINGS: `${API_BASE_URL}/api/listings`,

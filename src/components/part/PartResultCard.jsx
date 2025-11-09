@@ -1,18 +1,21 @@
+import { useNavigate } from "react-router-dom";
+import { RoutePaths } from "../../general/RoutePaths.jsx";
+
 const PartResultCard = ({ part }) => {
+  const navigate = useNavigate();
+
+  const handleViewListings = () => {
+    navigate(RoutePaths.BROWSE_PART_LISTINGS.replace(":partId", part.partId));
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl hover:scale-105 transition-all duration-300 flex flex-col h-full">
       {/* Image Container */}
       <div className="relative overflow-hidden bg-gray-200 h-48 sm:h-56">
         <img
-          src={part.imageUrl || "../assets/hot-listing-frame-1.png"}
           alt={part.value}
           className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
         />
-        {part.price && (
-          <div className="absolute top-3 right-3 bg-blue-600 text-white font-bold px-3 py-1 rounded-lg text-sm sm:text-base">
-            ${part.price}
-          </div>
-        )}
       </div>
 
       {/* Content Container */}
@@ -26,12 +29,12 @@ const PartResultCard = ({ part }) => {
         <div className="space-y-1 mb-3 flex-1">
           {part.year && (
             <p className="text-sm text-gray-600 font-medium">
-              📅 {part.year.value}
+              {part.year.value}
             </p>
           )}
           {part.make && (
             <p className="text-sm text-gray-600 font-medium">
-              🏭 {part.make.value}
+              {part.make.value}
             </p>
           )}
         </div>
@@ -43,9 +46,12 @@ const PartResultCard = ({ part }) => {
           </p>
         )}
 
-        {/* View Details Button */}
-        <button className="w-full bg-blue-600 text-white py-2 sm:py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base">
-          View Details
+        {/* View Listings Button */}
+        <button 
+          onClick={handleViewListings}
+          className="w-full bg-blue-600 text-white py-2 sm:py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
+        >
+          View Listings
         </button>
       </div>
     </div>
