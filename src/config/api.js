@@ -16,6 +16,10 @@ export const API_ENDPOINTS = {
   // Parts endpoints
   PARTS: `${API_BASE_URL}/api/parts`,
   CONDITIONS: `${API_BASE_URL}/api/conditions`,
+  BRANDS: `${API_BASE_URL}/api/brands`,
+  CATEGORY1: `${API_BASE_URL}/api/category1`,
+  CATEGORY2: `${API_BASE_URL}/api/category2`,
+  CATEGORY3: `${API_BASE_URL}/api/category3`,
 
   // Listings endpoints
   LISTINGS: `${API_BASE_URL}/api/listings`,
@@ -26,5 +30,8 @@ export const API_ENDPOINTS = {
   // User endpoints
   USER_PROFILE: `${API_BASE_URL}/api/users/profile`,
 };
+
+export const buildVehicleDetailUrl = (vehicleId) => `${API_BASE_URL}/api/vehicles/${vehicleId}`;
+export const buildBusinessDetailUrl = (businessId) => `${API_BASE_URL}/api/businesses/${businessId}`;
 
 export default API_ENDPOINTS;
