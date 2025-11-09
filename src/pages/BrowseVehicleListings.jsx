@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import API_ENDPOINTS from "../config/api.js";
+import Base64Image from "../components/Base64Image";
 
 const BrowseVehicleListings = () => {
   const { vehicleId } = useParams();
@@ -24,16 +25,18 @@ const BrowseVehicleListings = () => {
         console.log("Fetched vehicle listings data:", data);
 
         // The endpoint returns an array of listing objects (see sample).
+        let parsedListings;
         if (Array.isArray(data)) {
-          setListings(data);
+          parsedListings = data;
         } else {
           // If backend wraps results or returns pagination, try to normalize
           const listingsData = data.data || data.listings || [];
-          setListings(Array.isArray(listingsData) ? listingsData : []);
-
-          // If the backend returns pagination info, we could wire it up here.
-          // For now, simply keep the listings array parsed above.
+          parsedListings = Array.isArray(listingsData) ? listingsData : [];
         }
+
+        // Update state with normalized listings and log that normalized value
+        setListings(parsedListings);
+        console.log("Parsed listings:", parsedListings);
 
         // If vehicle details are included in response, use them
         if (data.vehicleDetails) {
@@ -121,41 +124,43 @@ const BrowseVehicleListings = () => {
                     </p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
-                    {listings.map((listing) => (
-                      <div
-                        key={listing.listingInfoId}
-                        className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
-                      >
-                        {listing.imageUrl && (
-                          <img
-                            src={listing.imageUrl}
-                            alt={`Listing ${listing.listingInfoId}`}
-                            className="w-full h-48 object-cover"
-                          />
-                        )}
-                        <div className="p-4">
-                          <h3 className="font-semibold text-lg text-gray-800 mb-2">
-                            ${listing.price?.toLocaleString() || 'N/A'}
-                          </h3>
-                          <p className="text-gray-600 text-sm mb-2">
-                            {listing.description || 'Listing'}
-                          </p>
-                          <p className="text-gray-500 text-xs mb-3">
-                            {listing.date ? new Date(listing.date).toLocaleDateString() : 'Date not provided'}
-                          </p>
-                          <p className="text-sm mb-3">
-                            {listing.isAvailable ? (
-                              <span className="text-green-600 font-medium">Available</span>
-                            ) : (
-                              <span className="text-red-600 font-medium">Not available</span>
-                            )}
-                          </p>
-                          <button className="w-full bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800 font-semibold">
-                            View Details
-                          </button>
+                    {listings.map((listing) => {
+                      const firstImage = Array.isArray(listing.images) && listing.images.length ? listing.images[0] : listing.images;
+                      return (
+                        <div
+                          key={listing.listingInfoId}
+                          className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                        >
+                          <div className="p-4">
+                            <Base64Image
+                              value={firstImage}
+                              mime="image/png"
+                              alt={`Listing ${listing.listingInfoId}`}
+                              className="w-full h-48 object-cover"
+                            />
+                            <h3 className="font-semibold text-lg text-gray-800 mb-2">
+                              ${listing.price?.toLocaleString() || 'N/A'}
+                            </h3>
+                            <p className="text-gray-600 text-sm mb-2">
+                              {listing.description || 'Listing'}
+                            </p>
+                            <p className="text-gray-500 text-xs mb-3">
+                              {listing.date ? new Date(listing.date).toLocaleDateString() : 'Date not provided'}
+                            </p>
+                            <p className="text-sm mb-3">
+                              {listing.isAvailable ? (
+                                <span className="text-green-600 font-medium">Available</span>
+                              ) : (
+                                <span className="text-red-600 font-medium">Not available</span>
+                              )}
+                            </p>
+                            <button className="w-full bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800 font-semibold">
+                              View Details
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </>
               )}
