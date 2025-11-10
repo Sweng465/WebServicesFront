@@ -127,7 +127,7 @@ const SellerRegistration = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const fullPhone = `${form.phone1}${form.phone2}${form.phone3}`;
+    let thisSellerId;
 
     try { // create seller
       const payload = {
@@ -142,7 +142,10 @@ const SellerRegistration = () => {
       });
 
       const data = await res.json();
-      if (res.ok) console.log("Seller created:", data);
+      if (res.ok) {
+        console.log("Seller created:", data);
+        thisSellerId = data.data.sellerId;
+      }
       else console.log("Error creating seller:", data);
     } catch (err) {
       console.error("Failed to create seller:", err);
@@ -163,10 +166,11 @@ const SellerRegistration = () => {
     }
 
     try { // create business
+
       const payload = {
-        sellerId: 1,
+        sellerId: thisSellerId,
         name: form.name,
-        phoneNumber: fullPhone,
+        phoneNumber: Number(`${form.phone1}${form.phone2}${form.phone3}`),
         isPullYourself: form.isPullYourself,
         description: form.description,
         disabled: 0,
@@ -186,6 +190,21 @@ const SellerRegistration = () => {
     }
 
     try { // create address
+
+      const payload = {
+        userId: user.id,
+        name: form.name,
+        line1: form.line1,
+        line2: form.line2 || null,
+        city: form.city,
+        stateId: 1, // stored procedure should be doing this
+        zipcode: Number(form.zipcode),
+        countryId: 1, // stored procedure should be doing this
+        addressTypeId: 1, // stored procedure should be doing this
+        enabled: 1,
+        disabled: 0,
+      };
+      
       /*
       const payload = {
         userId: user.id,
@@ -199,9 +218,9 @@ const SellerRegistration = () => {
         addressTypeId: 1, // the stored procedure should do this instead
         enabled: 1,
         disabled: 0,
-      };
-      */
+      }; */
 
+      /*
       const payload = {
         userId: user.id,
         name: ["name", form.name],
@@ -214,7 +233,7 @@ const SellerRegistration = () => {
         addressTypeId: ["addressTypeId", 1],
         enabled: ["enabled", 1],
         disabled: ["disabled", 0],
-      };
+      }; */
 
       const res = await authFetch(API_ENDPOINTS.ADDRESS, {
         method: "POST",
