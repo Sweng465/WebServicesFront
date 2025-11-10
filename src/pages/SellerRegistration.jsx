@@ -129,45 +129,44 @@ const SellerRegistration = () => {
 
     let thisSellerId;
 
-    try { // create seller
-      const payload = {
+    if (!isFormValid()) {
+      alert("Please fill out all required fields.");
+      return;
+    }
+
+    try {
+      // create seller
+      const sellerPayload = {
         userId: user.id,
         idVerified: form.idVerified,
       };
 
-      const res = await authFetch(API_ENDPOINTS.SELLERS, {
+      const sellerRes = await authFetch(API_ENDPOINTS.SELLERS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(sellerPayload),
       });
+      const sellerData = await sellerRes.json();
 
-      const data = await res.json();
-      if (res.ok) {
-        console.log("Seller created:", data);
-        thisSellerId = data.data.sellerId;
-      }
-      else console.log("Error creating seller:", data);
-    } catch (err) {
-      console.error("Failed to create seller:", err);
-    }
+      if (!sellerRes.ok) throw new Error(sellerData.message || "Error creating seller");
+      thisSellerId = sellerData.data.sellerId;
+      console.log("Seller created:", sellerData);
 
-    try { // update user role to seller
-      const res = await authFetch(`${API_ENDPOINTS.USERS}/${user.id}`, {
+
+      // update user role to seller
+      const roleRes = await authFetch(`${API_ENDPOINTS.USERS}/${user.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ roleId: 2 }),
       });
 
-      const data = await res.json();
-      if (res.ok) console.log("User role updated", data);
-      else console.log("Error updating user role:", data);
-    } catch (err) {
-      console.error("Failed to update user role:", err);
-    }
+      const roleData = await roleRes.json();
+      if (!roleRes.ok) throw new Error(roleData.message || "Error updating user role");
+      console.log("User role updated:", roleData);
 
-    try { // create business
 
-      const payload = {
+      // create business
+      const businessPayload = {
         sellerId: thisSellerId,
         name: form.name,
         phoneNumber: Number(`${form.phone1}${form.phone2}${form.phone3}`),
@@ -176,22 +175,18 @@ const SellerRegistration = () => {
         disabled: 0,
       };
 
-      const res = await authFetch(API_ENDPOINTS.BUSINESSES, {
+      const businessRes = await authFetch(API_ENDPOINTS.BUSINESSES, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(businessPayload),
       });
 
-      const data = await res.json();
-      if (res.ok) console.log("Business created:", data);
-      else console.log("Error creating business:", data);
-    } catch (err) {
-      console.error("Failed to create business:", err);
-    }
+      const businessData = await businessRes.json();
+      if (!businessRes.ok) throw new Error(businessData.message || "Error creating business");
+      console.log("Business created:", businessData);
 
-    try { // create address
-
-      const payload = {
+      // create address
+      const addressPayload = {
         userId: user.id,
         name: form.name,
         line1: form.line1,
@@ -205,54 +200,26 @@ const SellerRegistration = () => {
         disabled: 0,
       };
       
-      /*
-      const payload = {
-        userId: user.id,
-        name: form.name,
-        line1: form.addressLine1,
-        line2: form.addressLine2,
-        city: form.city,
-        stateId: 1, // the stored procedure should do this instead
-        zipcode: form.zipcode,
-        countryId: 1, // the stored procedure should do this instead
-        addressTypeId: 1, // the stored procedure should do this instead
-        enabled: 1,
-        disabled: 0,
-      }; */
-
-      /*
-      const payload = {
-        userId: user.id,
-        name: ["name", form.name],
-        line1: ["line1", form.line1],
-        line2: ["line2", form.line2],
-        city: ["city", form.city],
-        stateId: ["stateId", 1],
-        zipcode: ["zipcode", form.zipcode],
-        countryId: ["countryId", 1],
-        addressTypeId: ["addressTypeId", 1],
-        enabled: ["enabled", 1],
-        disabled: ["disabled", 0],
-      }; */
-
-      const res = await authFetch(API_ENDPOINTS.ADDRESS, {
+      const addressRes = await authFetch(API_ENDPOINTS.ADDRESS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(addressPayload),
       });
 
-      const data = await res.json();
-      if (res.ok) console.log("Business address created:", data);
-      else console.log("Error creating business address:", data);
+      const addressData = await addressRes.json();
+      if (!addressRes.ok) throw new Error(addressData.message || "Error creating address");
+      console.log("Address created:", addressData);
+
+      // need service for adding business addresses
+
+      // need services for payment information? 
+
+      navigate(RoutePaths.SELLITEMS);
+
     } catch (err) {
-      console.error("Failed to create business address:", err);
+      console.error("Registration failed:", err);
+      alert(`Registration failed: ${err.message}`);
     }
-
-    // need service for adding business addresses
-
-    // need services for payment information? 
-
-    navigate(RoutePaths.SELLITEMS);
   };
 
 
