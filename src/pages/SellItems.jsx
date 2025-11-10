@@ -4,13 +4,16 @@ import Header from "../components/Header";
 import VehicleSearch from "../components/vehicle/VehicleSearch";
 import API_ENDPOINTS from "../config/api.js";
 import Converter from "../imageConversion/ImageConverter.js";
-import { useNavigate } from "react-router-dom";
 import { RoutePaths } from "../general/RoutePaths.jsx";
+import { useNavigate } from "react-router-dom";
+import Collapsible from "../components/forms/Collapsible";
 
 const SellItems = () => {
-  const { user, authFetch, accessToken } = useAuth();
+  const { user, loading, authFetch, accessToken } = useAuth();
   const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
+  const borderStyle = `border border-gray-300 rounded-lg shadow-sm 
+    focus:outline-none focus:ring-2 focus:ring-blue-700 transition`
 
   // Form state
   const [form, setForm] = useState({
@@ -18,23 +21,84 @@ const SellItems = () => {
     conditionId: "",
     price: "",
   });
-
   const [filters, setFilters] = useState({
     yearId: "",
     makeId: "",
     modelId: "",
     submodelId: "",
   });
-
   const [conditions, setConditions] = useState([]);
 
   // Image upload state
   const [images, setImages] = useState([]); // { name, dataUrl, file }
   const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    if (!user?.id || !accessToken) return;
+  const requiredFields = [
+    "description",
+    "conditionId",
+    "price",
+  ];
+  const requiredFilters = [
+    "yearId",
+    "makeId",
+    "modelId",
+    "submodelId",
+  ];
 
+  const isFormValid = () => { // check if all required fields are filled
+    return requiredFields.every((field) => {
+      const value = form[field];
+      return value !== "" && value !== null && value !== undefined;
+    });
+  };
+  const isFiltersValid = () => { // check if all required filters are selected
+    return requiredFilters.every((filter) => {
+      const value = filters[filter];
+      return value !== "" && value !== null && value !== undefined;
+    });
+  };
+
+  useEffect(() => {
+    if (!accessToken) return;
+
+    const fetchUserProfile = async () => {
+      try {
+        const res = await fetch(API_ENDPOINTS.USER_PROFILE, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch profile");
+
+        const data = await res.json();
+        const userProfile = data.data;
+
+        setProfile(userProfile);
+
+        if (Number(userProfile.roleId) !== 2) {
+          navigate(RoutePaths.SELLERREGISTRATION);
+        }
+      } catch (err) {
+        console.error(err);
+        // Optionally redirect or show an error
+      }
+    };
+
+    fetchUserProfile();
+  }, [accessToken, navigate]);
+
+
+  /*
+  useEffect(() => {
+    if (!user || !accessToken) return; // wait until user & token are loaded
+    else {
+      if (Number(user.roleId) !== 2) { // can only be accessed if user is seller
+        navigate(RoutePaths.SELLERREGISTRATION);
+        return;
+      }
+    }
     const fetchProfile = async () => {
       try {
         const res = await authFetch(API_ENDPOINTS.USER_PROFILE);
@@ -45,31 +109,45 @@ const SellItems = () => {
       }
     };
 
-    fetchProfile();
-  }, [user, authFetch, accessToken]);
+    if (user?.id) fetchProfile();
+  }, [user, authFetch, accessToken, navigate]);
+
+
+  if (!profile) return <p>Loading profile...</p>;
+  else {
+    if (Number(user.roleId) !== 2) { // can only be accessed if user is seller
+      navigate(RoutePaths.SELLERREGISTRATION);
+      return;
+    }
+  }     */
+
 
   // Load conditions
   useEffect(() => {
     const fallbackConditions = [
-        { conditionId: 6, value: "Burnt" },
-        { conditionId: 7, value: "Bent Frame" },
-        { conditionId: 8, value: "Dent" },
-        { conditionId: 9, value: "Scratched" },
-        { conditionId: 10, value: "Flood Damage" },
-        { conditionId: 11, value: "Hail Damage" },
-        { conditionId: 12, value: "Rust" },
-        { conditionId: 13, value: "Engine Damage" },
-        { conditionId: 14, value: "Transmission Damage" },
-        { conditionId: 15, value: "Electrical Damage" },
-        { conditionId: 16, value: "Interior Damage" },
-        { conditionId: 17, value: "Broken Glass" },
-        { conditionId: 18, value: "Missing Parts" },
-        { conditionId: 19, value: "Suspension Damage" },
-        { conditionId: 20, value: "Totaled" },
+      { conditionId: 6, value: "Burnt" },
+      { conditionId: 7, value: "Bent Frame" },
+      { conditionId: 8, value: "Dent" },
+      { conditionId: 9, value: "Scratched" },
+      { conditionId: 10, value: "Flood Damage" },
+      { conditionId: 11, value: "Hail Damage" },
+      { conditionId: 12, value: "Rust" },
+      { conditionId: 13, value: "Engine Damage" },
+      { conditionId: 14, value: "Transmission Damage" },
+      { conditionId: 15, value: "Electrical Damage" },
+      { conditionId: 16, value: "Interior Damage" },
+      { conditionId: 17, value: "Broken Glass" },
+      { conditionId: 18, value: "Missing Parts" },
+      { conditionId: 19, value: "Suspension Damage" },
+      { conditionId: 20, value: "Totaled" },
     ];
 
     setConditions(fallbackConditions);
   }, []);
+
+  if (!user || loading) return <p>Loading user...</p>; // wait for auth state
+  //if (Number(user.roleId) !== 2) return <p>Redirecting...</p>;
+  if (!profile) return <p>Loading profile...</p>; // wait for auth state
 
   const fetchVehicleId = async (filters) => {
     const query = new URLSearchParams({
@@ -87,6 +165,15 @@ const SellItems = () => {
       throw new Error("No vehicle found for selected combination.");
 
     return vehicles[0].vehicleId;
+  };
+
+  const PRICE_LIMIT = 18; // maximum digits before decimal (optional)
+
+  const handlePriceChange = (value) => {
+    // Allow only digits and optional decimal point, max 2 decimals
+    if (/^\d*\.?\d{0,2}$/.test(value) && value.length <= PRICE_LIMIT + 3) {
+      handleChange("price", value);
+    }
   };
 
   const handleChange = (field, value) => {
@@ -135,68 +222,68 @@ const SellItems = () => {
  * Resize a data URL (image) to fit within maxWidth/maxHeight preserving aspect ratio.
  * Returns a data URL with the requested mime and quality.
  */
-async function resizeDataUrl(dataUrl, maxWidth = 1024, maxHeight = 1024, mime = "image/jpeg", quality = 0.8) {
-  if (!dataUrl || typeof dataUrl !== "string") return dataUrl;
+  async function resizeDataUrl(dataUrl, maxWidth = 1024, maxHeight = 1024, mime = "image/jpeg", quality = 0.8) {
+    if (!dataUrl || typeof dataUrl !== "string") return dataUrl;
 
-  // If already a data URL with small size, we could skip — but we'll still do the check by image dimensions
-  const img = await new Promise((resolve, reject) => {
-    const image = new Image();
-    // Necessary for CORS images loaded from remote URLs — not needed for FileReader data URLs
-    image.crossOrigin = "Anonymous";
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("Failed to load image for resize"));
-    image.src = dataUrl;
-  });
+    // If already a data URL with small size, we could skip — but we'll still do the check by image dimensions
+    const img = await new Promise((resolve, reject) => {
+      const image = new Image();
+      // Necessary for CORS images loaded from remote URLs — not needed for FileReader data URLs
+      image.crossOrigin = "Anonymous";
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error("Failed to load image for resize"));
+      image.src = dataUrl;
+    });
 
-  const width = img.naturalWidth || img.width;
-  const height = img.naturalHeight || img.height;
+    const width = img.naturalWidth || img.width;
+    const height = img.naturalHeight || img.height;
 
-  // If image is already small enough, return original
-  if (width <= maxWidth && height <= maxHeight) {
-    return dataUrl;
-  }
-
-  const ratio = Math.min(maxWidth / width, maxHeight / height);
-  const targetWidth = Math.round(width * ratio);
-  const targetHeight = Math.round(height * ratio);
-
-  // Use OffscreenCanvas if available for better performance
-  let canvas;
-  if (typeof OffscreenCanvas !== "undefined") {
-    canvas = new OffscreenCanvas(targetWidth, targetHeight);
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-    // OffscreenCanvas doesn't have toDataURL in some browsers — convert to Blob then read as dataURL
-    if (typeof canvas.convertToBlob === "function") {
-      const blob = await canvas.convertToBlob({ type: mime, quality });
-      return await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
+    // If image is already small enough, return original
+    if (width <= maxWidth && height <= maxHeight) {
+      return dataUrl;
     }
-    // else fallthrough to using toDataURL if polyfilled
-  } else {
-    canvas = document.createElement("canvas");
-    canvas.width = targetWidth;
-    canvas.height = targetHeight;
-    const ctx = canvas.getContext("2d");
-    // Optional: clear and draw
-    ctx.clearRect(0, 0, targetWidth, targetHeight);
-    ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-    return canvas.toDataURL(mime, quality);
+
+    const ratio = Math.min(maxWidth / width, maxHeight / height);
+    const targetWidth = Math.round(width * ratio);
+    const targetHeight = Math.round(height * ratio);
+
+    // Use OffscreenCanvas if available for better performance
+    let canvas;
+    if (typeof OffscreenCanvas !== "undefined") {
+      canvas = new OffscreenCanvas(targetWidth, targetHeight);
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+      // OffscreenCanvas doesn't have toDataURL in some browsers — convert to Blob then read as dataURL
+      if (typeof canvas.convertToBlob === "function") {
+        const blob = await canvas.convertToBlob({ type: mime, quality });
+        return await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      }
+      // else fallthrough to using toDataURL if polyfilled
+    } else {
+      canvas = document.createElement("canvas");
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const ctx = canvas.getContext("2d");
+      // Optional: clear and draw
+      ctx.clearRect(0, 0, targetWidth, targetHeight);
+      ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+      return canvas.toDataURL(mime, quality);
+    }
+
+    // Fallback — if we reach here, try toDataURL (some OffscreenCanvas impls support it)
+    try {
+      return canvas.toDataURL(mime, quality);
+    } catch {
+      return dataUrl; // give up gracefully
+    }
   }
 
-  // Fallback — if we reach here, try toDataURL (some OffscreenCanvas impls support it)
-  try {
-    return canvas.toDataURL(mime, quality);
-  } catch {
-    return dataUrl; // give up gracefully
-  }
-}
-
-/* --- Replace the imagesPayload creation in handleSubmit with the async resizing logic below --- */
+  /* --- Replace the imagesPayload creation in handleSubmit with the async resizing logic below --- */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -262,98 +349,133 @@ async function resizeDataUrl(dataUrl, maxWidth = 1024, maxHeight = 1024, mime = 
     }
   };
 
-  if (!profile) return <p>Loading profile...</p>;
-
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-orange-600 to-blue-600 text-white">
       <Header />
       <div className="max-w-3xl mx-auto p-6 bg-white bg-opacity-90 text-gray-800 rounded-lg mt-6">
-        <h2 className="text-2xl font-bold mb-4">Create Listing</h2>
+        <h2 className="text-center text-2xl font-bold mb-4">Create Listing</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="bg-gray-50 p-4 rounded-lg border mb-4">
+
+          {/* Select Vehicle */}
+          <div className={`p-4 ${borderStyle}`}>
             <h3 className="text-lg font-semibold mb-2">Select Vehicle</h3>
             <VehicleSearch filters={filters} setFilters={setFilters} />
           </div>
-          
-          <textarea
-            placeholder="Description"
-            value={form.description}
-            onChange={(e) => handleChange("description", e.target.value)}
-            className="w-full p-2 border rounded"
-            rows={4}
-          />
 
-          <select
-            value={form.conditionId}
-            onChange={(e) => handleChange("conditionId", e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          >
-            <option value="">Select Condition</option>
-            {conditions.map(c => <option key={c.conditionId} value={c.conditionId}>{c.value}</option>)}
-          </select>
-
-          <input
-            type="number"
-            placeholder="Price"
-            value={form.price}
-            onChange={(e) => handleChange("price", e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          {/* Hidden file input + styled button with preview */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileChange}
-            className="hidden"
-          />
-
-          <div>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full p-2 bg-gray-300 text-gray-800 rounded flex items-center gap-3"
-            >
-              {images.length > 0 ? (
-                <>
-                  <img src={images[0].dataUrl} alt="preview" className="h-8 w-8 object-cover rounded" />
-                  <span className="font-semibold">{images.length} photo{images.length>1?'s':''} selected</span>
-                </>
-              ) : (
-                <span className="font-semibold">Upload Photos</span>
-              )}
-            </button>
-
-            {/* Thumbnails */}
-            {images.length > 0 && (
-              <div className="mt-3 flex gap-3 overflow-x-auto">
-                {images.map((img, idx) => (
-                  <div key={idx} className="relative">
-                    <img src={img.dataUrl} alt={img.name} className="h-20 w-28 object-cover rounded border" />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(idx)}
-                      className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full h-6 w-6 text-xs flex items-center justify-center"
-                      aria-label={`Remove ${img.name}`}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
+          <Collapsible title="Listing Information">
+            <div className="space-y-4">
+              {/* Description */}
+              <div>
+                <label className="block mb-1 font-medium">Description</label>
+                <textarea
+                  placeholder="Ex. '02 Ford Ranger, failed inspection x4 due to excessive rust."
+                  maxLength="300"
+                  value={form.description}
+                  onChange={(e) => handleChange("description", e.target.value)}
+                  className={`w-full p-2 ${borderStyle}`}
+                  rows={4}
+                />
               </div>
+
+              {/* Condition */}
+              <div>
+                <label className="block mb-1 font-medium">Condition</label>
+                <select
+                  value={form.conditionId}
+                  onChange={(e) => handleChange("conditionId", e.target.value)}
+                  className={`w-full p-2 ${borderStyle}`}
+                  required
+                >
+                  <option value="">Select Condition</option>
+                  {conditions.map(c => <option key={c.conditionId} value={c.conditionId}>{c.value}</option>)}
+                </select>
+              </div>
+
+              {/* Price */}
+              <div>
+                <label className="block mb-1 font-medium">Price</label>
+                <input
+                  type="number"
+                  placeholder="Ex. 89.99"
+
+                  value={form.price}
+                  onChange={(e) => handlePriceChange(e.target.value)}
+                  className={`w-full p-2 ${borderStyle}`}
+                  inputMode="decimal"
+                  required
+                />
+              </div>
+
+
+              {/* Hidden file input + styled button with preview */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFileChange}
+                className="hidden"
+              />
+
+              <div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full p-2 bg-gray-300 text-gray-800 rounded flex items-center gap-3"
+                >
+                  {images.length > 0 ? (
+                    <>
+                      <img src={images[0].dataUrl} alt="preview" className="h-8 w-8 object-cover rounded" />
+                      <span className="font-semibold">{images.length} photo{images.length > 1 ? 's' : ''} selected</span>
+                    </>
+                  ) : (
+                    <span className="font-semibold">Upload Photos</span>
+                  )}
+                </button>
+
+                {/* Thumbnails */}
+                {images.length > 0 && (
+                  <div className="mt-3 flex gap-3 overflow-x-auto">
+                    {images.map((img, idx) => (
+                      <div key={idx} className="relative">
+                        <img src={img.dataUrl} alt={img.name} className="h-20 w-28 object-cover rounded border" />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(idx)}
+                          className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full h-6 w-6 text-xs flex items-center justify-center"
+                          aria-label={`Remove ${img.name}`}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </Collapsible>
+
+          {/* Create Listing Button */}
+          <div className="relative group w-full">
+            <button
+              type="submit"
+              disabled={!(isFormValid() && isFiltersValid())}
+              className={`w-full p-2 font-medium rounded-md transition
+                ${isFormValid() && isFiltersValid()
+                  ? "bg-blue-700 text-white hover:bg-blue-800"
+                  : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                }`}
+            >
+              Create Listing
+            </button>
+            {!(isFormValid() && isFiltersValid()) && (
+              <span className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2
+                bg-gray-700 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100
+                transition-opacity whitespace-nowrap pointer-events-none">
+                All required fields and filters must be filled out.
+              </span>
             )}
           </div>
-
-          <button
-            type="submit"
-            className="w-full p-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition"
-          >
-            Create Listing
-          </button>
         </form>
       </div>
     </div>

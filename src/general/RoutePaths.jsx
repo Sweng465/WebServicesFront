@@ -7,5 +7,6 @@ export const RoutePaths = {
   BROWSEPARTS: '/browse-parts',
   SELLITEMS: '/sell-items',
   BROWSE_VEHICLE_LISTINGS: '/browse-vehicle-listings/:vehicleId',
-  LISTING_DETAIL: '/listings/vehicle/:listingId'
+  LISTING_DETAIL: '/listings/vehicle/:listingId',
+  SELLERREGISTRATION: '/seller-registration',
 };

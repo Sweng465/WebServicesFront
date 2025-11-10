@@ -46,6 +46,7 @@ export const AuthProvider = ({ children }) => {
 
     setAccessToken(data.accessToken);
     localStorage.setItem("token", data.accessToken);
+
     setUser(payload);  // set user from decoded payload
 
     return data.accessToken;
