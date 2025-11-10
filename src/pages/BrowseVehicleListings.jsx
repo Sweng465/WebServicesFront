@@ -2,6 +2,59 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import API_ENDPOINTS from "../config/api.js";
+// Removed Base64Image import - we render normal <img> elements now
+import { RoutePaths } from "../general/RoutePaths.jsx";
+
+const isDataUrl = (s) => typeof s === "string" && s.startsWith("data:");
+const isLikelyUrl = (s) => typeof s === "string" && (s.startsWith("http://") || s.startsWith("https://") || s.startsWith("/"));
+const isLikelyBase64 = (s) =>
+  typeof s === "string" &&
+  // heuristic: raw base64 payloads tend to be long and use only base64 chars (we allow whitespace)
+  s.replace(/\s/g, "").length > 100 && /^[A-Za-z0-9+/=]+$/.test(s.replace(/\s/g, ""));
+
+const buildImageSrcFromValue = (val) => {
+  if (!val) return null;
+
+  // 1) If it's already a data URL, use directly
+  if (isDataUrl(val)) return val;
+
+  // 2) If it's a plain URL string, use it directly
+  if (isLikelyUrl(val)) return val;
+
+  // 3) If it's a raw base64 string (no data: prefix), build a data URL (default to jpeg)
+  if (typeof val === "string" && isLikelyBase64(val)) {
+    return `data:image/jpeg;base64,${val.trim()}`;
+  }
+
+  // 4) If it's an object, try common properties
+  if (typeof val === "object") {
+    // Prefer explicit data fields
+    const base64 = val.imageBase64 ?? val.base64 ?? val.data ?? null;
+    if (base64 && isLikelyBase64(base64)) {
+      const mime = val.mime || val.contentType || "image/jpeg";
+      return `data:${mime};base64,${base64.trim()}`;
+    }
+
+    // Prefer provided absolute/relative URL fields
+    const url = val.url ?? val.src ?? val.path ?? null;
+    if (url && isLikelyUrl(url)) return url;
+
+    // If object has an image id, return the server image endpoint URL (let browser fetch it)
+    const imageId = val.imageId ?? val.id ?? val.image_id ?? null;
+    if (imageId) {
+      // Prefer explicit API endpoint if configured
+      if (API_ENDPOINTS?.IMAGES) {
+        // If your API supports thumbnails, you can append a query param e.g. ?size=thumb
+        return `${API_ENDPOINTS.IMAGES}/${imageId}`;
+      }
+      // Fallback guess (you should add IMAGES to src/config/api.js)
+      return `/api/images/${imageId}`;
+    }
+  }
+
+  // Nothing usable found
+  return null;
+};
 
 const BrowseVehicleListings = () => {
   const { vehicleId } = useParams();
@@ -9,33 +62,27 @@ const BrowseVehicleListings = () => {
   const [listings, setListings] = useState([]);
   const [vehicleDetails, setVehicleDetails] = useState(null);
   const [loading, setLoading] = useState(false);
-  // This view uses the vehicle-specific listings endpoint which returns an
-  // array of listings. Pagination isn't provided by that endpoint in the
-  // current API sample.
 
   useEffect(() => {
     const fetchVehicleListings = async () => {
       setLoading(true);
       try {
-        // Call new vehicle-specific endpoint: /api/listings/vehicle/:id
         const res = await fetch(`${API_ENDPOINTS.LISTINGS_BY_VEHICLE}/${vehicleId}`);
         const data = await res.json();
 
         console.log("Fetched vehicle listings data:", data);
 
-        // The endpoint returns an array of listing objects (see sample).
+        let parsedListings;
         if (Array.isArray(data)) {
-          setListings(data);
+          parsedListings = data;
         } else {
-          // If backend wraps results or returns pagination, try to normalize
           const listingsData = data.data || data.listings || [];
-          setListings(Array.isArray(listingsData) ? listingsData : []);
-
-          // If the backend returns pagination info, we could wire it up here.
-          // For now, simply keep the listings array parsed above.
+          parsedListings = Array.isArray(listingsData) ? listingsData : [];
         }
 
-        // If vehicle details are included in response, use them
+        setListings(parsedListings);
+        console.log("Parsed listings:", parsedListings);
+
         if (data.vehicleDetails) {
           setVehicleDetails(data.vehicleDetails);
         }
@@ -121,41 +168,61 @@ const BrowseVehicleListings = () => {
                     </p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
-                    {listings.map((listing) => (
-                      <div
-                        key={listing.listingInfoId}
-                        className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
-                      >
-                        {listing.imageUrl && (
-                          <img
-                            src={listing.imageUrl}
-                            alt={`Listing ${listing.listingInfoId}`}
-                            className="w-full h-48 object-cover"
-                          />
-                        )}
-                        <div className="p-4">
-                          <h3 className="font-semibold text-lg text-gray-800 mb-2">
-                            ${listing.price?.toLocaleString() || 'N/A'}
-                          </h3>
-                          <p className="text-gray-600 text-sm mb-2">
-                            {listing.description || 'Listing'}
-                          </p>
-                          <p className="text-gray-500 text-xs mb-3">
-                            {listing.date ? new Date(listing.date).toLocaleDateString() : 'Date not provided'}
-                          </p>
-                          <p className="text-sm mb-3">
-                            {listing.isAvailable ? (
-                              <span className="text-green-600 font-medium">Available</span>
+                    {listings.map((listing, index) => {
+                      const firstImage =
+                        Array.isArray(listing.images) && listing.images.length
+                          ? listing.images[0]
+                          : listing.images;
+                      const listingIdValue = listing.listingInfoId || listing.listingId || listing.id;
+                      // Compute src using helper - this returns data: URLs, absolute/relative URLs, or server image URLs
+                      const thumbSrc = buildImageSrcFromValue(firstImage);
+
+                      return (
+                        <div
+                          key={listingIdValue ?? `listing-${index}`}
+                          className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                        >
+                          <div className="p-4">
+                            {thumbSrc ? (
+                              <img
+                                src={thumbSrc}
+                                alt={listing.title ? listing.title : `Listing ${listingIdValue ?? index}`}
+                                className="w-full h-48 object-cover rounded"
+                              />
                             ) : (
-                              <span className="text-red-600 font-medium">Not available</span>
+                              <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-400 rounded">
+                                No image
+                              </div>
                             )}
-                          </p>
-                          <button className="w-full bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800 font-semibold">
-                            View Details
-                          </button>
+
+                            <h3 className="font-semibold text-lg text-gray-800 mb-2">
+                              ${listing.price?.toLocaleString() || 'N/A'}
+                            </h3>
+                            <p className="text-gray-600 text-sm mb-2">
+                              {listing.description || 'Listing'}
+                            </p>
+                            <p className="text-gray-500 text-xs mb-3">
+                              {listing.date ? new Date(listing.date).toLocaleDateString() : 'Date not provided'}
+                            </p>
+                            <p className="text-sm mb-3">
+                              {listing.isAvailable ? (
+                                <span className="text-green-600 font-medium">Available</span>
+                              ) : (
+                                <span className="text-red-600 font-medium">Not available</span>
+                              )}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => navigate(RoutePaths.LISTING_DETAIL.replace(":listingId", listingIdValue))}
+                              className="w-full bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800 font-semibold"
+                              disabled={!listingIdValue}
+                            >
+                              View Details
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </>
               )}

@@ -4,12 +4,15 @@ import VehicleSearch from "../components/vehicle/VehicleSearch";
 import VehicleResultCard from "../components/vehicle/VehicleResultCard";
 import Pagination from "../components/Pagination";
 import API_ENDPOINTS from "../config/api.js";
+import { LayoutGrid, List, AArrowUp, AArrowDown  } from 'lucide-react';
 
 const BrowseVehicles = () => {
     const [vehicles, setVehicles] = useState([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState({ totalPages: 1 });
+    const [viewMode, setViewMode] = useState("grid"); // 'grid' | 'list'
+    const [size, setSize] = useState("small"); // 'small' | 'large'
     const [filters, setFilters] = useState({
         yearId: "",
         makeId: "",
@@ -101,16 +104,74 @@ const BrowseVehicles = () => {
                     </div>
                 ) : (
                     <>
-                    <div className="mb-6">
+                    <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
                         <p className="text-gray-700 font-medium">
                         Found <span className="text-blue-600 font-bold">{pagination.total}</span> vehicle{pagination.total !== 1 ? 's' : ''}
                         </p>
+                        <div className="flex gap-2 self-start">
+                          {/* View mode toggle */}
+                          <div className="inline-flex bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                            <button
+                              type="button"
+                              onClick={() => setViewMode('grid')}
+                              aria-pressed={viewMode === 'grid'}
+                              className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                            >
+                              {/* <span className="material-icons text-base hidden sm:inline">grid_view</span> */}
+                              <LayoutGrid className="text-base hidden sm:inline" />
+                              Grid
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setViewMode('list')}
+                              aria-pressed={viewMode === 'list'}
+                              className={`px-4 py-2 text-sm font-medium flex items-center gap-2 border-l border-gray-200 transition-colors ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                            >
+                              <List className="text-base hidden sm:inline" />
+                              List
+                            </button>
+                          </div>
+                          {/* Size toggle */}
+                          <div className="inline-flex bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                            <button
+                              type="button"
+                              onClick={() => setSize('small')}
+                              aria-pressed={size === 'small'}
+                              className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${size === 'small' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                            >
+                              <AArrowDown className="text-base hidden sm:inline" />
+                              Small
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSize('large')}
+                              aria-pressed={size === 'large'}
+                              className={`px-4 py-2 text-sm font-medium flex items-center gap-2 border-l border-gray-200 transition-colors ${size === 'large' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                            >
+                              <AArrowUp className="text-base hidden sm:inline" />
+                              Large
+                            </button>
+                          </div>
+                        </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
+                    {viewMode === 'grid' ? (
+                      <div className={`grid grid-cols-1 gap-4 sm:gap-5 lg:gap-6 
+                        ${size === 'small' 
+                          ? 'sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6' 
+                          : 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                        }`}
+                      >
                         {vehicles.map((v) => (
-                        <VehicleResultCard key={v.vehicleId} vehicle={v} />
+                          <VehicleResultCard key={v.vehicleId} vehicle={v} variant="grid" size={size} />
                         ))}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {vehicles.map((v) => (
+                          <VehicleResultCard key={v.vehicleId} vehicle={v} variant="list" size={size} />
+                        ))}
+                      </div>
+                    )}
                     </>
                 )}
                 </div>

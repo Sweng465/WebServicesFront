@@ -7,6 +7,7 @@ import { SignUp } from "../pages/SignUp.jsx";
 import BrowseVehicles from "../pages/BrowseVehicles.jsx";
 import BrowseVehicleListings from "../pages/BrowseVehicleListings.jsx";
 import BrowseParts from "../pages/BrowseParts.jsx";
+import ListingDetails from "../pages/ListingDetails.jsx";
 import { NotFound } from "./NotFound.jsx";
 import { Layout } from "./Layout.jsx";
 import Profile from "../pages/Profile.jsx";
@@ -91,6 +92,14 @@ export const Router = () => (
       element={
         <Layout>
           <BrowseParts />
+        </Layout>
+      }
+    />
+    <Route
+      path={RoutePaths.LISTING_DETAIL}
+      element={
+        <Layout>
+          <ListingDetails />
         </Layout>
       }
     />
