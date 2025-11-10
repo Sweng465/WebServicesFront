@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
-import Base64Image from "../components/Base64Image";
+// remove/keep Base64Image import depending on thumbnail decision
+// import Base64Image from "../components/Base64Image";
 import BusinessInfo from "../components/BusinessInfo.jsx";
 import API_ENDPOINTS, { buildVehicleDetailUrl } from "../config/api.js";
 
@@ -24,6 +25,9 @@ const ListingDetails = () => {
   const [error, setError] = useState(null);
   const [vehicleInfo, setVehicleInfo] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  // NEW: source URL/objectURL for the currently selected image
+  const [imageSrc, setImageSrc] = useState(null);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -105,6 +109,102 @@ const ListingDetails = () => {
     setSelectedImageIndex(0);
   }, [imageGallery.length]);
 
+  const primaryImage = imageGallery[selectedImageIndex] ?? null;
+
+  // NEW: resolve the primaryImage into a usable src (data URL, absolute/relative URL, or object URL from a fetched blob)
+  useEffect(() => {
+    let cancelled = false;
+    let currentObjectUrl = null;
+
+    const revoke = () => {
+      if (currentObjectUrl) {
+        URL.revokeObjectURL(currentObjectUrl);
+        currentObjectUrl = null;
+      }
+    };
+
+    const isDataUrl = (s) => typeof s === "string" && s.startsWith("data:");
+    const isLikelyUrl = (s) => typeof s === "string" && (s.startsWith("http") || s.startsWith("/"));
+    const isLikelyBase64 = (s) =>
+      typeof s === "string" &&
+      // quick heuristic: base64 blobs are long and only contain base64 chars (we check length)
+      s.length > 100 && /^[A-Za-z0-9+/=\s]+$/.test(s.replace(/\s/g, "").slice(0, 200));
+
+    const load = async () => {
+      setImageSrc(null);
+
+      if (!primaryImage) return;
+
+      // 1) If it's already a data URL, use directly
+      if (isDataUrl(primaryImage)) {
+        setImageSrc(primaryImage);
+        return;
+      }
+
+      // 2) If it's a plain URL string, use it directly (browser will request it)
+      if (isLikelyUrl(primaryImage)) {
+        setImageSrc(primaryImage);
+        return;
+      }
+
+      // 3) If it's a raw base64 string (no data: prefix), build a data URL
+      if (typeof primaryImage === "string" && isLikelyBase64(primaryImage)) {
+        // you can change the mime if server provides it; default to jpeg
+        const dataUrl = `data:image/jpeg;base64,${primaryImage.trim()}`;
+        setImageSrc(dataUrl);
+        return;
+      }
+
+      // 4) If it's an object with a base64 field, use that
+      if (typeof primaryImage === "object") {
+        const base64 = primaryImage.imageBase64 ?? primaryImage.base64 ?? primaryImage.data ?? null;
+        if (base64 && isLikelyBase64(base64)) {
+          const mime = primaryImage.mime || primaryImage.contentType || "image/jpeg";
+          setImageSrc(`data:${mime};base64,${base64.trim()}`);
+          return;
+        }
+
+        // 5) If it's an object with an external URL field use it
+        const url = primaryImage.url ?? primaryImage.src ?? primaryImage.path ?? null;
+        if (url) {
+          setImageSrc(url);
+          return;
+        }
+
+        // 6) If it's an object with an image id, fetch the binary and create an object URL
+        const imageId = primaryImage.imageId ?? primaryImage.id ?? primaryImage.image_id ?? null;
+        if (imageId) {
+          try {
+            // Ensure your API exposes an image endpoint; see note below if it doesn't exist.
+            const imageUrl = API_ENDPOINTS.IMAGES
+              ? `${API_ENDPOINTS.IMAGES}/${imageId}`
+              : `/api/images/${imageId}`; // fallback guess
+            const res = await fetch(imageUrl);
+            if (!res.ok) throw new Error(`Image fetch failed (${res.status})`);
+            const blob = await res.blob();
+            if (cancelled) return;
+            currentObjectUrl = URL.createObjectURL(blob);
+            setImageSrc(currentObjectUrl);
+            return;
+          } catch (err) {
+            console.warn("Failed to fetch image blob:", err);
+            // fallthrough to placeholder
+          }
+        }
+      }
+
+      // If we get here, we couldn't get an image source
+      setImageSrc(null);
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+      revoke();
+    };
+  }, [primaryImage]);
+
   const vehicleSummary = useMemo(() => {
     const source = vehicleInfo || listing?.vehicle;
     if (!source) return "Vehicle information unavailable";
@@ -133,7 +233,6 @@ const ListingDetails = () => {
     return "Vehicle information unavailable";
   }, [listing, vehicleInfo]);
 
-  const primaryImage = imageGallery[selectedImageIndex] ?? null;
   const seller = listing?.seller ?? null;
   // const sellerName = seller?.name || seller?.username || listing?.business?.name || "Seller";
   // const sellerPhone = seller?.phone || seller?.phoneNumber || listing?.business?.phoneNumber || null;
@@ -181,10 +280,9 @@ const ListingDetails = () => {
                     {/* Image Gallery */}
                     <div className="space-y-4">
                       <div className="relative overflow-hidden bg-gray-100 rounded-xl shadow-lg aspect-w-4 aspect-h-3">
-                        {primaryImage ? (
-                          <Base64Image
-                            value={primaryImage}
-                            mime="image/jpeg"
+                        {imageSrc ? (
+                          <img
+                            src={imageSrc}
                             alt={listing.title || vehicleSummary}
                             className="w-full h-full object-cover"
                           />
@@ -209,12 +307,20 @@ const ListingDetails = () => {
                               }`}
                               aria-label={`View image ${index + 1}`}
                             >
-                              <Base64Image
-                                value={img}
-                                mime="image/jpeg"
-                                alt={listing.title ? `${listing.title} thumbnail ${index + 1}` : `Listing thumbnail ${index + 1}`}
-                                className="h-full w-full object-cover"
-                              />
+                              {/* For thumbnails you can either:
+                                  - use the same fetch->objectURL logic, or
+                                  - reuse an existing Base64Image component if thumbnails may be base64.
+                                For simplicity here we'll just use an img with a small src resolution if available.
+                              */}
+                              {typeof img === "string" ? (
+                                <img src={img} alt={`thumb ${index + 1}`} className="h-full w-full object-cover" />
+                              ) : img?.url ? (
+                                <img src={img.url} alt={`thumb ${index + 1}`} className="h-full w-full object-cover" />
+                              ) : img?.imageBase64 || img?.base64 ? (
+                                <img src={`data:${img.mime ?? "image/jpeg"};base64,${img.imageBase64 ?? img.base64}`} alt={`thumb ${index + 1}`} className="h-full w-full object-cover" />
+                              ) : (
+                                <div className="h-full w-full flex items-center justify-center text-gray-400">—</div>
+                              )}
                             </button>
                           ))}
                         </div>

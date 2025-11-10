@@ -1,21 +1,56 @@
 import { useNavigate } from "react-router-dom";
 import { RoutePaths } from "../../general/RoutePaths.jsx";
+import Base64Image from "../Base64Image";
 
-const VehicleResultCard = ({ vehicle, variant = 'grid', size = 'small' }) => {
+const DEFAULT_PLACEHOLDER = "/assets/hot-listing-frame-1.png";
+
+const VehicleResultCard = ({ vehicle = {}, variant = 'grid', size = 'small' }) => {
   const navigate = useNavigate();
 
   const handleViewListings = () => {
-    navigate(RoutePaths.BROWSE_VEHICLE_LISTINGS.replace(":vehicleId", vehicle.vehicleId));
+    if (vehicle?.vehicleId) {
+      navigate(RoutePaths.BROWSE_VEHICLE_LISTINGS.replace(":vehicleId", vehicle.vehicleId));
+    }
   };
+
+  // Build a safe image value:
+  // 1) If imageBase64 exists, normalize/remove whitespace and build a data URL.
+  // 2) Else use imageUrl or image.
+  // 3) Else fallback to placeholder.
+  const rawBase64 = vehicle?.imageBase64 ?? vehicle?.base64image ?? null;
+
+  let imageFromBase64 = null;
+  if (typeof rawBase64 === "string" && rawBase64.trim()) {
+    const s = rawBase64.trim();
+    // If it already looks like a data URL, pass through
+    if (s.startsWith("data:")) {
+      imageFromBase64 = s;
+    } else {
+      // Remove any whitespace/newlines that could break atob
+      const cleaned = s.replace(/\s+/g, "");
+      // Only build data URL for reasonably long strings (basic safety)
+      if (cleaned.length > 50) {
+        imageFromBase64 = `data:image/jpeg;base64,${cleaned}`;
+      }
+    }
+  }
+
+  const imageValue = imageFromBase64 ?? vehicle?.imageUrl ?? vehicle?.image ?? DEFAULT_PLACEHOLDER;
+  const altText = vehicle?.value || "Listing image";
+
+  // Debug: show a slice so you can verify what's being passed (remove once verified)
+  console.log("Vehicle imageValue (start):", typeof imageValue === "string" ? imageValue.slice(0, 60) : imageValue);
 
   if (variant === 'list') {
     return (
       <div className={`bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 flex ${size === 'large' ? 'h-64' : 'h-48'}`}>
         {/* Image Container */}
         <div className={`relative overflow-hidden bg-gray-200 ${size === 'large' ? 'w-80' : 'w-56'}`}>
-          <img
-            src={vehicle.imageUrl || "../assets/hot-listing-frame-1.png"}
-            alt={vehicle.value}
+          <Base64Image
+            value={imageValue}
+            // For a data URL we don't need mime; if you pass raw base64 you'd set mime="image/jpeg"
+            mime="image/jpeg"
+            alt={altText}
             className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
           />
         </div>
@@ -70,10 +105,11 @@ const VehicleResultCard = ({ vehicle, variant = 'grid', size = 'small' }) => {
     <div className={`bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl hover:scale-105 transition-all duration-300 flex flex-col ${size === 'large' ? 'h-[32rem]' : 'h-full'}`}>
       {/* Image Container */}
       <div className={`relative overflow-hidden bg-gray-200 ${size === 'large' ? 'h-72' : 'h-48 sm:h-56'}`}>
-        <img
-          src={vehicle.imageUrl || "../assets/hot-listing-frame-1.png"}
-          alt={vehicle.value}
-          className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+        <Base64Image
+          value={imageValue}
+          mime="image/jpeg"
+          alt={altText}
+          className="w-full h-48 object-cover"
         />
       </div>
 
