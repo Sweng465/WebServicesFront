@@ -33,7 +33,7 @@ const Profile = () => {
     <div className="min-h-screen w-full bg-gradient-to-br from-orange-600 to-blue-600 flex flex-col items-center">
       <Header />
       <div className="max-w-3xl min-w-100 mx-auto p-6 bg-white rounded-lg mt-6 flex flex-col items-center text-center">
-        <h1 className="text-2xl font-bold mb-4"> Profile </h1>
+        <h1 className="text-3xl font-bold mb-4"> Profile </h1>
         {/* Update to get user's icon from database (replace w/ default if null) */}
         <img
           src={defaultIcon}
@@ -41,7 +41,7 @@ const Profile = () => {
           className="w-[250px] h-[250px] object-cover rounded-full mb-4"
         />
 
-        <h2 className="text-xl font-bold mb-4"> {profile.username} </h2>
+        <h2 className="text-2xl font-bold mb-4"> {profile.username} </h2>
         <h2 className="text-xl mb-4"> {profile.email} </h2>
 
         {/* Update to direct to page where users can edit their account details */}
