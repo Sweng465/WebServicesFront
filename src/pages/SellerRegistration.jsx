@@ -91,21 +91,21 @@ const SellerRegistration = () => {
     }));
   };
 
+  const MAX_FILE_MB = 1;
+  const ACCEPT_TYPES = ["image/jpeg", "image/png", "image/jpg"];
+
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const validTypes = ["image/png", "image/jpeg", "image/jpg"];
-    const maxSize = 1 * 1024 * 1024; // 1 MB
-
-    if (!validTypes.includes(file.type)) { // validate file type
-      alert("Only .png, .jpg, or .jpeg files are allowed.");
+    if (!ACCEPT_TYPES.includes(file.type)) { // validate file type
+      alert(`${file.name} is not an allowed file type.`);
       e.target.value = "";
       return;
     }
 
-    if (file.size > maxSize) { // validate file size
-      alert("File size must be less than 1 MB.");
+    if (file.size > MAX_FILE_MB * 1024 * 1024) { // validate file size
+      alert(`${file.name} is too large. Max size is ${MAX_FILE_MB}MB`);
       e.target.value = "";
       return;
     }
