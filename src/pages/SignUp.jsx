@@ -1,20 +1,54 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import API_ENDPOINTS from "../config/api.js";
+import FormField from "../components/forms/FormField";
 
 export const SignUp = () => {
-  const { login } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
+  const [formSubmitAttempted, setFormSubmitAttempted] = useState(false);
 
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // Form state
+  const [form, setForm] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+
+  const requiredFields = [
+    "username",
+    "email",
+    "password",
+  ];
+
+  const isFormValid = () => { // check if all required fields are filled
+    return requiredFields.every((field) => {
+      const value = form[field];
+      return value !== "" && value !== null && value !== undefined;
+    });
+  };
+
+  const handleChange = (field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormSubmitAttempted(true);
 
-    const payload = { username, email, password };
+    if (!isFormValid()) {
+      return; // fields will turn red
+    }
+
+    const payload = { 
+      username: form.username, 
+      email: form.email, 
+      password: form.password,
+    };
 
     try {
       const response = await fetch(API_ENDPOINTS.SIGN_UP, {
@@ -27,11 +61,10 @@ export const SignUp = () => {
       });
 
       const data = await response.json();
-      console.log("Login response data:", data);  // <-- add here
+      console.log("Login response data:", data);
 
       if (response.ok) {
         console.log("Registration successful:", data);
-        //localStorage.setItem("token", data.token);
         login(data.user, data.accessToken);
         navigate("/");
       } else {
@@ -44,6 +77,10 @@ export const SignUp = () => {
     }
   };
 
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-600 to-blue-600 px-4 py-12">
       <div className="bg-white bg-opacity-90 shadow-xl rounded-xl w-full max-w-md p-8">
@@ -51,68 +88,50 @@ export const SignUp = () => {
           Welcome to SalvageSearch!
         </h1>
 
-        <p className="text-center text-gray-600 mb-8">
+        <p className="text-center text-gray-600 mb-2">
           Create your account
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Username
-            </label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder="johnsJunkyard87"
-            />
-          </div>
+          {/* Username */}
+          <FormField
+            label="Username"
+            id="username"
+            type="text"
+            required
+            value={form.username}
+            onChange={(e) => handleChange("username", e.target.value)}
+            maxLength={20}
+            helpText="5-20 characters"
+            error={formSubmitAttempted && !form.username ? "Username is required." : ""}
+          />
 
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Email Address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder="youremail@example.com"
-            />
-          </div>
+          {/* Email */}
+          <FormField
+            label="Email Address"
+            id="email"
+            type="email"
+            required
+            value={form.email}
+            onChange={(e) => handleChange("email", e.target.value)}
+            maxLength={50}
+            error={formSubmitAttempted && !form.email ? "Email is required." : ""}
+          />
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder="••••••••"
-            />
-          </div>
+          {/* Password */}
+          <FormField
+            label="Password"
+            id="password"
+            type="text"
+            required
+            value={form.password}
+            onChange={(e) => handleChange("password", e.target.value)}
+            maxLength={30}
+            helpText="8-30 characters"
+            error={formSubmitAttempted && !form.password ? "Password is required." : ""}
+          />
 
+          {/* Submit Button */}
           <button
             type="submit"
             className="w-full py-3 rounded-lg bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition duration-200"
@@ -121,6 +140,7 @@ export const SignUp = () => {
           </button>
         </form>
 
+        {/* Create Account */}
         <p className="mt-6 text-center text-sm text-gray-700">
           Already have an account?{" "}
           <Link
