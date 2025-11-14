@@ -5,6 +5,7 @@ export const API_ENDPOINTS = {
   // Authentication endpoints
   SIGN_UP: `${API_BASE_URL}/api/auth/signup`,
   SIGN_IN: `${API_BASE_URL}/api/auth/signin`,
+  UPDATE_LOGIN: `${API_BASE_URL}/api/auth/updatelogin`,
 
   // Vehicle endpoints
   VEHICLES: `${API_BASE_URL}/api/vehicles`,

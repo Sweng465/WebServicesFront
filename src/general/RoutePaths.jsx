@@ -3,6 +3,7 @@ export const RoutePaths = {
   SIGNIN: '/signin',
   SIGNUP: '/signup',
   PROFILE: '/profile',
+  EDITPROFILE: '/edit-profile',
   BROWSECARS: '/browse-vehicles',
   BROWSEPARTS: '/browse-parts',
   SELLITEMS: '/sell-items',

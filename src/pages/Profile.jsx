@@ -2,14 +2,13 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/useAuth";
 import API_ENDPOINTS from "../config/api.js";
 import defaultIcon from "../assets/default_icon.png";
+import { Link } from "react-router-dom";
 import { RoutePaths } from "../general/RoutePaths.jsx";
-import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 
 const Profile = () => {
   const { user, authFetch, accessToken } = useAuth(); // pull in authFetch from context
   const [profile, setProfile] = useState(null);
-  const navigate = useNavigate();
   console.log("User from context:", user);
   useEffect(() => {
     if (!user?.id || !accessToken) return; 
@@ -44,10 +43,11 @@ const Profile = () => {
         <h2 className="text-2xl font-bold mb-4"> {profile.username} </h2>
         <h2 className="text-xl font-medium mb-4"> {profile.email} </h2>
 
-        {/* Update to direct to page where users can edit their account details */}
-        <button className= "p-2 px-8 mb-4 font-medium text-white rounded-md shadow-md transition bg-blue-700 hover:bg-blue-800">
-          Manage Account
-        </button>
+        <Link to= {RoutePaths.EDITPROFILE}>
+          <button className= "p-2 px-8 mb-4 font-medium text-white rounded-md shadow-md transition bg-blue-700 hover:bg-blue-800">
+            Manage Account
+          </button>
+        </Link>
 
         {/* Add Manage Business button here ? */}
       </div>
