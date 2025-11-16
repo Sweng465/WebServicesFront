@@ -70,7 +70,7 @@ const BrowseVehicleListings = () => {
         const res = await fetch(`${API_ENDPOINTS.LISTINGS_BY_VEHICLE}/${vehicleId}`);
         const data = await res.json();
 
-        console.log("Fetched vehicle listings data:", data);
+
 
         let parsedListings;
         if (Array.isArray(data)) {

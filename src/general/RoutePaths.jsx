@@ -11,4 +11,7 @@ export const RoutePaths = {
   BROWSE_VEHICLE_LISTINGS: '/browse-vehicle-listings/:vehicleId',
   LISTING_DETAIL: '/listings/vehicle/:listingId',
   SELLERREGISTRATION: '/seller-registration',
+  REVIEWS: '/businesses/:id/reviews',
+  BUSINESSES: '/businesses',
+  BUSINESS_DETAILS: '/businesses/:id',
 };

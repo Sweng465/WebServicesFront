@@ -127,32 +127,12 @@ const SellerRegistration = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    let thisSellerId;
-
     if (!isFormValid()) {
       alert("Please fill out all required fields.");
       return;
     }
 
     try {
-      // create seller
-      const sellerPayload = {
-        userId: user.id,
-        idVerified: form.idVerified,
-      };
-
-      const sellerRes = await authFetch(API_ENDPOINTS.SELLERS, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sellerPayload),
-      });
-      const sellerData = await sellerRes.json();
-
-      if (!sellerRes.ok) throw new Error(sellerData.message || "Error creating seller");
-      thisSellerId = sellerData.data.sellerId;
-      console.log("Seller created:", sellerData);
-
-
       // update user role to seller
       const roleRes = await authFetch(`${API_ENDPOINTS.USERS}/${user.id}`, {
         method: "PUT",
@@ -167,7 +147,8 @@ const SellerRegistration = () => {
 
       // create business
       const businessPayload = {
-        sellerId: thisSellerId,
+        userId: user.id,
+        isVerified: form.idVerified,
         name: form.name,
         phoneNumber: Number(`${form.phone1}${form.phone2}${form.phone3}`),
         isPullYourself: form.isPullYourself,
