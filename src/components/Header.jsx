@@ -95,7 +95,7 @@ const Header = () => {
           )}
 
           <Link
-            to="/cart"
+            to={RoutePaths.VIEWCART}
             className="bg-blue-700 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-md flex items-center gap-1 sm:gap-2 hover:bg-blue-800 text-xs sm:text-sm font-semibold whitespace-nowrap"
           >
             <ShoppingCart className="text-base hidden sm:inline" />

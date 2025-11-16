@@ -14,6 +14,7 @@ import Profile from "../pages/Profile.jsx";
 import SellItems from "../pages/SellItems.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import SellerRegistration from "../pages/SellerRegistration.jsx";
+import ViewCart from "../pages/ViewCart.jsx";
 
 export const Router = () => (
   <Routes>
@@ -101,6 +102,16 @@ export const Router = () => (
         <Layout>
           <ListingDetails />
         </Layout>
+      }
+    />
+    <Route
+      path={RoutePaths.VIEWCART}
+      element={
+        <ProtectedRoute>
+          <Layout>
+            <ViewCart />
+          </Layout>
+        </ProtectedRoute>
       }
     />
     <Route

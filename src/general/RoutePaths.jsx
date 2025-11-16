@@ -9,4 +9,5 @@ export const RoutePaths = {
   BROWSE_VEHICLE_LISTINGS: '/browse-vehicle-listings/:vehicleId',
   LISTING_DETAIL: '/listings/vehicle/:listingId',
   SELLERREGISTRATION: '/seller-registration',
+  VIEWCART: '/view-cart',
 };

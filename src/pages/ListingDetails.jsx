@@ -5,6 +5,8 @@ import Header from "../components/Header";
 // import Base64Image from "../components/Base64Image";
 import BusinessInfo from "../components/BusinessInfo.jsx";
 import API_ENDPOINTS, { buildVehicleDetailUrl } from "../config/api.js";
+import { getCart, saveCart } from "../utils/cart.js";
+
 
 const formatCurrency = (value) => {
   if (typeof value !== "number") return "N/A";
@@ -243,7 +245,21 @@ const ListingDetails = () => {
   // const sellerReviewCount = seller?.reviewCount || seller?.reviewsCount || null;
 
   const handleAddToCart = () => {
-    // Placeholder for cart integration
+    if (!listing) return;
+
+    const cart = getCart();
+    const existing = cart.find((c) => c.listingId === Number(listingId));
+
+    if (existing) {
+      alert("Error: This item is already in your cart.");
+    } else {
+      cart.push({
+        listingId: Number(listingId),
+      });
+    }
+
+    saveCart(cart);
+    alert("Added to cart!");
   };
 
   return (
