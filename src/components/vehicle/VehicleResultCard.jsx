@@ -1,21 +1,28 @@
 import { useNavigate } from "react-router-dom";
 import { RoutePaths } from "../../general/RoutePaths.jsx";
 import Base64Image from "../Base64Image";
-import hotListingFrame1 from "../../assets/hot-listing-frame-1.png"; // optional fallback if needed
+import hotListingFrame1 from "../../assets/hot-listing-frame-1.png";
 
 const DEFAULT_PLACEHOLDER = hotListingFrame1;
 
-const VehicleResultCard = ({ vehicle = {}, variant = 'grid', size = 'small', onSelect = null, showViewListings = true }) => {
 const VehicleResultCard = ({
   vehicle = {},
-  variant = 'grid',
-  size = 'small',
-  actionPath = null,   // new: explicit path to navigate to when button pressed
-  actionText = null,   // new: explicit label for the button
+  variant = "grid",
+  size = "small",
+
+  // From first file
+  actionPath = null,
+  actionText = null,
+
+  // From second file
+  onSelect = null,
+  showViewListings = true,
 }) => {
   const navigate = useNavigate();
 
-  // Determine candidate ids
+  /** ----------------------------
+   *  ID HANDLING (from version 1)
+   *  ---------------------------- */
   const listingIdCandidate =
     vehicle?.listingId ??
     vehicle?.id ??
@@ -28,34 +35,42 @@ const VehicleResultCard = ({
     vehicle?.vehicle_id ??
     null;
 
+  /** ---------------------------------------
+   *  NAVIGATION HANDLERS (merged versions)
+   *  --------------------------------------- */
   const handleAction = () => {
-    // If caller provided an explicit path, use it.
     if (actionPath) {
       navigate(actionPath);
       return;
     }
 
-    // If we have a listing id, go to listing detail.
     if (listingIdCandidate) {
-      navigate(RoutePaths.LISTING_DETAIL.replace(":listingId", listingIdCandidate));
+      navigate(
+        RoutePaths.LISTING_DETAIL.replace(":listingId", listingIdCandidate)
+      );
       return;
     }
 
-    // Otherwise if we have a vehicle id, go to vehicle listings.
     if (vehicleIdCandidate) {
-      navigate(RoutePaths.BROWSE_VEHICLE_LISTINGS.replace(":vehicleId", vehicleIdCandidate));
+      navigate(
+        RoutePaths.BROWSE_VEHICLE_LISTINGS.replace(
+          ":vehicleId",
+          vehicleIdCandidate
+        )
+      );
       return;
     }
-
-    // No valid target — do nothing.
   };
 
-  // Build a safe image value:
+  /** ----------------------------
+   *  IMAGE HANDLING (best merged)
+   *  ---------------------------- */
   const rawBase64 = vehicle?.imageBase64 ?? vehicle?.base64image ?? null;
 
   let imageFromBase64 = null;
   if (typeof rawBase64 === "string" && rawBase64.trim()) {
     const s = rawBase64.trim();
+
     if (s.startsWith("data:")) {
       imageFromBase64 = s;
     } else {
@@ -66,10 +81,17 @@ const VehicleResultCard = ({
     }
   }
 
-  const imageValue = imageFromBase64 ?? vehicle?.imageUrl ?? vehicle?.image ?? DEFAULT_PLACEHOLDER;
+  const imageValue =
+    imageFromBase64 ??
+    vehicle?.imageUrl ??
+    vehicle?.image ??
+    DEFAULT_PLACEHOLDER;
+
   const altText = vehicle?.value || "Listing image";
 
-  // Determine button label:
+  /** ----------------------------
+   *  BUTTON LABEL (from version 1)
+   *  ---------------------------- */
   const defaultLabel = (() => {
     if (actionText) return actionText;
     if (listingIdCandidate) return "View Details";
@@ -77,11 +99,22 @@ const VehicleResultCard = ({
     return "View";
   })();
 
-  if (variant === 'list') {
+  /** ============================================================
+   *  LIST VARIANT
+   *  ============================================================ */
+  if (variant === "list") {
     return (
-      <div className={`bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 flex ${size === 'large' ? 'h-64' : 'h-48'}`}>
-        {/* Image Container */}
-        <div className={`relative overflow-hidden bg-gray-200 ${size === 'large' ? 'w-80' : 'w-56'}`}>
+      <div
+        className={`bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 flex ${
+          size === "large" ? "h-64" : "h-48"
+        }`}
+      >
+        {/* Image */}
+        <div
+          className={`relative overflow-hidden bg-gray-200 ${
+            size === "large" ? "w-80" : "w-56"
+          }`}
+        >
           <Base64Image
             value={imageValue}
             mime="image/jpeg"
@@ -90,66 +123,99 @@ const VehicleResultCard = ({
           />
         </div>
 
-        {/* Content Container */}
+        {/* Content */}
         <div className="p-4 sm:p-6 flex-1 flex flex-col justify-between">
           <div>
-            <h3 className={`font-bold text-gray-900 mb-2 line-clamp-2 ${size === 'large' ? 'text-2xl' : 'text-lg'}`}>
+            <h3
+              className={`font-bold text-gray-900 mb-2 line-clamp-2 ${
+                size === "large" ? "text-2xl" : "text-lg"
+              }`}
+            >
               {vehicle.value}
             </h3>
 
+            {/* Details */}
             <div className="space-y-1 mb-3">
               {vehicle.year && (
-                <p className={`text-gray-600 font-medium ${size === 'large' ? 'text-base' : 'text-sm'}`}>
+                <p
+                  className={`text-gray-600 font-medium ${
+                    size === "large" ? "text-base" : "text-sm"
+                  }`}
+                >
                   {vehicle.year.value}
                 </p>
               )}
               {vehicle.make && (
-                <p className={`text-gray-600 font-medium ${size === 'large' ? 'text-base' : 'text-sm'}`}>
+                <p
+                  className={`text-gray-600 font-medium ${
+                    size === "large" ? "text-base" : "text-sm"
+                  }`}
+                >
                   {vehicle.make.value}
                 </p>
               )}
             </div>
 
             {vehicle.description && (
-              <p className={`text-gray-500 ${size === 'large' ? 'line-clamp-3 text-base' : 'line-clamp-2 text-sm'} mb-4`}>
+              <p
+                className={`text-gray-500 ${
+                  size === "large"
+                    ? "line-clamp-3 text-base"
+                    : "line-clamp-2 text-sm"
+                } mb-4`}
+              >
                 {vehicle.description}
               </p>
             )}
           </div>
 
-          {/* View Listings Button */}
-          {showViewListings && (
-            <button 
-              onClick={handleViewListings}
-              className={`bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors ${
-                size === 'large' 
-                  ? 'py-3 px-6 text-base w-auto self-start' 
-                  : 'py-2 px-4 text-sm w-auto self-start'
-              }`}
-            >
-              View Listings
-            </button>
-          )}
-          {onSelect && (
+          {/* Buttons */}
+          <div className="flex gap-3">
             <button
-              type="button"
-              onClick={() => onSelect(vehicle)}
-              className={`ml-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors ${
-                size === 'large' ? 'py-3 px-6 text-base' : 'py-2 px-4 text-sm'
+              onClick={handleAction}
+              className={`bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors ${
+                size === "large"
+                  ? "py-3 px-6 text-base"
+                  : "py-2 px-4 text-sm"
               }`}
             >
-              Select Vehicle
+              {defaultLabel}
             </button>
-          )}
+
+            {onSelect && (
+              <button
+                type="button"
+                onClick={() => onSelect(vehicle)}
+                className={`bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors ${
+                  size === "large"
+                    ? "py-3 px-6 text-base"
+                    : "py-2 px-4 text-sm"
+                }`}
+              >
+                Select
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
   }
 
+  /** ============================================================
+   *  GRID VARIANT
+   *  ============================================================ */
   return (
-    <div className={`bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl hover:scale-105 transition-all duration-300 flex flex-col ${size === 'large' ? 'h-[32rem]' : 'h-full'}`}>
-      {/* Image Container */}
-      <div className={`relative overflow-hidden bg-gray-200 ${size === 'large' ? 'h-72' : 'h-48 sm:h-56'}`}>
+    <div
+      className={`bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl hover:scale-105 transition-all duration-300 flex flex-col ${
+        size === "large" ? "h-[32rem]" : "h-full"
+      }`}
+    >
+      {/* Image */}
+      <div
+        className={`relative overflow-hidden bg-gray-200 ${
+          size === "large" ? "h-72" : "h-48 sm:h-56"
+        }`}
+      >
         <Base64Image
           value={imageValue}
           mime="image/jpeg"
@@ -158,44 +224,64 @@ const VehicleResultCard = ({
         />
       </div>
 
-      {/* Content Container */}
-      <div className={`p-4 sm:p-5 flex-1 flex flex-col ${size === 'large' ? 'p-6' : ''}`}>
-        <h3 className={`font-bold text-gray-900 mb-2 line-clamp-2 ${size === 'large' ? 'text-2xl' : 'text-lg sm:text-xl'}`}>
+      {/* Content */}
+      <div
+        className={`p-4 sm:p-5 flex-1 flex flex-col ${
+          size === "large" ? "p-6" : ""
+        }`}
+      >
+        <h3
+          className={`font-bold text-gray-900 mb-2 line-clamp-2 ${
+            size === "large" ? "text-2xl" : "text-lg sm:text-xl"
+          }`}
+        >
           {vehicle.value}
         </h3>
 
         <div className="space-y-1 mb-3 flex-1">
           {vehicle.year && (
-            <p className={`text-gray-600 font-medium ${size === 'large' ? 'text-base' : 'text-sm'}`}>
+            <p
+              className={`text-gray-600 font-medium ${
+                size === "large" ? "text-base" : "text-sm"
+              }`}
+            >
               {vehicle.year.value}
             </p>
           )}
           {vehicle.make && (
-            <p className={`text-gray-600 font-medium ${size === 'large' ? 'text-base' : 'text-sm'}`}>
+            <p
+              className={`text-gray-600 font-medium ${
+                size === "large" ? "text-base" : "text-sm"
+              }`}
+            >
               {vehicle.make.value}
             </p>
           )}
         </div>
 
         {vehicle.description && (
-          <p className={`text-gray-500 mb-4 ${size === 'large' ? 'text-base line-clamp-4' : 'text-xs sm:text-sm line-clamp-2'}`}>
+          <p
+            className={`text-gray-500 mb-4 ${
+              size === "large"
+                ? "text-base line-clamp-4"
+                : "text-xs sm:text-sm line-clamp-2"
+            }`}
+          >
             {vehicle.description}
           </p>
         )}
-
-        {/* View Listings Button */}
         {showViewListings && (
-          <button 
-            onClick={handleViewListings}
+          <button
+            onClick={handleAction}
             className={`w-full bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors ${
-              size === 'large' 
-                ? 'py-3 text-base' 
-                : 'py-2 sm:py-2.5 text-sm sm:text-base'
+              size === "large" ? "py-3 text-base" : "py-2 sm:py-2.5 text-sm"
             }`}
           >
-            View Listings
+            {defaultLabel}
           </button>
         )}
+
+
         {onSelect && (
           <button
             type="button"
