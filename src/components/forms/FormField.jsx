@@ -8,7 +8,7 @@ export default function FormField({
   onChange,
   required = false,
   error = "",
-  helpText = "",
+  helpText = " ",
   className = "",
   children,  // for <select> options
   ...props
@@ -58,17 +58,20 @@ export default function FormField({
         {children}
       </Component>
 
-      {/* Error message */}
-      {showError && (
-        <p className="text-sm text-red-600 mt-1">
-          {error || "This field is required."}
-        </p>
-      )}
-
-      {/* Optional help text */}
-      {helpText && !showError && (
-        <p className="text-xs text-gray-600 mt-1">{helpText}</p>
-      )}
+      {/* Error / Help section with fixed height so inputs never shift */}
+      <div className="min-h-[1.25rem] mt-1">
+        {showError ? (
+          <p className="text-sm text-red-600">
+            {error || "This field is required."}
+          </p>
+        ) : (
+          helpText && (
+            <p className="text-xs text-gray-600">
+              {helpText}
+            </p>
+          )
+        )}
+      </div>
     </div>
   );
 }

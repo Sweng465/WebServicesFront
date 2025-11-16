@@ -100,6 +100,7 @@ export const SignUp = () => {
             type="text"
             required
             value={form.username}
+            placeHolder="Username"
             onChange={(e) => handleChange("username", e.target.value)}
             maxLength={20}
             helpText="5-20 characters"
@@ -113,6 +114,7 @@ export const SignUp = () => {
             type="email"
             required
             value={form.email}
+            placeHolder="Email Address"
             onChange={(e) => handleChange("email", e.target.value)}
             maxLength={50}
             error={formSubmitAttempted && !form.email ? "Email is required." : ""}
@@ -125,6 +127,7 @@ export const SignUp = () => {
             type="text"
             required
             value={form.password}
+            placeHolder="Password"
             onChange={(e) => handleChange("password", e.target.value)}
             maxLength={30}
             helpText="8-30 characters"

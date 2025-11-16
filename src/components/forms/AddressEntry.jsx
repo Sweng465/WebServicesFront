@@ -1,4 +1,6 @@
-const AddressEntry = ({ form, handleChange }) => {
+import FormField from "./FormField";
+
+const AddressEntry = ({ form, handleChange, formSubmitAttempted }) => {
   /* 
     name: "",
     line1: "",
@@ -8,91 +10,85 @@ const AddressEntry = ({ form, handleChange }) => {
     zipcode: "",
   */
 
-  const borderStyle = `border border-gray-300 rounded-lg shadow-sm 
-    focus:outline-none focus:ring-2 focus:ring-blue-700 transition`
-
   return (
-    <div className="space-y-4">
-      <div> {/* Name */}
-        <label className="block mb-1 font-medium">Name</label>
-        <input
-          type="text"
-          maxLength="50"
-          placeholder="Ex. John's Junkyard (Max 50 characters)"
-          value={form.name}
-          onChange={(e) => handleChange("name", e.target.value)}
-          className={`w-full p-2 ${borderStyle}`}
-          required
-        />
-      </div>
+    <div className="space-y-1">
+      {/* Name */}
+      <FormField
+        label="Name"
+        type="text"
+        required
+        value={form.name}
+        placeHolder="Ex. John's Junkyard"
+        onChange={(e) => handleChange("name", e.target.value)}
+        maxLength={50}
+        helpText="Max 50 characters"
+        error={formSubmitAttempted && !form.name ? "Name is required." : ""}
+      />
 
-      <div> {/* Address Line 1 */}
-        <label className="block mb-1 font-medium">Address Line 1</label>
-        <input
-          type="text"
-          maxLength="75"
-          placeholder="Ex. 123 Main Street"
-          value={form.line1}
-          onChange={(e) => handleChange("line1", e.target.value)}
-          className={`w-full p-2 ${borderStyle}`}
-          required
-        />
-      </div>
+      {/* Address Line 1 */}
+      <FormField
+        label="Address Line 1"
+        placeholder="Ex. 123 Main Street"
+        value={form.line1}
+        onChange={(e) => handleChange("line1", e.target.value)}
+        type="text"
+        required
+        maxLength={75}
+        error={formSubmitAttempted && !form.line1 ? "Address line 1 is required." : ""}
+      />
 
-      <div> {/* Address Line 2 */}
-        <label className="block mb-1 font-medium">Address Line 2 (Optional)</label>
-        <input
-          type="text"
-          maxLength="75"
-          placeholder="Ex. Floor 1"
-          value={form.line2}
-          onChange={(e) => handleChange("line2", e.target.value)}
-          className={`w-full p-2 ${borderStyle}`}
-        />
-      </div>
+      {/* Address Line 2 */}
+      <FormField
+        label="Address Line 2 (Optional)"
+        placeholder="Ex. Floor 1"
+        value={form.line2}
+        onChange={(e) => handleChange("line2", e.target.value)}
+        type="text"
+        maxLength={75}
+      />
 
       <div> {/* City State Zipcode */}
-        <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+        <div className="flex flex-wrap items-center gap-x-10">
           {/* City */}
-          <div className="flex items-center space-x-2">
-            <span className="font-medium whitespace-nowrap">City</span>
-            <input
-              type="text"
-              maxLength="50"
+          <div className="flex items-center w-40">
+            <FormField
+              label="City"
               placeholder="Ex. Erie"
               value={form.city}
               onChange={(e) => handleChange("city", e.target.value)}
-              className={`w-40 p-2 ${borderStyle}`}
+              type="text"
               required
+              maxLength={50}
+              error={formSubmitAttempted && !form.city ? "City is required." : ""}
             />
           </div>
 
           {/* State */}
-          <div className="flex items-center space-x-2">
-            <span className="font-medium whitespace-nowrap">State</span>
-            <input
-              type="text"
-              maxLength="2"
+          <div className="flex items-center w-20">
+            <FormField
+              label="State"
               placeholder="Ex. PA"
               value={form.state}
               onChange={(e) => handleChange("state", e.target.value)}
-              className={`w-20 p-2 text-center ${borderStyle}`}
+              type="text"
               required
+              maxLength={2}
+              error={formSubmitAttempted && !form.state ? "State is required." : ""}
             />
           </div>
 
           {/* Zip */}
-          <div className="flex items-center space-x-2">
-            <span className="font-medium whitespace-nowrap">Zipcode</span>
-            <input
-              type="text"
-              maxLength="5"
-              inputMode="numeric"
+          <div className="flex items-center w-24">
+            <FormField
+              label="Zipcode"
               placeholder="Ex. 16501"
               value={form.zipcode}
               onChange={(e) => handleChange("zipcode", e.target.value)}
-              className={`w-24 p-2 text-center ${borderStyle}`}
+              type="number"
+              inputMode="numeric"
               required
+              maxLength={5}
+              error={formSubmitAttempted && !form.zipcode ? "Zipcode is required." : ""}
             />
           </div>
         </div>

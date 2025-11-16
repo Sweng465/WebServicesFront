@@ -14,6 +14,7 @@ import CollapsibleToggle from "../components/forms/CollapsibleToggle";
 const SellerRegistration = () => {
   const { user, authFetch } = useAuth();
   const navigate = useNavigate();
+  const [formSubmitAttempted, setFormSubmitAttempted] = useState(false);
 
   const [form, setForm] = useState({
     // seller id verification
@@ -126,6 +127,7 @@ const SellerRegistration = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormSubmitAttempted(true);
 
     let thisSellerId;
 
@@ -276,7 +278,7 @@ const SellerRegistration = () => {
             <div className="space-y-4">
               {/* Address */}
               <Collapsible title="Business Address">
-                <AddressEntry form={form} handleChange={handleChange} />
+                <AddressEntry form={form} handleChange={handleChange} formSubmitAttempted={formSubmitAttempted} />
               </Collapsible>
 
               {/* Billing Information */}

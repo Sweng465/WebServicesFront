@@ -95,6 +95,7 @@ export const SignIn = () => {
             type="text"
             required
             value={form.username}
+            placeHolder="Username"
             onChange={(e) => handleChange("username", e.target.value)}
             maxLength={20}
             error={formSubmitAttempted && !form.username ? "Username is required." : ""}
@@ -107,6 +108,7 @@ export const SignIn = () => {
             type="text"
             required
             value={form.password}
+            placeHolder="Password"
             onChange={(e) => handleChange("password", e.target.value)}
             maxLength={30}
             error={formSubmitAttempted && !form.password ? "Password is required." : ""}
