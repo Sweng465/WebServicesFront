@@ -26,6 +26,7 @@ export const API_ENDPOINTS = {
   // Listings by vehicle id
   LISTINGS_BY_VEHICLE: `${API_BASE_URL}/api/listings/vehicle`,
   CREATE_LISTING: `${API_BASE_URL}/api/listings`,
+  LISTING_BY_BUSINESS: `${API_BASE_URL}/api/listings/business/:businessId`,
 
   // User endpoints
   USERS: `${API_BASE_URL}/api/users`,
@@ -34,6 +35,9 @@ export const API_ENDPOINTS = {
   // Seller endpoints
   SELLERS: `${API_BASE_URL}/api/sellers`,
   BUSINESSES: `${API_BASE_URL}/api/businesses`,
+
+  // Reviews endpoints
+  REVIEWS: `${API_BASE_URL}/api/businesses/:id/reviews`,
 
   // Address endpoints
   ADDRESS: `${API_BASE_URL}/api/address`,

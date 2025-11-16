@@ -14,6 +14,9 @@ import Profile from "../pages/Profile.jsx";
 import SellItems from "../pages/SellItems.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import SellerRegistration from "../pages/SellerRegistration.jsx";
+import Businesses from "../pages/Businesses.jsx";
+import Reviews from "../pages/Reviews.jsx";
+import BusinessDetails from "../pages/BusinessDetails.jsx";
 
 export const Router = () => (
   <Routes>
@@ -110,6 +113,26 @@ export const Router = () => (
           <NotFound />
         </Layout>
       }
+    />
+    <Route
+      path={RoutePaths.BUSINESSES}
+      element={
+        <Layout>
+          <Businesses />
+        </Layout>
+      }
+    />
+    <Route
+      path={RoutePaths.REVIEWS}
+      element={
+        <Layout>
+          <Reviews />
+        </Layout>
+      }
+    />
+    <Route
+      path="/businesses/:id"
+      element={<BusinessDetails />}
     />
   </Routes>
 );

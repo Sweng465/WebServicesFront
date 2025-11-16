@@ -1,34 +1,64 @@
 import { useNavigate } from "react-router-dom";
 import { RoutePaths } from "../../general/RoutePaths.jsx";
 import Base64Image from "../Base64Image";
+import hotListingFrame1 from "../../assets/hot-listing-frame-1.png"; // optional fallback if needed
 
-const DEFAULT_PLACEHOLDER = "/assets/hot-listing-frame-1.png";
+const DEFAULT_PLACEHOLDER = hotListingFrame1;
 
-const VehicleResultCard = ({ vehicle = {}, variant = 'grid', size = 'small' }) => {
+const VehicleResultCard = ({
+  vehicle = {},
+  variant = 'grid',
+  size = 'small',
+  actionPath = null,   // new: explicit path to navigate to when button pressed
+  actionText = null,   // new: explicit label for the button
+}) => {
   const navigate = useNavigate();
 
-  const handleViewListings = () => {
-    if (vehicle?.vehicleId) {
-      navigate(RoutePaths.BROWSE_VEHICLE_LISTINGS.replace(":vehicleId", vehicle.vehicleId));
+  // Determine candidate ids
+  const listingIdCandidate =
+    vehicle?.listingId ??
+    vehicle?.id ??
+    vehicle?._id ??
+    vehicle?.listing_id ??
+    null;
+
+  const vehicleIdCandidate =
+    vehicle?.vehicleId ??
+    vehicle?.vehicle_id ??
+    null;
+
+  const handleAction = () => {
+    // If caller provided an explicit path, use it.
+    if (actionPath) {
+      navigate(actionPath);
+      return;
     }
+
+    // If we have a listing id, go to listing detail.
+    if (listingIdCandidate) {
+      navigate(RoutePaths.LISTING_DETAIL.replace(":listingId", listingIdCandidate));
+      return;
+    }
+
+    // Otherwise if we have a vehicle id, go to vehicle listings.
+    if (vehicleIdCandidate) {
+      navigate(RoutePaths.BROWSE_VEHICLE_LISTINGS.replace(":vehicleId", vehicleIdCandidate));
+      return;
+    }
+
+    // No valid target — do nothing.
   };
 
   // Build a safe image value:
-  // 1) If imageBase64 exists, normalize/remove whitespace and build a data URL.
-  // 2) Else use imageUrl or image.
-  // 3) Else fallback to placeholder.
   const rawBase64 = vehicle?.imageBase64 ?? vehicle?.base64image ?? null;
 
   let imageFromBase64 = null;
   if (typeof rawBase64 === "string" && rawBase64.trim()) {
     const s = rawBase64.trim();
-    // If it already looks like a data URL, pass through
     if (s.startsWith("data:")) {
       imageFromBase64 = s;
     } else {
-      // Remove any whitespace/newlines that could break atob
       const cleaned = s.replace(/\s+/g, "");
-      // Only build data URL for reasonably long strings (basic safety)
       if (cleaned.length > 50) {
         imageFromBase64 = `data:image/jpeg;base64,${cleaned}`;
       }
@@ -38,8 +68,13 @@ const VehicleResultCard = ({ vehicle = {}, variant = 'grid', size = 'small' }) =
   const imageValue = imageFromBase64 ?? vehicle?.imageUrl ?? vehicle?.image ?? DEFAULT_PLACEHOLDER;
   const altText = vehicle?.value || "Listing image";
 
-  // Debug: show a slice so you can verify what's being passed (remove once verified)
-  console.log("Vehicle imageValue (start):", typeof imageValue === "string" ? imageValue.slice(0, 60) : imageValue);
+  // Determine button label:
+  const defaultLabel = (() => {
+    if (actionText) return actionText;
+    if (listingIdCandidate) return "View Details";
+    if (vehicleIdCandidate) return "View Listings";
+    return "View";
+  })();
 
   if (variant === 'list') {
     return (
@@ -48,7 +83,6 @@ const VehicleResultCard = ({ vehicle = {}, variant = 'grid', size = 'small' }) =
         <div className={`relative overflow-hidden bg-gray-200 ${size === 'large' ? 'w-80' : 'w-56'}`}>
           <Base64Image
             value={imageValue}
-            // For a data URL we don't need mime; if you pass raw base64 you'd set mime="image/jpeg"
             mime="image/jpeg"
             alt={altText}
             className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
@@ -58,12 +92,10 @@ const VehicleResultCard = ({ vehicle = {}, variant = 'grid', size = 'small' }) =
         {/* Content Container */}
         <div className="p-4 sm:p-6 flex-1 flex flex-col justify-between">
           <div>
-            {/* Title */}
             <h3 className={`font-bold text-gray-900 mb-2 line-clamp-2 ${size === 'large' ? 'text-2xl' : 'text-lg'}`}>
               {vehicle.value}
             </h3>
 
-            {/* Details */}
             <div className="space-y-1 mb-3">
               {vehicle.year && (
                 <p className={`text-gray-600 font-medium ${size === 'large' ? 'text-base' : 'text-sm'}`}>
@@ -77,7 +109,6 @@ const VehicleResultCard = ({ vehicle = {}, variant = 'grid', size = 'small' }) =
               )}
             </div>
 
-            {/* Description */}
             {vehicle.description && (
               <p className={`text-gray-500 ${size === 'large' ? 'line-clamp-3 text-base' : 'line-clamp-2 text-sm'} mb-4`}>
                 {vehicle.description}
@@ -85,16 +116,15 @@ const VehicleResultCard = ({ vehicle = {}, variant = 'grid', size = 'small' }) =
             )}
           </div>
 
-          {/* View Listings Button */}
-          <button 
-            onClick={handleViewListings}
+          <button
+            onClick={handleAction}
             className={`bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors ${
-              size === 'large' 
-                ? 'py-3 px-6 text-base w-auto self-start' 
+              size === 'large'
+                ? 'py-3 px-6 text-base w-auto self-start'
                 : 'py-2 px-4 text-sm w-auto self-start'
             }`}
           >
-            View Listings
+            {defaultLabel}
           </button>
         </div>
       </div>
@@ -115,12 +145,10 @@ const VehicleResultCard = ({ vehicle = {}, variant = 'grid', size = 'small' }) =
 
       {/* Content Container */}
       <div className={`p-4 sm:p-5 flex-1 flex flex-col ${size === 'large' ? 'p-6' : ''}`}>
-        {/* Title */}
         <h3 className={`font-bold text-gray-900 mb-2 line-clamp-2 ${size === 'large' ? 'text-2xl' : 'text-lg sm:text-xl'}`}>
           {vehicle.value}
         </h3>
 
-        {/* Details */}
         <div className="space-y-1 mb-3 flex-1">
           {vehicle.year && (
             <p className={`text-gray-600 font-medium ${size === 'large' ? 'text-base' : 'text-sm'}`}>
@@ -134,23 +162,21 @@ const VehicleResultCard = ({ vehicle = {}, variant = 'grid', size = 'small' }) =
           )}
         </div>
 
-        {/* Description */}
         {vehicle.description && (
           <p className={`text-gray-500 mb-4 ${size === 'large' ? 'text-base line-clamp-4' : 'text-xs sm:text-sm line-clamp-2'}`}>
             {vehicle.description}
           </p>
         )}
 
-        {/* View Listings Button */}
-        <button 
-          onClick={handleViewListings}
+        <button
+          onClick={handleAction}
           className={`w-full bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors ${
-            size === 'large' 
-              ? 'py-3 text-base' 
+            size === 'large'
+              ? 'py-3 text-base'
               : 'py-2 sm:py-2.5 text-sm sm:text-base'
           }`}
         >
-          View Listings
+          {defaultLabel}
         </button>
       </div>
     </div>
