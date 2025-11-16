@@ -1,24 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API_ENDPOINTS from "../config/api";
-
-// cookie utils
-const getCart = () => {
-  try {
-    const cookie = document.cookie
-      .split("; ")
-      .find((r) => r.startsWith("cart="));
-    if (!cookie) return [];
-    return JSON.parse(decodeURIComponent(cookie.split("=")[1]));
-  } catch {
-    return [];
-  }
-};
-
-const saveCart = (cart) => {
-  const value = encodeURIComponent(JSON.stringify(cart));
-  document.cookie = `cart=${value}; path=/; max-age=${60 * 60 * 24 * 30}`;
-};
+import { getCart, saveCart } from "../utils/cart.js";
 
 const CartPage = () => {
   const navigate = useNavigate();
