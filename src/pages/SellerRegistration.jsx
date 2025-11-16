@@ -290,7 +290,7 @@ const SellerRegistration = () => {
                   </p>
                 </label>
               </div>
-                <CreditEntry form={form} handleChange={handleChange} />
+                <CreditEntry form={form} handleChange={handleChange} formSubmitAttempted={formSubmitAttempted} />
               </Collapsible>
 
               {/* Payout Information */}

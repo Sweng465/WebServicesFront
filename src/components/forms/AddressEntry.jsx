@@ -21,7 +21,6 @@ const AddressEntry = ({ form, handleChange, formSubmitAttempted }) => {
         placeHolder="Ex. John's Junkyard"
         onChange={(e) => handleChange("name", e.target.value)}
         maxLength={50}
-        helpText="Max 50 characters"
         error={formSubmitAttempted && !form.name ? "Name is required." : ""}
       />
 
@@ -48,52 +47,63 @@ const AddressEntry = ({ form, handleChange, formSubmitAttempted }) => {
       />
 
       <div> {/* City State Zipcode */}
-        <div className="flex flex-wrap items-center gap-x-10">
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
           {/* City */}
-          <div className="flex items-center w-40">
-            <FormField
-              label="City"
-              placeholder="Ex. Erie"
-              value={form.city}
-              onChange={(e) => handleChange("city", e.target.value)}
-              type="text"
-              required
-              maxLength={50}
-              error={formSubmitAttempted && !form.city ? "City is required." : ""}
-            />
+          <div className="flex items-start space-x-2">
+            <span className="font-medium whitespace-nowrap relative top-[10px]">City</span>
+            <div className="flex items-center w-40">
+              <FormField
+                label=""
+                placeholder="Ex. Erie"
+                value={form.city}
+                onChange={(e) => handleChange("city", e.target.value)}
+                type="text"
+                required
+                maxLength={50}
+                error={formSubmitAttempted && !form.city ? "City is required." : ""}
+              />
+            </div>
           </div>
 
           {/* State */}
-          <div className="flex items-center w-20">
-            <FormField
-              label="State"
-              placeholder="Ex. PA"
-              value={form.state}
-              onChange={(e) => handleChange("state", e.target.value)}
-              type="text"
-              required
-              maxLength={2}
-              error={formSubmitAttempted && !form.state ? "State is required." : ""}
-            />
+          <div className="flex items-start space-x-2">
+            <span className="font-medium whitespace-nowrap relative top-[10px]">State</span>
+            <div className="flex items-center w-20">
+              <FormField
+                label=""
+                placeholder="Ex. PA"
+                value={form.state}
+                onChange={(e) => handleChange("state", e.target.value)}
+                type="text"
+                required
+                maxLength={2}
+                className={`text-center`}
+                error={formSubmitAttempted && !form.state ? "State is required." : ""}
+              />
+            </div>
           </div>
 
           {/* Zip */}
-          <div className="flex items-center w-24">
-            <FormField
-              label="Zipcode"
-              placeholder="Ex. 16501"
-              value={form.zipcode}
-              onChange={(e) => handleChange("zipcode", e.target.value)}
-              type="number"
-              inputMode="numeric"
-              required
-              maxLength={5}
-              error={formSubmitAttempted && !form.zipcode ? "Zipcode is required." : ""}
-            />
+          <div className="flex items-start space-x-2">
+            <span className="font-medium whitespace-nowrap relative top-[10px]">Zipcode</span>
+            <div className="flex items-center w-24">
+              <FormField
+                label=""
+                placeholder="Ex. 16501"
+                value={form.zipcode}
+                onChange={(e) => handleChange("zipcode", e.target.value)}
+                type="number"
+                inputMode="numeric"
+                required
+                maxLength={5}
+                className={`text-center`}
+                error={formSubmitAttempted && !form.zipcode ? "Zipcode is required." : ""}
+              />
+            </div>
           </div>
         </div>
       </div>
-  </div>
+    </div>
   );
 };
 

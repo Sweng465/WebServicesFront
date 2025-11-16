@@ -1,6 +1,7 @@
 import { useRef } from "react";
+import FormField from "./FormField";
 
-const CreditEntry = ({ form, handleChange }) => {
+const CreditEntry = ({ form, handleChange, formSubmitAttempted }) => {
   /* 
     cardHolderName: "",
     cardNumber: "",
@@ -8,6 +9,7 @@ const CreditEntry = ({ form, handleChange }) => {
     expYear: "",
     cvc: "",
   */
+
   const borderStyle = `border border-gray-300 rounded-lg shadow-sm 
     focus:outline-none focus:ring-2 focus:ring-blue-700 transition`
 
@@ -47,78 +49,90 @@ const CreditEntry = ({ form, handleChange }) => {
   };
 
   return (
-    <div className="space-y-4">
-      <div> {/* Card Holder Name */}
-        <label className="block mb-1 font-medium">Card Holder Name</label>
-        <input
-          type="text"
-          maxLength="50"
-          placeholder="Ex. John Smith"
-          value={form.cardHolderName}
-          onChange={(e) => handleChange("cardHolderName", e.target.value)}
-          className={`w-full p-2 ${borderStyle}`}
-          required
-        />
-      </div>
+    <div className="space-y-1">
+      {/* Card Holder Name */}
+      <FormField
+        label="Card Holder Name"
+        type="text"
+        required
+        value={form.cardHolderName}
+        placeHolder="Ex. John Smith"
+        onChange={(e) => handleChange("cardHolderName", e.target.value)}
+        maxLength={50}
+        error={formSubmitAttempted && !form.cardHolderName ? "Card holder name is required." : ""}
+      />
 
       {/* Card Number */}
-      <div>
-        <label className="block mb-1 font-medium">Card Number</label>
-        <input
-          type="text"
-          inputMode="numeric"
-          autoComplete="cc-number"
-          placeholder="#### #### #### ####"
-          value={form.cardNumber}
-          onChange={handleCardNumberChange}
-          className={`w-full p-2 tracking-widest ${borderStyle}`}
-          required
-        />
-      </div>
+      <FormField
+        label="Card Number"
+        type="text"
+        inputMode="numeric"
+        autoComplete="cc-number"
+        required
+        value={form.cardNumber}
+        placeHolder="#### #### #### ####"
+        onChange={handleCardNumberChange}
+        error={formSubmitAttempted && !form.cardNumber ? "Card number is required." : ""}
+      />
 
       <div> {/* Expiry Date and CVC */}
         <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
           {/* Expiry Date */}
-          <div className="flex items-center space-x-2">
-            <span className="font-medium whitespace-nowrap">Expiry Date</span>
-            <input
-              ref={monthRef}
-              onKeyDown={(e) => handleDateKeyDown("expMonth", e)}
-              type="text"
-              maxLength="2"
-              placeholder="MM"
-              value={form.expMonth}
-              onChange={(e) => handleDateChange("expMonth", e.target.value)}
-              className={`w-15 p-2 text-center ${borderStyle}`}
-              required
-            />
-            <span className=" text-xl font-medium">/</span>
-            <input
-              ref={yearRef}
-              onKeyDown={(e) => handleDateKeyDown("expYear", e)}
-              type="text"
-              maxLength="2"
-              placeholder="YY"
-              value={form.expYear}
-              onChange={(e) => handleDateChange("expYear", e.target.value)}
-              className={`w-15 p-2 text-center ${borderStyle}`}
-              required
-            />
+          <div className="flex items-start space-x-2">
+            <span className="font-medium whitespace-nowrap relative top-[10px]">Expiry Date</span>
+              {/* Month */}
+              <div className={`w-15`}>
+                <FormField
+                  ref={monthRef}
+                  onKeyDown={(e) => handleDateKeyDown("expMonth", e)}
+                  label=""
+                  type="text"
+                  required
+                  value={form.expMonth}
+                  placeHolder="MM"
+                  onChange={(e) => handleDateChange("expMonth", e.target.value)}
+                  maxLength={2}
+                  className={`text-center`}
+                  error={formSubmitAttempted && !form.expMonth ? "Expiry month is required." : ""}
+                />
+              </div>
+              <span className=" text-xl font-medium relative top-[5px]">/</span>
+              {/* Year */}
+              <div className={`w-15`}>
+                <FormField
+                  ref={yearRef}
+                  onKeyDown={(e) => handleDateKeyDown("expYear", e)}
+                  label=""
+                  type="text"
+                  required
+                  value={form.expYear}
+                  placeHolder="YY"
+                  onChange={(e) => handleDateChange("expYear", e.target.value)}
+                  maxLength={2}
+                  className={`text-center`}
+                  error={formSubmitAttempted && !form.expYear ? "Expiry year is required." : ""}
+                  
+                />
+              </div>
           </div> 
 
           {/* CVC */}
-          <div className="flex items-center space-x-2">
-            <span className="font-medium whitespace-nowrap">CVC</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              maxLength="3"
-              placeholder="###"
-              value={form.cvc}
-              onChange={(e) => handleChange("cvc", e.target.value)}
-              className={`w-15 p-2 text-center ${borderStyle}`}
-              required
-            />
+          <div className="flex items-start space-x-2">
+            <span className="font-medium whitespace-nowrap relative top-[10px]">CVC</span>
+            <div className={`w-15`}>
+              <FormField
+                label=""
+                type="text"
+                inputMode="numeric"
+                required
+                maxLength={3}
+                value={form.cvc}
+                placeHolder="###"
+                className={`text-center`}
+                onChange={(e) => handleChange("cvc", e.target.value)}
+                error={formSubmitAttempted && !form.cvc ? "CVC is required." : ""}
+              />
+            </div>
           </div>
 
         </div>

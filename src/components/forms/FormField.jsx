@@ -62,7 +62,7 @@ export default function FormField({
       <div className="min-h-[1.25rem] mt-1">
         {showError ? (
           <p className="text-sm text-red-600">
-            {error || "This field is required."}
+            {error || "Required."}
           </p>
         ) : (
           helpText && (
