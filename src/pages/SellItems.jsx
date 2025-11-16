@@ -177,8 +177,6 @@ const SellItems = () => {
   if (!profile) return <p>Loading profile...</p>; // wait for auth state
 
 
-  
-
   const fetchVehicleId = async (filters) => {
     const query = new URLSearchParams({
       yearId: filters.yearId,
@@ -438,7 +436,7 @@ const SellItems = () => {
             isOpen={infoOpen}
             onToggle={toggleInfo}
           >
-            <div className="space-y-4">
+            <div className="space-y-1">
               {/* Description */}
               <FormField
                 label="Description"
@@ -449,6 +447,7 @@ const SellItems = () => {
                 rows={4}
                 maxLength={300}
                 helpText="Max 300 characters"
+                placeHolder="Ex. Silver Ford Ranger '02, heavily rusted frame."
                 error={formSubmitAttempted && !form.description ? "Description is required." : ""}
               />
 
@@ -473,9 +472,11 @@ const SellItems = () => {
               <FormField
                 label="Price"
                 type="text"
+                inputMode="numeric"
                 required
                 value={form.price}
                 onChange={(e) => handlePriceChange(e.target.value)}
+                placeHolder="$"
                 error={formSubmitAttempted && !form.price ? "Price is required." : ""}
               />
 

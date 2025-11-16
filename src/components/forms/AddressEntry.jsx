@@ -91,11 +91,16 @@ const AddressEntry = ({ form, handleChange, formSubmitAttempted }) => {
                 label=""
                 placeholder="Ex. 16501"
                 value={form.zipcode}
-                onChange={(e) => handleChange("zipcode", e.target.value)}
-                type="number"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  // Allow only digits, max 5
+                  if (/^\d{0,5}$/.test(val)) {
+                    handleChange("zipcode", val);
+                  }
+                }}
+                type="text"
                 inputMode="numeric"
                 required
-                maxLength={5}
                 className={`text-center`}
                 error={formSubmitAttempted && !form.zipcode ? "Zipcode is required." : ""}
               />

@@ -86,7 +86,7 @@ export const SignIn = () => {
           Sign in to access your account
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-2">
 
           {/* Username */}
           <FormField
@@ -117,7 +117,7 @@ export const SignIn = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full py-3 rounded-lg bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition duration-200"
+            className="mt-2 w-full py-3 rounded-lg bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition duration-200"
           >
             Sign In
           </button>

@@ -10,9 +10,6 @@ const CreditEntry = ({ form, handleChange, formSubmitAttempted }) => {
     cvc: "",
   */
 
-  const borderStyle = `border border-gray-300 rounded-lg shadow-sm 
-    focus:outline-none focus:ring-2 focus:ring-blue-700 transition`
-
   const monthRef = useRef(null);
   const yearRef = useRef(null);
   const DATE_LIMITS = { expMonth: 2, expYear: 2};
@@ -125,11 +122,16 @@ const CreditEntry = ({ form, handleChange, formSubmitAttempted }) => {
                 type="text"
                 inputMode="numeric"
                 required
-                maxLength={3}
                 value={form.cvc}
                 placeHolder="###"
                 className={`text-center`}
-                onChange={(e) => handleChange("cvc", e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  // Allow only digits, max 3
+                  if (/^\d{0,3}$/.test(val)) {
+                    handleChange("cvc", val);
+                  }
+                }}
                 error={formSubmitAttempted && !form.cvc ? "CVC is required." : ""}
               />
             </div>

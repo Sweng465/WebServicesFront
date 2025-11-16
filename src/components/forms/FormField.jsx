@@ -1,18 +1,21 @@
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 
-export default function FormField({
-  label,
-  type = "text",
-  as = "input",
-  value,
-  onChange,
-  required = false,
-  error = "",
-  helpText = " ",
-  className = "",
-  children,  // for <select> options
-  ...props
-}) {
+const FormField = forwardRef(function FormField(
+  {
+    label,
+    type = "text",
+    as = "input",
+    value,
+    onChange,
+    required = false,
+    error = "",
+    helpText = " ",
+    className = "",
+    children, // for <select> options
+    ...props
+  },
+  ref
+) {
   const [touched, setTouched] = useState(false);
 
   const showError = (required && touched && !value) || error;
@@ -30,11 +33,6 @@ export default function FormField({
   };
 
   const handleInput = (e) => {
-    /*
-    if (showError && !!e.target.value) {
-      // remove visual error once user starts fixing
-    }
-    */
     if (touched && required && e.target.value.trim() !== "") {
       setTouched(false);
     }
@@ -48,6 +46,7 @@ export default function FormField({
       {label && <label className="block mb-1 font-medium">{label}</label>}
 
       <Component
+        ref={ref}
         type={type}
         value={value}
         onChange={handleInput}
@@ -59,9 +58,9 @@ export default function FormField({
       </Component>
 
       {/* Error / Help section with fixed height so inputs never shift */}
-      <div className="min-h-[1.25rem] mt-1">
+      <div className="min-h-[1rem] mt-1">
         {showError ? (
-          <p className="text-sm text-red-600">
+          <p className="text-xs text-red-600">
             {error || "Required."}
           </p>
         ) : (
@@ -74,4 +73,6 @@ export default function FormField({
       </div>
     </div>
   );
-}
+});
+
+export default FormField;

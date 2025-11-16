@@ -84,7 +84,7 @@ export const SignUp = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-600 to-blue-600 px-4 py-12">
       <div className="bg-white bg-opacity-90 shadow-xl rounded-xl w-full max-w-md p-8">
-        <h1 className="text-4xl font-bold text-center text-blue-800 mb-6">
+        <h1 className="text-4xl font-bold text-center text-blue-800 mb-4">
           Welcome to SalvageSearch!
         </h1>
 
@@ -92,7 +92,7 @@ export const SignUp = () => {
           Create your account
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-1">
           {/* Username */}
           <FormField
             label="Username"
@@ -137,7 +137,7 @@ export const SignUp = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full py-3 rounded-lg bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition duration-200"
+            className="mt-2 w-full py-3 rounded-lg bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition duration-200"
           >
             Register
           </button>
