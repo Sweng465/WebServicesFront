@@ -5,6 +5,8 @@ export const RoutePaths = {
   PROFILE: '/profile',
   BROWSECARS: '/browse-vehicles',
   BROWSEPARTS: '/browse-parts',
+  BROWSE_PART_LISTINGS: '/browse-part-listings/:partId',
+  PART_LISTING_DETAIL: '/listings/part/:listingId',
   SELLITEMS: '/sell-items',
   BROWSE_VEHICLE_LISTINGS: '/browse-vehicle-listings/:vehicleId',
   LISTING_DETAIL: '/listings/vehicle/:listingId',
