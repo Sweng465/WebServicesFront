@@ -7,7 +7,9 @@ import { SignUp } from "../pages/SignUp.jsx";
 import BrowseVehicles from "../pages/BrowseVehicles.jsx";
 import BrowseVehicleListings from "../pages/BrowseVehicleListings.jsx";
 import BrowseParts from "../pages/BrowseParts.jsx";
-import ListingDetails from "../pages/ListingDetails.jsx";
+import BrowsePartListings from "../pages/BrowsePartListings.jsx";
+import VehicleListingDetails from "../pages/VehicleListingDetails.jsx";
+import PartListingDetails from "../pages/PartListingDetails.jsx";
 import { NotFound } from "./NotFound.jsx";
 import { Layout } from "./Layout.jsx";
 import Profile from "../pages/Profile.jsx";
@@ -91,6 +93,14 @@ export const Router = () => (
       }
     />
     <Route
+      path={RoutePaths.BROWSE_PART_LISTINGS}
+      element={
+        <Layout>
+          <BrowsePartListings />
+        </Layout>
+      }
+    />
+    <Route
       path={RoutePaths.BROWSEPARTS}
       element={
         <Layout>
@@ -102,7 +112,15 @@ export const Router = () => (
       path={RoutePaths.LISTING_DETAIL}
       element={
         <Layout>
-          <ListingDetails />
+          <VehicleListingDetails />
+        </Layout>
+      }
+    />
+    <Route
+      path={RoutePaths.PART_LISTING_DETAIL}
+      element={
+        <Layout>
+          <PartListingDetails />
         </Layout>
       }
     />

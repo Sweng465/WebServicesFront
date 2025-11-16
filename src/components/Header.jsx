@@ -6,7 +6,7 @@ import { ShoppingCart, Wrench } from 'lucide-react';
 
 const navItems = [
   { label: "Browse Vehicles", href: RoutePaths.BROWSECARS },
-  { label: "Auto Parts", href: RoutePaths.BROWSEPARTS },
+  { label: "Browse Parts", href: RoutePaths.BROWSEPARTS },
   { label: "Sell Items", href: RoutePaths.SELLITEMS },
   { label: "Businesses", href: RoutePaths.BUSINESSES },
 ];

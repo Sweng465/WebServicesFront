@@ -5,6 +5,7 @@ import hotListingFrame1 from "../../assets/hot-listing-frame-1.png"; // optional
 
 const DEFAULT_PLACEHOLDER = hotListingFrame1;
 
+const VehicleResultCard = ({ vehicle = {}, variant = 'grid', size = 'small', onSelect = null, showViewListings = true }) => {
 const VehicleResultCard = ({
   vehicle = {},
   variant = 'grid',
@@ -116,16 +117,30 @@ const VehicleResultCard = ({
             )}
           </div>
 
-          <button
-            onClick={handleAction}
-            className={`bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors ${
-              size === 'large'
-                ? 'py-3 px-6 text-base w-auto self-start'
-                : 'py-2 px-4 text-sm w-auto self-start'
-            }`}
-          >
-            {defaultLabel}
-          </button>
+          {/* View Listings Button */}
+          {showViewListings && (
+            <button 
+              onClick={handleViewListings}
+              className={`bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors ${
+                size === 'large' 
+                  ? 'py-3 px-6 text-base w-auto self-start' 
+                  : 'py-2 px-4 text-sm w-auto self-start'
+              }`}
+            >
+              View Listings
+            </button>
+          )}
+          {onSelect && (
+            <button
+              type="button"
+              onClick={() => onSelect(vehicle)}
+              className={`ml-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors ${
+                size === 'large' ? 'py-3 px-6 text-base' : 'py-2 px-4 text-sm'
+              }`}
+            >
+              Select Vehicle
+            </button>
+          )}
         </div>
       </div>
     );
@@ -168,16 +183,28 @@ const VehicleResultCard = ({
           </p>
         )}
 
-        <button
-          onClick={handleAction}
-          className={`w-full bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors ${
-            size === 'large'
-              ? 'py-3 text-base'
-              : 'py-2 sm:py-2.5 text-sm sm:text-base'
-          }`}
-        >
-          {defaultLabel}
-        </button>
+        {/* View Listings Button */}
+        {showViewListings && (
+          <button 
+            onClick={handleViewListings}
+            className={`w-full bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors ${
+              size === 'large' 
+                ? 'py-3 text-base' 
+                : 'py-2 sm:py-2.5 text-sm sm:text-base'
+            }`}
+          >
+            View Listings
+          </button>
+        )}
+        {onSelect && (
+          <button
+            type="button"
+            onClick={() => onSelect(vehicle)}
+            className="mt-3 w-full bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors py-2 text-sm"
+          >
+            Select Vehicle
+          </button>
+        )}
       </div>
     </div>
   );
