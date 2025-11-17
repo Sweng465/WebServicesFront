@@ -391,8 +391,18 @@ const SellItems = () => {
         }
       }).filter(Boolean);
 
+      const business = await authFetch(`${API_ENDPOINTS.BUSINESSES}/user/${user.id}`, {
+              method: "GET",
+              headers: { "Content-Type": "application/json" },
+            });
+
+      console.log("Business fetch response:", business);
+      const businessData = await business.json();
+      console.log("Business data:", businessData);
+      const businessInfo = businessData.data;
+
       const payload = {
-        businessId: 1,
+        businessId: businessInfo.businessId,
         date: new Date().toISOString(),
         price: parseFloat(form.price),
         description: form.description,

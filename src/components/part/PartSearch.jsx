@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import API_ENDPOINTS from "../../config/api.js";
 
-const PartSearch = ({ filters, setFilters }) => {
+const PartSearch = ({ filters, setFilters, vehicleId = null, requireVehicle = false }) => {
   const [brands, setBrands] = useState([]);
   const [category1, setCategory1] = useState([]);
   const [category2, setCategory2] = useState([]);
@@ -63,6 +63,23 @@ const PartSearch = ({ filters, setFilters }) => {
       .catch((err) => console.error("Error loading category3:", err));
   }, [filters.category2Id]);
 
+  // If a vehicleId is passed in, ensure it's reflected in the filters
+  useEffect(() => {
+    if (!setFilters) return;
+    if (vehicleId) {
+      setFilters((prev) => ({ ...prev, vehicleId }));
+    } else {
+      // remove vehicleId from filters if null/undefined
+      setFilters((prev) => {
+        const copy = { ...prev };
+        if (copy.vehicleId) delete copy.vehicleId;
+        return copy;
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vehicleId]);
+
+
   const handleChange = (key, value) => {
     setFilters((prev) => ({
       ...prev,
@@ -73,66 +90,70 @@ const PartSearch = ({ filters, setFilters }) => {
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 items-center">
+    <div>
 
-      {/* Category 1 */}
-      <select
-        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-700 font-medium text-sm sm:text-base disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-        value={filters.category1Id}
-        onChange={(e) => handleChange("category1Id", e.target.value)}
-      >
-        <option value="">All Categories</option>
-        {category1.map((c, idx) => (
-          <option key={getId(c) ?? idx} value={getId(c)}>
-            {getLabel(c)}
-          </option>
-        ))}
-      </select>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 items-center">
 
-      {/* Category 2 */}
-      <select
-        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-700 font-medium text-sm sm:text-base disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-        value={filters.category2Id}
-        onChange={(e) => handleChange("category2Id", e.target.value)}
-        disabled={!filters.category1Id}
-      >
-        <option value="">All Subcategories</option>
-        {category2.map((c, idx) => (
-          <option key={getId(c) ?? idx} value={getId(c)}>
-            {getLabel(c)}
-          </option>
-        ))}
-      </select>
+        {/* Category 1 */}
+        <select
+          className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-700 font-medium text-sm sm:text-base disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+          value={filters.category1Id}
+          onChange={(e) => handleChange("category1Id", e.target.value)}
+          disabled={requireVehicle && !vehicleId}
+        >
+          <option value="">All Categories</option>
+          {category1.map((c, idx) => (
+            <option key={getId(c) ?? idx} value={getId(c)}>
+              {getLabel(c)}
+            </option>
+          ))}
+        </select>
 
-      {/* Category 3 */}
-      <select
-        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-700 font-medium text-sm sm:text-base disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-        value={filters.category3Id}
-        onChange={(e) => handleChange("category3Id", e.target.value)}
-        disabled={!filters.category2Id}
-      >
-        <option value="">All Sub-Subcategories</option>
-        {category3.map((c, idx) => (
-          <option key={getId(c) ?? idx} value={getId(c)}>
-            {getLabel(c)}
-          </option>
-        ))}
-      </select>
+        {/* Category 2 */}
+        <select
+          className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-700 font-medium text-sm sm:text-base disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+          value={filters.category2Id}
+          onChange={(e) => handleChange("category2Id", e.target.value)}
+          disabled={ (requireVehicle && !vehicleId) || !filters.category1Id }
+        >
+          <option value="">All Subcategories</option>
+          {category2.map((c, idx) => (
+            <option key={getId(c) ?? idx} value={getId(c)}>
+              {getLabel(c)}
+            </option>
+          ))}
+        </select>
 
-      {/* Brand */}
-      <select
-        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-700 font-medium text-sm sm:text-base"
-        value={filters.brandId}
-        onChange={(e) => handleChange("brandId", e.target.value)}
-      >
-        <option value="">All Brands</option>
-        {brands.map((b, idx) => (
-          <option key={getId(b) ?? idx} value={getId(b)}>
-            {getLabel(b)}
-          </option>
-        ))}
-      </select>
+        {/* Category 3 */}
+        <select
+          className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-700 font-medium text-sm sm:text-base disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+          value={filters.category3Id}
+          onChange={(e) => handleChange("category3Id", e.target.value)}
+          disabled={ (requireVehicle && !vehicleId) || !filters.category2Id }
+        >
+          <option value="">All Sub-Subcategories</option>
+          {category3.map((c, idx) => (
+            <option key={getId(c) ?? idx} value={getId(c)}>
+              {getLabel(c)}
+            </option>
+          ))}
+        </select>
 
+        {/* Brand */}
+        <select
+          className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-700 font-medium text-sm sm:text-base disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+          value={filters.brandId}
+          onChange={(e) => handleChange("brandId", e.target.value)}
+          disabled={requireVehicle && !vehicleId}
+        >
+          <option value="">All Brands</option>
+          {brands.map((b, idx) => (
+            <option key={getId(b) ?? idx} value={getId(b)}>
+              {getLabel(b)}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 };
