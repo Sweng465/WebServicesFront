@@ -75,11 +75,44 @@ const BusinessInfo = ({ businessId, fallbackBusiness = null, className = "" }) =
   const cleanedBusiness = useMemo(() => {
     if (!business) return null;
 
+    // helpers to safely parse numeric-like rating/count fields
+    const pickNumber = (obj, keys = []) => {
+      for (const k of keys) {
+        const v = obj?.[k];
+        if (typeof v === "number" && !Number.isNaN(v)) return v;
+        if (typeof v === "string" && v.trim() !== "" && /^[+-]?\d+(\.\d+)?$/.test(v.trim())) return Number(v.trim());
+      }
+      return null;
+    };
+
+    const avgRating = pickNumber(business, [
+      "avgRating",
+      "averageRating",
+      "average_rating",
+      "rating",
+      "stars",
+      "score",
+      "ratingAverage",
+    ]);
+
+    const reviewsCount = pickNumber(business, [
+      "reviewsCount",
+      "ratingCount",
+      "reviews_count",
+      "reviewCount",
+      "numReviews",
+      "count",
+      "reviews",
+    ]);
+
     return {
       ...business,
       name: cleanString(business.name ?? business.businessName ?? ""),
       description: cleanString(business.description ?? business.details ?? ""),
       phoneNumber: formatPhoneNumber(business.phoneNumber ?? business.phone ?? business.contactNumber),
+      // normalized rating fields
+      avgRating: avgRating !== null ? Number(avgRating) : null,
+      reviewsCount: reviewsCount !== null ? Number(reviewsCount) : null,
     };
   }, [business]);
 
@@ -97,9 +130,48 @@ const BusinessInfo = ({ businessId, fallbackBusiness = null, className = "" }) =
         <p className="text-sm text-red-600">{error}</p>
       ) : cleanedBusiness ? (
         <div className="space-y-2">
-          <p className="text-lg font-semibold text-gray-800">
-            {cleanedBusiness.name || `Business #${cleanedBusiness.businessId ?? businessId ?? "?"}`}
-          </p>
+          <div className="flex items-start gap-4">
+            <p className="text-lg font-semibold text-gray-800">
+              {cleanedBusiness.name || `Business #${cleanedBusiness.businessId ?? businessId ?? "?"}`}
+            </p>
+
+            {/* Rating summary as 5 stars with partial fill */}
+            {(cleanedBusiness.avgRating !== null || cleanedBusiness.reviewsCount !== null) && (
+              <div className="flex items-center gap-3 mt-1">
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: 5 }).map((_, i) => {
+                    const avg = cleanedBusiness.avgRating ?? 0;
+                    const fill = Math.max(0, Math.min(1, avg - i)); // 0..1
+                    const percent = Math.round(fill * 100);
+                    const clipId = `biz-star-${String(cleanedBusiness.businessId ?? businessId ?? "0")}-${i}`;
+                    // star path (same for both layers)
+                    const d = "M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.96a1 1 0 00.95.69h4.165c.969 0 1.371 1.24.588 1.81l-3.37 2.45a1 1 0 00-.364 1.118l1.287 3.96c.3.922-.755 1.688-1.54 1.118L10 15.347l-3.691 2.586c-.785.57-1.84-.196-1.54-1.118l1.286-3.96a1 1 0 00-.364-1.118L2.326 9.387c-.783-.57-.38-1.81.588-1.81h4.165a1 1 0 00.95-.69l1.286-3.96z";
+
+                    return (
+                      <svg key={i} viewBox="0 0 20 20" className="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                          <clipPath id={clipId}>
+                            <rect x="0" y="0" width={`${percent}%`} height="100%" />
+                          </clipPath>
+                        </defs>
+
+                        {/* background (empty) star */}
+                        <path d={d} fill="#e5e7eb" />
+
+                        {/* filled portion clipped to percent */}
+                        <path d={d} fill="#f59e0b" clipPath={`url(#${clipId})`} />
+                      </svg>
+                    );
+                  })}
+                </div>
+
+                <div className="text-sm text-gray-600">
+                  {cleanedBusiness.avgRating !== null ? `${Number(cleanedBusiness.avgRating).toFixed(1)} / 5` : "No rating"}
+                  {cleanedBusiness.reviewsCount ? ` · ${cleanedBusiness.reviewsCount} review${cleanedBusiness.reviewsCount !== 1 ? "s" : ""}` : ""}
+                </div>
+              </div>
+            )}
+          </div>
 
           {cleanedBusiness.description && (
             <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
