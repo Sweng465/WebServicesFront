@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API_ENDPOINTS, { buildVehicleDetailUrl } from "../config/api";
 import { getCart, saveCart } from "../utils/cart.js";
+import { RoutePaths } from "../general/RoutePaths.jsx";
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -180,7 +181,9 @@ const CartPage = () => {
                     <div className="flex-1">
                       <h2
                         className="font-semibold text-lg cursor-pointer hover:underline"
-                        onClick={() => navigate(`/listing/${item.listingId}`)}
+                        onClick={() =>
+                          navigate(RoutePaths.LISTING_DETAIL.replace(':listingId', item.listingId))
+                        }
                       >
                         {listing.title || "Untitled"}
                       </h2>
