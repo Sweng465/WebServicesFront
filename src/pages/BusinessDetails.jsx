@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState, useMemo } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import Header from "../components/Header";
 import API_ENDPOINTS, { buildBusinessDetailUrl } from "../config/api.js";
 import Base64Image from "../components/Base64Image.jsx";
 import VehicleResultCard from "../components/vehicle/VehicleResultCard";
 import { RoutePaths } from "../general/RoutePaths.jsx";
+import ReviewForm from "../components/ReviewForm.jsx";
+import { useAuth } from "../context/useAuth.js";
 
 // Image helper: copied/adapted from BrowseVehicleListings.jsx
 const isDataUrl = (s) => typeof s === "string" && s.startsWith("data:");
@@ -62,6 +64,9 @@ const BusinessDetails = () => {
   const navigate = useNavigate();
   const rawId = params.id ?? params.businessId ?? null;
 
+  const { user, accessToken } = useAuth();
+  const signedIn = Boolean(accessToken) || Boolean(user);
+
   const [business, setBusiness] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -73,6 +78,10 @@ const BusinessDetails = () => {
   // listings state
   const [listings, setListings] = useState([]);
   const [listingsLoading, setListingsLoading] = useState(false);
+
+  // reviews state
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
 
   const numericId = (() => {
     if (rawId === null || rawId === undefined) return null;
@@ -164,6 +173,48 @@ const BusinessDetails = () => {
     };
 
     load();
+    return () => { cancelled = true; };
+  }, [numericId]);
+
+  // Fetch reviews for this business
+  useEffect(() => {
+    if (!numericId) {
+      setReviews([]);
+      return;
+    }
+
+    let cancelled = false;
+    const loadReviews = async () => {
+      setReviewsLoading(true);
+      try {
+        const url = (() => {
+          if (API_ENDPOINTS.REVIEWS) return API_ENDPOINTS.REVIEWS.replace(":id", numericId);
+          if (API_ENDPOINTS.BUSINESSES) return `${API_ENDPOINTS.BUSINESSES}/${numericId}/reviews`;
+          return `/api/businesses/${numericId}/reviews`;
+        })();
+
+        const res = await fetch(url);
+        if (!res.ok) {
+          // If 404/other, treat as no reviews rather than crash the UI.
+          console.warn("Failed to load reviews:", res.status);
+          if (!cancelled) setReviews([]);
+          return;
+        }
+        const data = await res.json();
+        console.log("Fetched reviews for business:", data);
+        // common response shapes: { data: [...] } or { reviews: [...] } or [...]
+        const rawItems = data?.data ?? data?.reviews ?? (Array.isArray(data) ? data : []);
+        const itemsArray = Array.isArray(rawItems) ? rawItems : [];
+        if (!cancelled) setReviews(itemsArray);
+      } catch (err) {
+        console.error("Error fetching reviews for business:", err);
+        if (!cancelled) setReviews([]);
+      } finally {
+        if (!cancelled) setReviewsLoading(false);
+      }
+    };
+
+    loadReviews();
     return () => { cancelled = true; };
   }, [numericId]);
 
@@ -348,6 +399,61 @@ const BusinessDetails = () => {
     };
   };
 
+  // detect whether the current signed-in user already left a review
+  const hasReviewed = useMemo(() => {
+    if (!user || !Array.isArray(reviews) || reviews.length === 0) return false;
+    const uid = user?.id ?? user?.sub ?? user?.userId ?? user?.user_id ?? user?.uid ?? null;
+    const uEmail = (user?.email ?? "").toLowerCase();
+    const uName = (user?.username ?? user?.userName ?? user?.user_name ?? user?.name ?? "").toLowerCase();
+
+    return reviews.some((r) => {
+      // common user id placements on a review
+      const rid = r?.userId ?? r?.user?.id ?? r?.userId ?? r?.user?.user_id ?? r?.user?.sub ?? null;
+      if (rid && uid && String(rid) === String(uid)) return true;
+
+      // email match
+      const rEmail = (r?.email ?? r?.user?.email ?? "").toLowerCase();
+      if (rEmail && uEmail && rEmail === uEmail) return true;
+
+      // username/name match
+      const rUserName =
+        (r?.username ?? r?.user?.username ?? r?.userName ?? r?.user?.user_name ?? r?.user?.name ?? r?.name ?? "")
+          .toLowerCase();
+      if (uName && rUserName && rUserName === uName) return true;
+
+      return false;
+    });
+  }, [reviews, user]);
+
+  // derive average rating + count from reviews array (tolerant to different field names)
+  const ratingSummary = useMemo(() => {
+    const arr = Array.isArray(reviews) ? reviews : [];
+    const count = arr.length;
+    if (count === 0) return { avg: null, count: 0 };
+
+    const values = arr
+      .map((r) => {
+        const raw = r?.rating ?? r?.score ?? r?.stars ?? r?.value ?? r?.ratingValue ?? null;
+        if (typeof raw === "number") return raw;
+        if (typeof raw === "string" && raw.trim() !== "" && !Number.isNaN(Number(raw))) return Number(raw);
+        return null;
+      })
+      .filter((v) => typeof v === "number");
+
+    if (values.length === 0) return { avg: null, count };
+
+    const avgRaw = values.reduce((a, b) => a + b, 0) / values.length;
+    const avg = Math.round(avgRaw * 10) / 10; // one decimal place
+    return { avg, count };
+  }, [reviews]);
+
+  const handleCreate = (r) => {
+    setReviews(prev => [r, ...prev]);
+    setTimeout(() => {
+      document.getElementById("business-reviews")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
+  };
+
   if (!numericId) {
     return (
       <div>
@@ -431,6 +537,19 @@ const BusinessDetails = () => {
 
                         <div className="mt-2 text-sm text-gray-500">
                           {business.location && <span>{business.location}</span>}
+
+                          <div className="mt-2">
+                            {reviewsLoading ? (
+                              <span className="text-sm text-gray-500">Loading rating…</span>
+                            ) : ratingSummary.avg ? (
+                              <div className="flex items-center gap-2 text-gray-700">
+                                <span className="text-yellow-500 font-semibold">★ {ratingSummary.avg}</span>
+                                <span className="text-sm text-gray-500">({ratingSummary.count} review{ratingSummary.count === 1 ? "" : "s"})</span>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-gray-500">Not rated</span>
+                            )}
+                          </div>
                         </div>
 
                         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -536,6 +655,98 @@ const BusinessDetails = () => {
                             );
                           })}
                         </div>
+                      </div>
+                    )}
+                  </section>
+
+                  {/* Write a Review Section (moved above reviews) */}
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold">
+                      Write a review
+                    </h3>
+                    <p className="text-sm text-gray-500">Share your experience with this business.</p>
+
+                    <div className="mt-3">
+                      {!signedIn ? (
+                        <div className="p-4 bg-gray-50 rounded">
+                          Please <Link to="/signin">sign in</Link> to write a review.
+                        </div>
+                      ) : hasReviewed ? (
+                        <div className="p-4 bg-green-50 border border-green-100 rounded">
+                          You have already submitted a review for this business.
+                        </div>
+                      ) : (
+                        <ReviewForm
+                          businessId={numericId}
+                          currentUser={user}
+                          token={accessToken}
+                          onCreate={handleCreate}
+                          subject={business?.name}
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Reviews Section */}
+                  <section id="business-reviews" className="rounded-xl border border-gray-200 bg-white p-6 shadow-md">
+                    <div className="flex justify-between items-center mb-4">
+                      <h2 className="text-xl font-semibold text-gray-900">Reviews</h2>
+                      <p className="text-sm text-gray-600">Found <span className="font-semibold text-blue-600">{reviews.length}</span></p>
+                    </div>
+
+                    {reviewsLoading ? (
+                      <div className="py-8 text-center text-gray-600">Loading reviews…</div>
+                    ) : reviews.length === 0 ? (
+                      <div className="py-8 text-center text-gray-600">No reviews yet.</div>
+                    ) : (
+                      <div className="space-y-4">
+                        {reviews.map((review, idx) => {
+                          // reviewer name: prefer username fields, then display a real name, otherwise Anonymous
+                          const reviewerName =
+                            review.reviewerName ??
+                            review.username ??
+                            review.userName ??
+                            review.user_name ??
+                            review.name ??
+                            (review.user?.username ?? review.user?.userName ?? review.user?.user_name ?? review.user?.name) ??
+                            "Anonymous";
+
+                          // rating: accept multiple possible field names (rating is preferred)
+                          const reviewerRating = review.rating ?? review.score ?? review.stars ?? review.value ?? null;
+
+                          // comment/content: backend column is `content`
+                          const reviewContent = review.content ?? review.comment ?? review.body ?? "";
+
+                          // date: backend column may be `dateCreated`
+                          const rawDate = review.dateCreated ?? review.createdAt ?? review.date ?? review.timestamp ?? null;
+                          const reviewDate = rawDate ? new Date(rawDate) : null;
+                          const reviewDateString = reviewDate ? reviewDate.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "";
+
+                          const key = review.id ?? review.reviewId ?? `review-${idx}`;
+
+                          return (
+                            <div key={key} className="p-4 bg-gray-50 rounded-lg shadow-sm">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="text-sm font-semibold text-gray-700">{reviewerName}</div>
+                                {reviewerRating !== null && (
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-yellow-500 font-semibold">★ {reviewerRating}</span>
+                                    {/* optional votes field if present */}
+                                    {review.ratingCount ? <span className="text-xs text-gray-500">({review.ratingCount} {review.ratingCount === 1 ? "vote" : "votes"})</span> : null}
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="text-sm text-gray-700 mb-2">
+                                {reviewContent}
+                              </div>
+
+                              <div className="text-xs text-gray-500">
+                                {reviewDateString}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </section>
