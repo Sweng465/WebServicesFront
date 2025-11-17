@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API_ENDPOINTS from "../config/api";
+import API_ENDPOINTS, { buildVehicleDetailUrl } from "../config/api";
 import { getCart, saveCart } from "../utils/cart.js";
 
 const CartPage = () => {
@@ -13,6 +13,8 @@ const CartPage = () => {
     const cart = getCart();
     setCartItems(cart);
   }, []);
+
+  
 
   // Fetch latest listing data
   useEffect(() => {
@@ -37,6 +39,36 @@ const CartPage = () => {
           const data = await res.json();
           const listing = data?.data ?? data;
 
+          // Determine vehicleId the SAME way ListingDetails does
+          const vehicleId = listing.itemId; // <-- your listing had itemId: 606
+
+          let vehicleInfo = null;
+
+          // Fetch vehicle info so we can build title
+          if (vehicleId) {
+            try {
+              const vehicleRes = await fetch(buildVehicleDetailUrl(vehicleId)
+              );
+              if (vehicleRes.ok) {
+                const vehicleData = await vehicleRes.json();
+                vehicleInfo = vehicleData?.data ?? vehicleData;
+                
+              }
+            } catch (e) {
+              console.warn("Failed to fetch vehicle info", e);
+            }
+          }
+
+          // Build title like ListingDetails
+          //const v = vehicleInfo ?? {};
+          //console.log("VehicleInfo:", vehicleInfo);
+          
+
+          if (!listing.title || listing.title === "Untitled") {
+            listing.title = vehicleInfo.value || "Untitled";
+          }
+          //console.log('Listing: ', {listing});
+
           results.push({
             listingId: item.listingId,
             listing,
@@ -57,6 +89,11 @@ const CartPage = () => {
     else setListingData([]);
   }, [cartItems]);
 
+  
+
+  
+
+  // cart operations
   const removeItem = (id) => {
     const updated = cartItems.filter((item) => item.listingId !== id);
     saveCart(updated);
