@@ -1,8 +1,7 @@
 import { useRef } from "react";
+import FormField from "./FormField";
 
-const PhoneEntry = ({ form, handleChange }) => {
-  const borderStyle = `text-center border border-gray-300 rounded-lg shadow-sm 
-    focus:outline-none focus:ring-2 focus:ring-blue-700 transition`
+const PhoneEntry = ({ form, handleChange, formSubmitAttempted }) => {
 
   const phone1Ref = useRef(null);
   const phone2Ref = useRef(null);
@@ -33,44 +32,53 @@ const PhoneEntry = ({ form, handleChange }) => {
   return (
     <div className="flex flex-col">
       <label className="block mb-1 font-medium">Phone Number</label>
-      <div className="flex items-center space-x-2">
-        <input
-          ref={phone1Ref}
-          type="text"
-          inputMode="numeric"
-          maxLength="3"
-          placeholder="###"
-          value={form.phone1}
-          onChange={(e) => handlePhoneChange("phone1", e.target.value)}
-          className={`w-16 p-2 ${borderStyle}`}
-          required
-        />
-        <span className=" text-xl font-medium">-</span>
-        <input
-          ref={phone2Ref}
-          onKeyDown={(e) => handlePhoneKeyDown("phone2", e)}
-          type="text"
-          inputMode="numeric"
-          maxLength="3"
-          placeholder="###"
-          value={form.phone2}
-          onChange={(e) => handlePhoneChange("phone2", e.target.value)}
-          className={`w-16 p-2 ${borderStyle}`}
-          required
-        />
-        <span className=" text-xl font-medium">-</span>
-        <input
-          ref={phone3Ref}
-          onKeyDown={(e) => handlePhoneKeyDown("phone3", e)}
-          type="text"
-          inputMode="numeric"
-          maxLength="4"
-          placeholder="####"
-          value={form.phone3}
-          onChange={(e) => handlePhoneChange("phone3", e.target.value)}
-          className={`w-20 p-2 ${borderStyle}`}
-          required
-        />
+      <div className="flex items-start space-x-2">
+        <div className="w-16">
+          <FormField
+            ref={phone1Ref}
+            label=""
+            placeholder="###"
+            value={form.phone1}
+            onChange={(e) => handlePhoneChange("phone1", e.target.value)}
+            type="text"
+            inputMode="numeric"
+            required
+            className={`text-center`}
+            error={formSubmitAttempted && !form.phone1 ? "Phone number is required." : ""}
+          />
+        </div>
+        <span className=" text-xl font-medium relative top-[5px]">-</span>
+        <div className="w-16">
+          <FormField
+            ref={phone2Ref}
+            onKeyDown={(e) => handlePhoneKeyDown("phone2", e)}
+            label=""
+            placeholder="###"
+            value={form.phone2}
+            onChange={(e) => handlePhoneChange("phone2", e.target.value)}
+            type="text"
+            inputMode="numeric"
+            required
+            className={`text-center`}
+            error={formSubmitAttempted && !form.phone2 ? "Phone number is required." : ""}
+          />
+        </div>
+        <span className=" text-xl font-medium relative top-[5px]">-</span>
+        <div className="w-20">
+          <FormField
+            ref={phone3Ref}
+            onKeyDown={(e) => handlePhoneKeyDown("phone3", e)}
+            label=""
+            placeholder="####"
+            value={form.phone3}
+            onChange={(e) => handlePhoneChange("phone3", e.target.value)}
+            type="text"
+            inputMode="numeric"
+            required
+            className={`text-center`}
+            error={formSubmitAttempted && !form.phone3 ? "Phone number is required." : ""}
+          />
+        </div>
       </div>
     </div>
   );
