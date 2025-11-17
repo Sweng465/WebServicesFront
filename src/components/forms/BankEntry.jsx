@@ -1,4 +1,7 @@
-const BankEntry = ({ form, handleChange }) => {
+import FormField from "./FormField";
+import FormFieldCheckbox from "./FormFieldCheckbox";
+
+const BankEntry = ({ form, handleChange, formSubmitAttempted }) => {
   /* 
     accountHolderName: "",
     routingNumber: "",
@@ -7,12 +10,12 @@ const BankEntry = ({ form, handleChange }) => {
     bankName: "",
   */
 
-  const borderStyle = `border border-gray-300 rounded-lg shadow-sm 
-    focus:outline-none focus:ring-2 focus:ring-blue-700 transition`;
-
   const handleAccountTypeChange = (type) => {
-    // Only one checkbox can be selected at a time
-    handleChange("accountType", form.accountType === type ? "" : type);
+    // If user clicks the currently selected one, do nothing.
+    if (form.accountType === type) return;
+
+    // Otherwise switch to the new one
+    handleChange("accountType", type);
   };
 
   const formatRoutingNumber = (value) => {
@@ -24,90 +27,63 @@ const BankEntry = ({ form, handleChange }) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-1">
       {/* Account Holder Name */}
-      <div>
-        <label className="block mb-1 font-medium">Account Holder Name</label>
-        <input
-          type="text"
-          maxLength="50"
-          placeholder="Ex. John Doe"
-          value={form.accountHolderName}
-          onChange={(e) => handleChange("accountHolderName", e.target.value)}
-          className={`w-full p-2 ${borderStyle}`}
-          required
-        />
-      </div>
+      <FormField
+        label="Account Holder Name"
+        type="text"
+        required
+        value={form.accountHolderName}
+        placeHolder="Ex. Jane Doe"
+        onChange={(e) => handleChange("accountHolderName", e.target.value)}
+        maxLength={50}
+        error={formSubmitAttempted && !form.accountHolderName ? "Account holder name is required." : ""}
+      />
 
       {/* Routing Number */}
-      <div>
-        <label className="block mb-1 font-medium">Routing Number</label>
-        <input
-          type="text"
-          inputMode="numeric"
-          maxLength="9"
-          placeholder="#########"
-          value={form.routingNumber}
-          onChange={(e) => handleChange("routingNumber", formatRoutingNumber(e.target.value))}
-          className={`w-full p-2 ${borderStyle}`}
-          required
-        />
-      </div>
+      <FormField
+        label="Routing Number"
+        type="text"
+        inputMode="numeric"
+        required
+        value={form.routingNumber}
+        placeHolder="#########"
+        onChange={(e) => handleChange("routingNumber", formatRoutingNumber(e.target.value))}
+        maxLength={9}
+        error={formSubmitAttempted && !form.routingNumber ? "Routing number is required." : ""}
+      />
 
       {/* Account Number */}
-      <div>
-        <label className="block mb-1 font-medium">Account Number</label>
-        <input
-          type="text"
-          inputMode="numeric"
-          maxLength="17"
-          placeholder="Ex. 000123456789"
-          value={form.accountNumber}
-          onChange={(e) => handleChange("accountNumber", formatAccountNumber(e.target.value))}
-          className={`w-full p-2 ${borderStyle}`}
-          required
-        />
-      </div>
+      <FormField
+        label="Account Number"
+        type="text"
+        inputMode="numeric"
+        required
+        value={form.accountNumber}
+        placeHolder="Ex. 000123456789"
+        onChange={(e) => handleChange("accountNumber", formatAccountNumber(e.target.value))}
+        maxLength={17}
+        error={formSubmitAttempted && !form.accountNumber ? "Account number is required." : ""}
+      />
 
       {/* Account Type */}
       <div>
         <label className="block mb-1 font-medium">Account Type</label>
-        <div className="flex gap-4">
-          <div className="flex items-center">
-            <input
-              id="checking-checkbox"
-              type="checkbox"
-              checked={form.accountType === "checking"}
-              onChange={() => handleAccountTypeChange("checking")}
-              className="w-4 h-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-700 transition"
-            />
-            <label htmlFor="checking-checkbox" className="ml-2">Checking</label>
-          </div>
+        <div className="flex gap-6">
+          {/* Checking */}
+          <FormFieldCheckbox
+            label="Checking"
+            checked={form.accountType === "checking"}
+            onChange={() => handleAccountTypeChange("checking")}
+          />
 
-          <div className="flex items-center">
-            <input
-              id="savings-checkbox"
-              type="checkbox"
-              checked={form.accountType === "savings"}
-              onChange={() => handleAccountTypeChange("savings")}
-              className="w-4 h-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-700 transition"
-            />
-            <label htmlFor="savings-checkbox" className="ml-2">Savings</label>
-          </div>
+          {/* Savings */}
+          <FormFieldCheckbox
+            label="Savings"
+            checked={form.accountType === "savings"}
+            onChange={() => handleAccountTypeChange("savings")}
+          />
         </div>
-      </div>
-
-      {/* Bank Name */}
-      <div>
-        <label className="block mb-1 font-medium">Bank Name</label>
-        <input
-          type="text"
-          placeholder="Ex. Farmer's National Bank"
-          maxLength="50"
-          value={form.bankName}
-          onChange={(e) => handleChange("bankName", e.target.value)}
-          className={`w-full p-2 ${borderStyle}`}
-        />
       </div>
     </div>
   );
