@@ -111,6 +111,8 @@ const ReviewForm = ({ businessId, onCreate = () => {}, currentUser = null, token
       // notify parent (BusinessDetails will add it into its reviews state)
       onCreate(created);
 
+      setTimeout(() => window.location.reload(), 120);
+
       // reset form fields
       setRating(5);
       setTitle("");
