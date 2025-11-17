@@ -110,10 +110,17 @@ const BrowseParts = () => {
                 const res = await fetch(`${API_ENDPOINTS.PARTS}?${query}`);
                 const data = await res.json();
 
-                // The backend returns { data: [...], pagination: {...} }
-                setParts(data.data || []);
+                // Support multiple response shapes: array, { data: [...] }, or { parts: [...] }
+                const list = Array.isArray(data)
+                    ? data
+                    : Array.isArray(data?.data)
+                        ? data.data
+                        : Array.isArray(data?.parts)
+                            ? data.parts
+                            : [];
+                setParts(list);
 
-                const raw = data.pagination || {};
+                const raw = (Array.isArray(data) ? {} : (data.pagination || data.meta || {}));
                 const paginationData = {
                     page: Number(raw.page || 1),
                     pages: Number(raw.pages ?? raw.totalPages ?? 1),
