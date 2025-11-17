@@ -1,8 +1,8 @@
-export const getCart = () => {
+export const getCart = (userId) => {
   try {
     const cookie = document.cookie
       .split("; ")
-      .find((row) => row.startsWith("cart="));
+      .find((row) => row.startsWith(`cart_${userId}=`));
     if (!cookie) return [];
     return JSON.parse(decodeURIComponent(cookie.split("=")[1]));
   } catch {
@@ -10,9 +10,7 @@ export const getCart = () => {
   }
 };
 
-export const saveCart = (cart) => {
+export const saveCart = (userId, cart) => {
   const value = encodeURIComponent(JSON.stringify(cart));
-
-  // Cookie expires in 30 days
-  document.cookie = `cart=${value}; path=/; max-age=${60 * 60 * 24 * 30}`;
+  document.cookie = `cart_${userId}=${value}; path=/; max-age=${60*60*24*30}`;
 };

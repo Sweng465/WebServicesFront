@@ -1,33 +1,24 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API_ENDPOINTS, { buildVehicleDetailUrl } from "../config/api";
-import { getCart, saveCart } from "../utils/cart.js";
 import { RoutePaths } from "../general/RoutePaths.jsx";
+import { useAuth } from "../context/useAuth";
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState([]); // raw cookie data
-  const [listingData, setListingData] = useState([]); // fetched listing data
+  const { user, cart, updateCart } = useAuth(); // Use cart from AuthProvider
+  const [listingData, setListingData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const cart = getCart();
-    setCartItems(cart);
-  }, []);
-
-  
-
-  // Fetch latest listing data
+  // Fetch latest listing data whenever cart changes
   useEffect(() => {
     const loadListingDetails = async () => {
       setLoading(true);
-
       const results = [];
 
-      for (const item of cartItems) {
+      for (const item of cart) {
         try {
           const res = await fetch(`${API_ENDPOINTS.LISTINGS}/${item.listingId}`);
-
           if (!res.ok) {
             results.push({
               listingId: item.listingId,
@@ -41,43 +32,28 @@ const CartPage = () => {
           const listing = data?.data ?? data;
 
           // Fetch vehicle info to build title
-          const vehicleId = listing.itemId; 
-
+          const vehicleId = listing.itemId;
           let vehicleInfo = null;
 
           if (vehicleId) {
             try {
-              const vehicleRes = await fetch(buildVehicleDetailUrl(vehicleId)
-              );
+              const vehicleRes = await fetch(buildVehicleDetailUrl(vehicleId));
               if (vehicleRes.ok) {
                 const vehicleData = await vehicleRes.json();
                 vehicleInfo = vehicleData?.data ?? vehicleData;
-                
               }
             } catch (e) {
               console.warn("Failed to fetch vehicle info", e);
             }
           }
 
-          // Build title like ListingDetails
-          //const v = vehicleInfo ?? {};
-          //console.log("VehicleInfo:", vehicleInfo);
-          
-
           if (!listing.title || listing.title === "Untitled") {
-            listing.title = vehicleInfo.value || "Untitled";
+            listing.title = vehicleInfo?.value || "Untitled";
           }
-          console.log('Listing: ', {listing});
 
-          results.push({
-            listingId: item.listingId,
-            listing,
-          });
+          results.push({ listingId: item.listingId, listing });
         } catch {
-          results.push({
-            listingId: item.listingId,
-            error: true,
-          });
+          results.push({ listingId: item.listingId, error: true });
         }
       }
 
@@ -85,24 +61,18 @@ const CartPage = () => {
       setLoading(false);
     };
 
-    if (cartItems.length > 0) loadListingDetails();
+    if (cart.length > 0) loadListingDetails();
     else setListingData([]);
-  }, [cartItems]);
+  }, [cart]);
 
-  
-
-  
-
-  // cart operations
+  // Cart operations
   const removeItem = (id) => {
-    const updated = cartItems.filter((item) => item.listingId !== id);
-    saveCart(updated);
-    setCartItems(updated);
+    const updated = cart.filter((item) => item.listingId !== id);
+    updateCart(updated);
   };
 
   const clearCart = () => {
-    saveCart([]);
-    setCartItems([]);
+    updateCart([]);
   };
 
   const total = listingData

@@ -6,7 +6,8 @@ import Header from "../components/Header";
 import BusinessInfo from "../components/BusinessInfo.jsx";
 import API_ENDPOINTS, { buildVehicleDetailUrl } from "../config/api.js";
 import { getCart, saveCart } from "../utils/cart.js";
-
+import { RoutePaths } from "../general/RoutePaths.jsx";
+import { useAuth } from "../context/useAuth";
 
 const formatCurrency = (value) => {
   if (typeof value !== "number") return "N/A";
@@ -27,6 +28,7 @@ const ListingDetails = () => {
   const [error, setError] = useState(null);
   const [vehicleInfo, setVehicleInfo] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const { user, cart, updateCart } = useAuth(); // pull in authFetch from context
 
   // NEW: source URL/objectURL for the currently selected image
   const [imageSrc, setImageSrc] = useState(null);
@@ -244,22 +246,26 @@ const ListingDetails = () => {
   // const sellerRating = seller?.rating || seller?.averageRating || null;
   // const sellerReviewCount = seller?.reviewCount || seller?.reviewsCount || null;
 
-  const handleAddToCart = () => {
-    if (!listing) return;
+const handleAddToCart = () => {
+  if (!listing) return;
+  if (!user) {
+    navigate(RoutePaths.SIGNIN);
+    return;
+  }
 
-    const cart = getCart();
-    const existing = cart.find((c) => c.listingId === Number(listingId));
+  const existing = cart.find((c) => c.listingId === Number(listingId));
 
-    if (existing) {
-      alert("Error: This item is already in your cart.");
-    } else {
-      cart.push({
-        listingId: Number(listingId),
-      });
-      saveCart(cart);
-      alert("Added to cart!");
-    }
-  };
+  if (existing) {
+    alert("Error: This item is already in your cart.");
+  } else {
+    const updatedCart = [
+      ...cart,
+      { listingId: Number(listingId) },
+    ];
+    updateCart(updatedCart); // update context and localStorage internally
+    alert("Added to cart!");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-600 to-blue-600">

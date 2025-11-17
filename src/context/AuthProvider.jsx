@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect, useCallback } from "react";
+import { getCart, saveCart } from "../utils/cart.js";
 //import { useNavigate} from "react-router-dom";
 const AuthContext = createContext();
 
@@ -7,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [cart, setCart] = useState([]); // <-- Add cart state
 
 
 
@@ -15,6 +17,14 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("token", token);
     setAccessToken(token);
     setUser(userData);
+    const userCart = getCart(userData.id); // load cart for this user
+    setCart(userCart);
+  };
+
+  // Save cart changes
+  const updateCart = (newCart) => {
+    setCart(newCart);
+    if (user) saveCart(user.id, newCart); // Save per-user
   };
 
   // Logout: clear tokens and user state
@@ -155,7 +165,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, accessToken, authFetch, loading }}
+      value={{ user, login, logout, accessToken, authFetch, loading, cart, updateCart, }}
     >
       {children}
     </AuthContext.Provider>

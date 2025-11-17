@@ -17,7 +17,7 @@ const Header = () => {
   const [cartItems, setCartItems] = useState([]); 
 
   useEffect(() => {
-    const cart = getCart();
+    const cart = getCart(user?.id);
     setCartItems(cart);
   }, []);
 
