@@ -39,12 +39,11 @@ const CartPage = () => {
           const data = await res.json();
           const listing = data?.data ?? data;
 
-          // Determine vehicleId the SAME way ListingDetails does
-          const vehicleId = listing.itemId; // <-- your listing had itemId: 606
+          // Fetch vehicle info to build title
+          const vehicleId = listing.itemId; 
 
           let vehicleInfo = null;
 
-          // Fetch vehicle info so we can build title
           if (vehicleId) {
             try {
               const vehicleRes = await fetch(buildVehicleDetailUrl(vehicleId)
@@ -67,7 +66,7 @@ const CartPage = () => {
           if (!listing.title || listing.title === "Untitled") {
             listing.title = vehicleInfo.value || "Untitled";
           }
-          //console.log('Listing: ', {listing});
+          console.log('Listing: ', {listing});
 
           results.push({
             listingId: item.listingId,
@@ -169,7 +168,7 @@ const CartPage = () => {
                     <div className="w-24 h-24 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
                       {listing.images?.[0] ? (
                         <img
-                          src={listing.images[0]}
+                          src={`data:image/jpeg;base64,${listing.images[0].imageBase64}`}
                           alt={listing.title}
                           className="w-full h-full object-cover"
                         />
