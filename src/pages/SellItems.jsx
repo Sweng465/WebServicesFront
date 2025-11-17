@@ -6,7 +6,6 @@ import API_ENDPOINTS from "../config/api.js";
 import Converter from "../imageConversion/ImageConverter.js";
 import { RoutePaths } from "../general/RoutePaths.jsx";
 import { useNavigate } from "react-router-dom";
-import Collapsible from "../components/forms/Collapsible";
 import FormField from "../components/forms/FormField";
 import CollapsibleToggle from "../components/forms/CollapsibleToggle";
 
@@ -38,18 +37,18 @@ const SellItems = () => {
     if (!infoLocked) setinfoOpen(!infoOpen);
   };
   useEffect(() => {
-    const filtersAreValid = isFiltersValid();
+    const filtersAreValid = [yearId, makeId, modelId, submodelId].every((v) => {
+      return v !== "" && v !== null && v !== undefined;
+    });
 
     if (filtersAreValid) {
-      // unlock & auto-open
       setinfoLocked(false);
       setinfoOpen(true);
     } else {
-      // lock & force closed
       setinfoLocked(true);
       setinfoOpen(false);
     }
-  }, [filters.yearId, filters.makeId, filters.modelId, filters.submodelId]);
+  }, [yearId, makeId, modelId, submodelId]);
 
   const [conditions, setConditions] = useState([]);
 
@@ -427,6 +426,8 @@ const SellItems = () => {
       console.error("Failed to create listing:", err);
     }
   };
+
+  const { yearId, makeId, modelId, submodelId } = filters;
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-orange-600 to-blue-600 text-white">
