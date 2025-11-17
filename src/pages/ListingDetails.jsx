@@ -256,10 +256,9 @@ const ListingDetails = () => {
       cart.push({
         listingId: Number(listingId),
       });
+      saveCart(cart);
+      alert("Added to cart!");
     }
-
-    saveCart(cart);
-    alert("Added to cart!");
   };
 
   return (
