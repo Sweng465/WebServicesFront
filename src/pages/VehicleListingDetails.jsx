@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import Header from "../components/Header";
+import Header from "../components/Header.jsx";
 // remove/keep Base64Image import depending on thumbnail decision
 // import Base64Image from "../components/Base64Image";
 import BusinessInfo from "../components/BusinessInfo.jsx";
@@ -20,7 +20,7 @@ const formatDate = (value) => {
   return Number.isNaN(parsed.getTime()) ? "Unknown" : parsed.toLocaleDateString();
 };
 
-const ListingDetails = () => {
+const VehicleListingDetails = () => {
   const { listingId } = useParams();
   const navigate = useNavigate();
   const [listing, setListing] = useState(null);
@@ -440,4 +440,4 @@ const handleAddToCart = () => {
   );
 };
 
-export default ListingDetails;
+export default VehicleListingDetails;
