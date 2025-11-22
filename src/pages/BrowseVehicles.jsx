@@ -14,6 +14,40 @@ const BrowseVehicles = () => {
   const [pagination, setPagination] = useState({ totalPages: 1 });
   const [viewMode, setViewMode] = useState("grid"); // 'grid' | 'list'
   const [size, setSize] = useState("small"); // 'small' | 'large'
+  const VIEW_MODE_KEY = 'vehicleViewMode';
+  const CARD_SIZE_KEY = 'vehicleCardSize';
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  // Load persisted view layout & size before user interaction
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const savedView = localStorage.getItem(VIEW_MODE_KEY);
+        if (savedView === 'grid' || savedView === 'list') {
+          setViewMode(savedView);
+        }
+        const savedSize = localStorage.getItem(CARD_SIZE_KEY);
+        if (savedSize === 'small' || savedSize === 'large') {
+          setSize(savedSize);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed loading persisted layout settings:', e);
+    } finally {
+      setSettingsLoaded(true);
+    }
+  }, []);
+
+  // Persist view mode changes (skip initial default write until loaded)
+  useEffect(() => {
+    if (!settingsLoaded) return;
+    try { localStorage.setItem(VIEW_MODE_KEY, viewMode); } catch (e) {console.warn('Failed to persist view mode:', e); }
+  }, [viewMode, settingsLoaded]);
+
+  // Persist card size changes (skip initial default write until loaded)
+  useEffect(() => {
+    if (!settingsLoaded) return;
+    try { localStorage.setItem(CARD_SIZE_KEY, size); } catch (e) {console.warn('Failed to persist card size:', e); }
+  }, [size, settingsLoaded]);
   const [filters, setFilters] = useState({
     yearId: "",
     makeId: "",
