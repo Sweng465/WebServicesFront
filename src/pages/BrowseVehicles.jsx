@@ -8,64 +8,119 @@ import { LayoutGrid, List, AArrowUp, AArrowDown  } from 'lucide-react';
 import { RoutePaths } from "../general/RoutePaths.jsx";
 
 const BrowseVehicles = () => {
-    const [vehicles, setVehicles] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [page, setPage] = useState(1);
-    const [pagination, setPagination] = useState({ totalPages: 1 });
-    const [viewMode, setViewMode] = useState("grid"); // 'grid' | 'list'
-    const [size, setSize] = useState("small"); // 'small' | 'large'
-    const [filters, setFilters] = useState({
-        yearId: "",
-        makeId: "",
-        modelId: "",
-        submodelId: "",
-    });
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ totalPages: 1 });
+  const [viewMode, setViewMode] = useState("grid"); // 'grid' | 'list'
+  const [size, setSize] = useState("small"); // 'small' | 'large'
+  const VIEW_MODE_KEY = 'vehicleViewMode';
+  const CARD_SIZE_KEY = 'vehicleCardSize';
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  // Load persisted view layout & size before user interaction
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const savedView = localStorage.getItem(VIEW_MODE_KEY);
+        if (savedView === 'grid' || savedView === 'list') {
+          setViewMode(savedView);
+        }
+        const savedSize = localStorage.getItem(CARD_SIZE_KEY);
+        if (savedSize === 'small' || savedSize === 'large') {
+          setSize(savedSize);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed loading persisted layout settings:', e);
+    } finally {
+      setSettingsLoaded(true);
+    }
+  }, []);
 
-    useEffect(() => {
-        const fetchVehicles = async () => {
-            setLoading(true);
-            
-            try {
-                const query = new URLSearchParams({
-                page,
-                limit: 12,
-                yearId: filters.yearId || "",
-                makeId: filters.makeId || "",
-                modelId: filters.modelId || "",
-                submodelId: filters.submodelId || "",
-                });
-                const res = await fetch(`${API_ENDPOINTS.VEHICLES}?${query}`);
-                const data = await res.json();
+  // Persist view mode changes (skip initial default write until loaded)
+  useEffect(() => {
+    if (!settingsLoaded) return;
+    try { localStorage.setItem(VIEW_MODE_KEY, viewMode); } catch (e) {console.warn('Failed to persist view mode:', e); }
+  }, [viewMode, settingsLoaded]);
 
-                // The backend returns { data: [...], pagination: {...} } or similar structure
-                const vehiclesData = data.data || data.vehicles || data || [];
-                setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
+  // Persist card size changes (skip initial default write until loaded)
+  useEffect(() => {
+    if (!settingsLoaded) return;
+    try { localStorage.setItem(CARD_SIZE_KEY, size); } catch (e) {console.warn('Failed to persist card size:', e); }
+  }, [size, settingsLoaded]);
+  const [filters, setFilters] = useState({
+    yearId: "",
+    makeId: "",
+    modelId: "",
+    submodelId: "",
+  });
+  // Track when persisted filters have been loaded to avoid double-fetch on mount
+  // Persistence handled by VehicleSearch component now
+  const [filtersInitialized, setFiltersInitialized] = useState(false);
 
-                const raw = data.pagination || {};
-                const paginationData = {
-                    page: Number(raw.page || 1),
-                    pages: Number(raw.pages ?? raw.totalPages ?? 1),
-                    total: Number(raw.total ?? 0),
-                    limit: Number(raw.limit ?? 12),
-                    hasNextPage: !!raw.hasNextPage,
-                    hasPreviousPage: !!raw.hasPreviousPage,
-                };
+  // Load persisted filters BEFORE first fetch so results match visible dropdown state on initial render
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('vehicleFilters');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === 'object') {
+            setFilters(prev => ({ ...prev, ...parsed }));
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to read persisted vehicle filters:', e);
+    } finally {
+      setFiltersInitialized(true);
+    }
+  }, []);
 
-                setPagination(paginationData);
-
-                if (paginationData.page !== page) {
-                    setPage(paginationData.page);
-                }
-
-            } catch (error) {
-                console.error("Error fetching vehicles:", error);
-            } finally {
-                setLoading(false);
-            }
+  useEffect(() => {
+    if (!filtersInitialized) return; // wait until we know persisted filters are applied
+    const fetchVehicles = async () => {
+      setLoading(true);
+      try {
+        const query = new URLSearchParams({
+          page,
+          limit: 12,
+          yearId: filters.yearId || "",
+          makeId: filters.makeId || "",
+          modelId: filters.modelId || "",
+          submodelId: filters.submodelId || "",
+        });
+        const res = await fetch(`${API_ENDPOINTS.VEHICLES}?${query}`);
+        const data = await res.json();
+        const vehiclesData = data.data || data.vehicles || data || [];
+        setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
+        const raw = data.pagination || {};
+        const paginationData = {
+          page: Number(raw.page || 1),
+          pages: Number(raw.pages ?? raw.totalPages ?? 1),
+          total: Number(raw.total ?? 0),
+          limit: Number(raw.limit ?? 12),
+          hasNextPage: !!raw.hasNextPage,
+          hasPreviousPage: !!raw.hasPreviousPage,
         };
+        setPagination(paginationData);
+        if (paginationData.page !== page) {
+          setPage(paginationData.page);
+        }
+      } catch (error) {
+        console.error("Error fetching vehicles:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVehicles();
+  }, [filters, page, filtersInitialized]);
 
-        fetchVehicles();
-    }, [filters, page]);
+  const handleClearFilters = () => {
+    setFilters({ yearId: "", makeId: "", modelId: "", submodelId: "" });
+    setPage(1);
+    try { localStorage.removeItem('vehicleFilters'); } catch (e) {console.warn('Failed to clear persisted filters:', e);}
+  };
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-600 to-blue-600">
         <Header />
@@ -81,12 +136,20 @@ const BrowseVehicles = () => {
                 </p>
             </div>
             {/* Search Section */}
-            <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 mb-8 sm:mb-10">
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-6">
-                Filters
-                </h2>
-                <VehicleSearch filters={filters} setFilters={setFilters} />
-            </div>
+      <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 mb-8 sm:mb-10">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800">Filters</h2>
+          <button
+            type="button"
+            onClick={handleClearFilters}
+            className="text-sm font-medium px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 transition-colors disabled:opacity-50"
+            disabled={!filters.yearId && !filters.makeId && !filters.modelId && !filters.submodelId}
+          >
+            Clear
+          </button>
+        </div>
+        <VehicleSearch filters={filters} setFilters={setFilters} />
+      </div>
             {/* Results Section */}
             <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden">
                 <div className="p-4 sm:p-6 lg:p-8">

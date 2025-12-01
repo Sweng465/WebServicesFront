@@ -23,10 +23,81 @@ const BrowseParts = () => {
         category2Id: "",
         category3Id: "",
         brandId: "",
+        vehicleId: "",
     });
     const [searchMode, setSearchMode] = useState('byVehicle'); // 'byVehicle' | 'generic'
     const [vehicles, setVehicles] = useState([]);
     const [vehicleLoading, setVehicleLoading] = useState(false);
+    const PART_FILTERS_KEY = 'partFilters';
+    const PART_SEARCH_MODE_KEY = 'partSearchMode';
+    const [loadedPersisted, setLoadedPersisted] = useState(false);
+
+    // Load persisted part filters & search mode
+    useEffect(() => {
+        try {
+            if (typeof window !== 'undefined') {
+                const savedFilters = localStorage.getItem(PART_FILTERS_KEY);
+                if (savedFilters) {
+                    const parsed = JSON.parse(savedFilters);
+                    if (parsed && typeof parsed === 'object') {
+                        setFilters(prev => ({ ...prev, ...parsed }));
+                    }
+                }
+                const savedMode = localStorage.getItem(PART_SEARCH_MODE_KEY);
+                if (savedMode === 'byVehicle' || savedMode === 'generic') {
+                    setSearchMode(savedMode);
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to load persisted part filters:', e);
+        } finally {
+            setLoadedPersisted(true);
+        }
+    }, []);
+
+    // Persist part-specific filters (exclude vehicle dropdown filters handled by VehicleSearch) + vehicleId
+    useEffect(() => {
+        if (!loadedPersisted) return; // avoid persisting initial empty defaults before load
+        try {
+            const toPersist = {
+                category1Id: filters.category1Id || "",
+                category2Id: filters.category2Id || "",
+                category3Id: filters.category3Id || "",
+                brandId: filters.brandId || "",
+                vehicleId: filters.vehicleId || "",
+            };
+            localStorage.setItem(PART_FILTERS_KEY, JSON.stringify(toPersist));
+        } catch (e) {
+            console.warn('Failed to persist part filters:', e);
+        }
+    }, [filters.category1Id, filters.category2Id, filters.category3Id, filters.brandId, filters.vehicleId, loadedPersisted]);
+
+    // Persist search mode
+    useEffect(() => {
+        if (!loadedPersisted) return;
+        try { localStorage.setItem(PART_SEARCH_MODE_KEY, searchMode); } catch (e) {console.warn('Failed to persist part search mode:', e); }
+    }, [searchMode, loadedPersisted]);
+
+    const handleClearAllFilters = () => {
+        setFilters({
+            yearId: "",
+            makeId: "",
+            modelId: "",
+            submodelId: "",
+            category1Id: "",
+            category2Id: "",
+            category3Id: "",
+            brandId: "",
+            vehicleId: "",
+        });
+        setPage(1);
+        try {
+            localStorage.removeItem(PART_FILTERS_KEY);
+            localStorage.removeItem('vehicleFilters'); // also clear vehicle dropdown persistence if desired
+        } catch (e) {
+            console.warn('Failed to clear persisted filters:', e);
+        }
+    };
 
     // Fetch vehicle results for selection when in 'byVehicle' mode and no vehicle selected
     useEffect(() => {
@@ -161,25 +232,40 @@ const BrowseParts = () => {
                     </div>
                     {/* Search Section */}
                     <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 mb-8 sm:mb-10">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
-                                Find parts
-                            </h2>
-                            <div className="inline-flex bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+                            <div className="flex items-center gap-4">
+                                <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+                                    Find parts
+                                </h2>
+                                <div className="inline-flex bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearchMode('byVehicle')}
+                                        className={`px-4 py-2 text-sm font-medium ${searchMode === 'byVehicle' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                                    >
+                                        By vehicle
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearchMode('generic')}
+                                        className={`px-4 py-2 text-sm font-medium border-l border-gray-200 ${searchMode === 'generic' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                                    >
+                                        Generic
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
                                 <button
                                     type="button"
-                                    onClick={() => setSearchMode('byVehicle')}
-                                    className={`px-4 py-2 text-sm font-medium ${searchMode === 'byVehicle' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                                    onClick={handleClearAllFilters}
+                                    disabled={Object.values(filters).every(v => !v) && searchMode === 'byVehicle'}
+                                    className="text-sm font-medium px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 transition-colors disabled:opacity-50"
                                 >
-                                    By vehicle
+                                    Clear
                                 </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setSearchMode('generic')}
-                                    className={`px-4 py-2 text-sm font-medium border-l border-gray-200 ${searchMode === 'generic' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-                                >
-                                    Generic
-                                </button>
+                                {!loadedPersisted && (
+                                    <span className="text-xs text-gray-500">Loading saved filters...</span>
+                                )}
                             </div>
                         </div>
 
