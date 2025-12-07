@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API_ENDPOINTS, { buildVehicleDetailUrl } from "../config/api";
+import API_ENDPOINTS, { buildVehicleDetailUrl, buildPartDetailUrl } from "../config/api";
 import { RoutePaths } from "../general/RoutePaths.jsx";
 import { useAuth } from "../context/useAuth";
 
@@ -30,25 +30,47 @@ const CartPage = () => {
 
           const data = await res.json();
           const listing = data?.data ?? data;
+          console.log("Listing response data:", listing);
 
-          // Fetch vehicle info to build title
-          const vehicleId = listing.itemId;
-          let vehicleInfo = null;
+          if (item.listingTypeId == 1) {
+            const vehicleId = listing.itemId;
+            let vehicleInfo = null;
 
-          if (vehicleId) {
-            try {
-              const vehicleRes = await fetch(buildVehicleDetailUrl(vehicleId));
-              if (vehicleRes.ok) {
-                const vehicleData = await vehicleRes.json();
-                vehicleInfo = vehicleData?.data ?? vehicleData;
+            if (vehicleId) {
+              try {
+                const vehicleRes = await fetch(buildVehicleDetailUrl(vehicleId));
+                if (vehicleRes.ok) {
+                  const vehicleData = await vehicleRes.json();
+                  vehicleInfo = vehicleData?.data ?? vehicleData;
+                }
+              } catch (e) {
+                console.warn("Failed to fetch vehicle info", e);
               }
-            } catch (e) {
-              console.warn("Failed to fetch vehicle info", e);
+            }
+
+            if (!listing.title || listing.title === "Untitled") {
+              listing.title = vehicleInfo?.value || "Untitled";
             }
           }
 
-          if (!listing.title || listing.title === "Untitled") {
-            listing.title = vehicleInfo?.value || "Untitled";
+          if (item.listingTypeId == 2) {
+            const partId = listing.itemId;
+            let partInfo = null;
+            if (partId) {
+              try {
+                const partRes = await fetch(buildPartDetailUrl(partId));
+                if (partRes.ok) {
+                  const partData = await partRes.json();
+                  partInfo = partData?.data ?? partData;
+                }
+              } catch (e) {
+                console.warn("Failed to fetch part info", e);
+              }
+              
+              if (!listing.title || listing.title === "Untitled") {
+                listing.title = partInfo?.value || "Untitled";
+              }
+            }
           }
 
           results.push({ listingId: item.listingId, listing });
@@ -151,9 +173,19 @@ const CartPage = () => {
                     <div className="flex-1">
                       <h2
                         className="font-semibold text-lg cursor-pointer hover:underline"
-                        onClick={() =>
-                          navigate(RoutePaths.LISTING_DETAIL.replace(':listingId', item.listingId))
-                        }
+                        onClick={() => {
+                          if (item.listing.listingTypeId === 2) {
+                            // Part listing
+                            navigate(
+                              RoutePaths.PART_LISTING_DETAIL.replace(":listingId", item.listingId)
+                            );
+                          } else {
+                            // Vehicle listing
+                            navigate(
+                              RoutePaths.LISTING_DETAIL.replace(":listingId", item.listingId)
+                            );
+                          }
+                        }}
                       >
                         {listing.title || "Untitled"}
                       </h2>

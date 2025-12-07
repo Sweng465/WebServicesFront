@@ -260,7 +260,9 @@ const handleAddToCart = () => {
   } else {
     const updatedCart = [
       ...cart,
-      { listingId: Number(listingId) },
+      { listingId: Number(listingId),
+        listingTypeId: 1,
+      },
     ];
     updateCart(updatedCart); // update context and localStorage internally
     alert("Added to cart!");

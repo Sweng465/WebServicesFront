@@ -105,6 +105,10 @@ export const AuthProvider = ({ children }) => {
           const payload = JSON.parse(atob(token.split(".")[1]));
           setAccessToken(token);
           setUser(payload);
+
+          const savedCart = getCart(payload.id);
+          setCart(savedCart);
+          
         } catch (e) {
           console.error("Invalid token", e);
           logout();
