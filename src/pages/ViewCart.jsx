@@ -15,9 +15,9 @@ const CartPage = () => {
   const getContinueShoppingPath = () => {
     const prevPath = location.state?.from || "";
     const partPaths = [
-      RoutePaths.BROWSEPARTS,
-      "/listings/part/",
-      "/browse-part-listings/",
+      RoutePaths.BROWSEPARTS, // /browse-parts
+      RoutePaths.PART_LISTING_DETAIL.replace(':listingId', ''), // /listings/part/
+      RoutePaths.BROWSE_PART_LISTINGS.replace(':partId', ''), // /browse-part-listings/
     ];
 
     const isPart = partPaths.some((p) => prevPath.includes(p));
@@ -25,7 +25,6 @@ const CartPage = () => {
   };
 
   const continueShoppingPath = getContinueShoppingPath();
-
 
   // Fetch latest listing data whenever cart changes
   useEffect(() => {

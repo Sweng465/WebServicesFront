@@ -1,16 +1,12 @@
 import { createContext, useState, useEffect, useCallback } from "react";
 import { getCart, saveCart } from "../utils/cart.js";
-//import { useNavigate} from "react-router-dom";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  //const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState([]); // <-- Add cart state
-
-
 
   // Login: store access token and user info
   const login = (userData, token) => {
@@ -39,8 +35,6 @@ export const AuthProvider = ({ children }) => {
       method: 'POST',
       credentials: 'include',
     });
-    //navigate("/signin");
-    //window.location.href = "/signin";
   }, []);
 
   const refreshAccessToken = useCallback(async () => {
@@ -118,7 +112,6 @@ export const AuthProvider = ({ children }) => {
           setLoading(false); // always stop loading
         }
       }
-      //setLoading(false);
     };
 
     initializeAuth();
