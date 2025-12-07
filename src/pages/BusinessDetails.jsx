@@ -8,6 +8,28 @@ import { RoutePaths } from "../general/RoutePaths.jsx";
 import ReviewForm from "../components/ReviewForm.jsx";
 import { useAuth } from "../context/useAuth.js";
 
+// --- ADDED: react-leaflet + leaflet imports & CSS ---
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
+
+// Vite-safe marker URLs
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: new URL("leaflet/dist/images/marker-icon-2x.png", import.meta.url).href,
+  iconUrl: new URL("leaflet/dist/images/marker-icon.png", import.meta.url).href,
+  shadowUrl: new URL("leaflet/dist/images/marker-shadow.png", import.meta.url).href,
+});
+
+// small helper to force Leaflet to recalculate map size when the container becomes visible
+function InvalidateMapOnLoad() {
+  const map = useMap();
+  useEffect(() => {
+    setTimeout(() => map.invalidateSize(), 200);
+  }, [map]);
+  return null;
+}
+// --- end added ---
+
 // Image helper: copied/adapted from BrowseVehicleListings.jsx
 const isDataUrl = (s) => typeof s === "string" && s.startsWith("data:");
 const isLikelyUrl = (s) => typeof s === "string" && (s.startsWith("http://") || s.startsWith("https://") || s.startsWith("/"));
@@ -454,6 +476,100 @@ const BusinessDetails = () => {
     }, 80);
   };
 
+  // --- ADDED: helper to extract lat/lng from many common shapes ---
+  const getCoordsFromBusiness = (b) => {
+    if (!b) return null;
+    const lat =
+      b.latitude ??
+      b.lat ??
+      b.latitud ??
+      b.location?.lat ??
+      b.coordinates?.lat ??
+      (Array.isArray(b.coordinates) ? b.coordinates[1] : null);
+    const lng =
+      b.longitude ??
+      b.lng ??
+      b.long ??
+      b.lon ??
+      b.location?.lng ??
+      b.coordinates?.lng ??
+      (Array.isArray(b.coordinates) ? b.coordinates[0] : null);
+    if (lat == null || lng == null) return null;
+    const nLat = Number(lat);
+    const nLng = Number(lng);
+    if (Number.isNaN(nLat) || Number.isNaN(nLng)) return null;
+    return [nLat, nLng];
+  };
+  // --- end added ---
+
+  // coords state: prefer explicit lat/lng in record, otherwise geocode the address via Nominatim
+  const [coords, setCoords] = useState(() => getCoordsFromBusiness(business));
+
+  useEffect(() => {
+    // prefer explicit coords from business record
+    const explicit = getCoordsFromBusiness(business);
+    if (explicit) {
+      setCoords(explicit);
+      return;
+    }
+
+    if (!business?.address) {
+      setCoords(null);
+      return;
+    }
+
+    let cancelled = false;
+    const controller = new AbortController();
+
+    // try cached value first (sessionStorage per-address)
+    try {
+      const cached = sessionStorage.getItem(`geocode:${business.address}`);
+      if (cached) {
+        setCoords(JSON.parse(cached));
+        return () => { /* nothing to cleanup */ };
+      }
+    } catch (e) {
+      // non-fatal storage error (quota/permissions) — log for debugging
+      console.debug("sessionStorage read error:", e);
+    }
+
+    (async () => {
+      try {
+        // Nominatim (OpenStreetMap) free geocoding — respectful use only (rate-limited)
+        const q = encodeURIComponent(business.address);
+        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${q}`;
+        const res = await fetch(url, { signal: controller.signal });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) return;
+        const item = data[0];
+        const lat = Number(item.lat);
+        const lon = Number(item.lon);
+        if (Number.isFinite(lat) && Number.isFinite(lon) && !cancelled) {
+          const value = [lat, lon];
+          try {
+            sessionStorage.setItem(`geocode:${business.address}`, JSON.stringify(value));
+          } catch (e) {
+            // non-fatal storage error (quota/permissions) — log for debugging
+            console.debug("sessionStorage write error:", e);
+          }
+          setCoords(value);
+        }
+      } catch (err) {
+        // non-fatal geocoding/network error — log for debugging
+        console.debug("Geocode/Fetch error:", err);
+      }
+    })();
+
+    return () => { cancelled = true; controller.abort(); };
+  }, [business]);
+
+  // debug output
+  useEffect(() => {
+    console.debug("BusinessDetails: business", business);
+    console.debug("BusinessDetails: coords", coords);
+  }, [business, coords]);
+
   if (!numericId) {
     return (
       <div>
@@ -581,7 +697,47 @@ const BusinessDetails = () => {
                           {business.isPullYourself !== undefined && (
                             <p><span className="font-semibold">Pull-It-Yourself:</span> {business.isPullYourself ? "Yes" : "No"}</p>
                           )}
-                          {business.address && <p><span className="font-semibold">Address:</span> {business.address}</p>}
+                          {business.address && (
+                            <>
+                              <p><span className="font-semibold">Address:</span> {business.address}</p>
+
+                              {coords ? (
+                                <div className="mt-3 rounded overflow-hidden border">
+                                  <MapContainer
+                                    center={coords ?? [40.7128, -74.0060]}           // fallback to test center (NYC) while debugging
+                                    zoom={13}
+                                    scrollWheelZoom={false}
+                                    style={{ height: 300, width: "100%" }}          // explicit height is required
+                                  >
+                                    <TileLayer
+                                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                      attribution='&copy; OpenStreetMap contributors'
+                                    />
+                                    {coords && <Marker position={coords}>
+                                      <Popup>
+                                        <div className="text-sm">
+                                          <div className="font-semibold">{business?.name}</div>
+                                          <div>{business?.address}</div>
+                                        </div>
+                                      </Popup>
+                                    </Marker>}
+                                    <InvalidateMapOnLoad />
+                                  </MapContainer>
+                                </div>
+                              ) : (
+                                <div className="mt-2">
+                                  <a
+                                    href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(business.address)}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-blue-600 font-semibold"
+                                  >
+                                    View on map
+                                  </a>
+                                </div>
+                              )}
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
