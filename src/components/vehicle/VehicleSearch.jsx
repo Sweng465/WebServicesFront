@@ -1,11 +1,59 @@
 import { useEffect, useState } from "react";
 import API_ENDPOINTS from "../../config/api.js";
 
-const VehicleSearch = ({ filters, setFilters }) => {
+// Default filter shape for vehicles
+const DEFAULT_FILTERS = {
+  yearId: "",
+  makeId: "",
+  modelId: "",
+  submodelId: "",
+};
+
+// Component handles persistence internally. If parent passes both filters & setFilters, it syncs/persists them.
+const VehicleSearch = ({ filters: externalFilters, setFilters: externalSetFilters }) => {
   const [years, setYears] = useState([]);
   const [makes, setMakes] = useState([]);
   const [models, setModels] = useState([]);
   const [submodels, setSubmodels] = useState([]);
+  const [internalFilters, setInternalFilters] = useState(DEFAULT_FILTERS);
+  const usingExternal = externalFilters && externalSetFilters;
+  const filters = usingExternal ? externalFilters : internalFilters;
+  const setFilters = usingExternal ? externalSetFilters : setInternalFilters;
+  const STORAGE_KEY = 'vehicleFilters';
+  const [loadedPersisted, setLoadedPersisted] = useState(false);
+
+  // Load persisted filters on mount and merge with current
+  useEffect(() => {
+    try {
+      const saved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          setFilters(prev => ({ ...prev, ...DEFAULT_FILTERS, ...parsed }));
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load persisted vehicle filters:', e);
+    } finally {
+      setLoadedPersisted(true);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Persist relevant filter keys on change (after initial load to avoid writing defaults prematurely)
+  useEffect(() => {
+    if (!loadedPersisted) return;
+    try {
+      const toPersist = {
+        yearId: filters.yearId || "",
+        makeId: filters.makeId || "",
+        modelId: filters.modelId || "",
+        submodelId: filters.submodelId || "",
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toPersist));
+    } catch (e) {
+      console.warn('Failed to persist vehicle filters:', e);
+    }
+  }, [filters.yearId, filters.makeId, filters.modelId, filters.submodelId, loadedPersisted]);
 
   // Load all years
   useEffect(() => {
@@ -131,6 +179,10 @@ const VehicleSearch = ({ filters, setFilters }) => {
           ))
         )}
       </select>
+      {/* Small status indicator if loading persisted filters for internal usage */}
+      {!usingExternal && !loadedPersisted && (
+        <p className="col-span-full text-xs text-gray-500 mt-1">Loading saved filters...</p>
+      )}
     </div>
   );
 };
