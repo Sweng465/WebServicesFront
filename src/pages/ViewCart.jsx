@@ -101,7 +101,11 @@ const CartPage = () => {
     };
 
     if (cart.length > 0) loadListingDetails();
-    else setListingData([]);
+    else {
+      setListingData([]);
+      setLoading(false);
+    }
+      
   }, [cart]);
 
   // Cart operations
