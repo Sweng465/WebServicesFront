@@ -1,5 +1,5 @@
 import { RoutePaths } from "../general/RoutePaths.jsx";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { useState, useEffect } from "react";
 import { ShoppingCart, Wrench } from 'lucide-react';
@@ -13,7 +13,9 @@ const navItems = [
 ];
 
 const Header = () => {
-  const { user, logout, cart} = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, logout, cart } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const cartCount = cart.length;
@@ -98,8 +100,11 @@ const Header = () => {
             </Link>
           )}
 
-          <Link
-            to={RoutePaths.VIEWCART}
+          {/* View Cart Button */}
+          <button
+            onClick={() =>
+              navigate(RoutePaths.VIEWCART, { state: { from: location.pathname } })
+            }
             className="relative bg-blue-700 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-md flex items-center gap-1 sm:gap-2 hover:bg-blue-800 text-xs sm:text-sm font-semibold whitespace-nowrap"
           >
             <ShoppingCart className="text-base hidden sm:inline" />
@@ -109,7 +114,7 @@ const Header = () => {
                 {cartCount}
               </span>
             )}
-          </Link>
+          </button>
         </div>
       </div>
     </header>

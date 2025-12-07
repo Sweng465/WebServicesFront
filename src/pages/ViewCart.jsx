@@ -1,14 +1,31 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import API_ENDPOINTS, { buildVehicleDetailUrl, buildPartDetailUrl } from "../config/api";
 import { RoutePaths } from "../general/RoutePaths.jsx";
 import { useAuth } from "../context/useAuth";
 
 const CartPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, cart, updateCart } = useAuth(); // Use cart from AuthProvider
   const [listingData, setListingData] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Determine "continue shopping" target
+  const getContinueShoppingPath = () => {
+    const prevPath = location.state?.from || "";
+    const partPaths = [
+      RoutePaths.BROWSEPARTS,
+      "/listings/part/",
+      "/browse-part-listings/",
+    ];
+
+    const isPart = partPaths.some((p) => prevPath.includes(p));
+    return isPart ? RoutePaths.BROWSEPARTS : RoutePaths.BROWSECARS;
+  };
+
+  const continueShoppingPath = getContinueShoppingPath();
+
 
   // Fetch latest listing data whenever cart changes
   useEffect(() => {
@@ -66,7 +83,7 @@ const CartPage = () => {
               } catch (e) {
                 console.warn("Failed to fetch part info", e);
               }
-              
+
               if (!listing.title || listing.title === "Untitled") {
                 listing.title = partInfo?.value || "Untitled";
               }
@@ -112,6 +129,17 @@ const CartPage = () => {
         </button>
 
         <h1 className="text-3xl font-bold text-center mb-6">Your Cart</h1>
+
+        {/* Instruction text with conditional "continue shopping" link */}
+        <p className="text-center text-gray-700 mb-6">
+          View/edit your cart and proceed to checkout below, or{" "}
+          <button
+            onClick={() => navigate(continueShoppingPath)}
+            className="text-blue-700 hover:underline"
+          >
+            continue shopping
+          </button>.
+        </p>
 
         {loading ? (
           <p className="text-center text-gray-600">Loading cart...</p>
