@@ -37,7 +37,7 @@ const SellItems = () => {
     if (!infoLocked) setinfoOpen(!infoOpen);
   };
   useEffect(() => {
-    const filtersAreValid = [yearId, makeId, modelId, submodelId].every((v) => {
+    const filtersAreValid = [filters.yearId, filters.makeId, filters.modelId, filters.submodelId].every((v) => {
       return v !== "" && v !== null && v !== undefined;
     });
 
@@ -48,7 +48,7 @@ const SellItems = () => {
       setinfoLocked(true);
       setinfoOpen(false);
     }
-  }, [yearId, makeId, modelId, submodelId]);
+  }, [filters.yearId, filters.makeId, filters.modelId, filters.submodelId]);
 
   const [conditions, setConditions] = useState([]);
 
@@ -427,7 +427,7 @@ const SellItems = () => {
     }
   };
 
-  const { yearId, makeId, modelId, submodelId } = filters;
+  //const { yearId, makeId, modelId, submodelId } = filters;
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-orange-600 to-blue-600 text-white">
