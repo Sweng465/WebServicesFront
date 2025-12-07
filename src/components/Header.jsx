@@ -20,7 +20,7 @@ const Header = () => {
   useEffect(() => {
     const cart = getCart(user?.id);
     setCartItems(cart);
-  }, []);
+  }, [user?.id]);
 
   const cartCount = cartItems.length;
 

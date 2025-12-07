@@ -3,7 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import API_ENDPOINTS from "../config/api.js";
 // Removed Base64Image import - we render normal <img> elements now
-import { RoutePaths } from "../general/RoutePaths.jsx";
+//import { RoutePaths } from "../general/RoutePaths.jsx";
+import ListingCard from "../components/ListingCard.jsx";
 
 const isDataUrl = (s) => typeof s === "string" && s.startsWith("data:");
 const isLikelyUrl = (s) => typeof s === "string" && (s.startsWith("http://") || s.startsWith("https://") || s.startsWith("/"));
@@ -178,49 +179,17 @@ const BrowseVehicleListings = () => {
                       const thumbSrc = buildImageSrcFromValue(firstImage);
 
                       return (
-                        <div
+                        <ListingCard
                           key={listingIdValue ?? `listing-${index}`}
-                          className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
-                        >
-                          <div className="p-4">
-                            {thumbSrc ? (
-                              <img
-                                src={thumbSrc}
-                                alt={listing.title ? listing.title : `Listing ${listingIdValue ?? index}`}
-                                className="w-full h-48 object-cover rounded"
-                              />
-                            ) : (
-                              <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-400 rounded">
-                                No image
-                              </div>
-                            )}
-
-                            <h3 className="font-semibold text-lg text-gray-800 mb-2">
-                              ${listing.price?.toLocaleString() || 'N/A'}
-                            </h3>
-                            <p className="text-gray-600 text-sm mb-2">
-                              {listing.description || 'Listing'}
-                            </p>
-                            <p className="text-gray-500 text-xs mb-3">
-                              {listing.date ? new Date(listing.date).toLocaleDateString() : 'Date not provided'}
-                            </p>
-                            <p className="text-sm mb-3">
-                              {listing.isAvailable ? (
-                                <span className="text-green-600 font-medium">Available</span>
-                              ) : (
-                                <span className="text-red-600 font-medium">Not available</span>
-                              )}
-                            </p>
-                            <button
-                              type="button"
-                              onClick={() => navigate(RoutePaths.LISTING_DETAIL.replace(":listingId", listingIdValue))}
-                              className="w-full bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800 font-semibold"
-                              disabled={!listingIdValue}
-                            >
-                              View Details
-                            </button>
-                          </div>
-                        </div>
+                          listing={{
+                            id: listingIdValue,
+                            title: listing.title,
+                            description: listing.description,
+                            price: listing.price,
+                            images: listing.images,
+                          } }
+                          thumbSrc={thumbSrc}
+                        />
                       );
                     })}
                   </div>

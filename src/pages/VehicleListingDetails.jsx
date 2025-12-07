@@ -5,7 +5,7 @@ import Header from "../components/Header.jsx";
 // import Base64Image from "../components/Base64Image";
 import BusinessInfo from "../components/BusinessInfo.jsx";
 import API_ENDPOINTS, { buildVehicleDetailUrl } from "../config/api.js";
-import { getCart, saveCart } from "../utils/cart.js";
+//import { getCart, saveCart } from "../utils/cart.js";
 import { RoutePaths } from "../general/RoutePaths.jsx";
 import { useAuth } from "../context/useAuth";
 

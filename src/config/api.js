@@ -23,6 +23,8 @@ export const API_ENDPOINTS = {
 
   // Listings endpoints
   LISTINGS: `${API_BASE_URL}/api/listings`,
+  VEHICLE_LISTINGS: `${API_BASE_URL}/api/listings/vehicle`,
+  PART_LISTINGS: `${API_BASE_URL}/api/listings/part`,
   // Listings by vehicle id
   LISTINGS_BY_VEHICLE: `${API_BASE_URL}/api/listings/vehicle`,
   CREATE_LISTING: `${API_BASE_URL}/api/listings`,

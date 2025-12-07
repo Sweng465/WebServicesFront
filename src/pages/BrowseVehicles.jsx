@@ -1,11 +1,12 @@
 ﻿import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import VehicleSearch from "../components/vehicle/VehicleSearch";
-import VehicleResultCard from "../components/vehicle/VehicleResultCard";
+
 import Pagination from "../components/Pagination";
 import API_ENDPOINTS from "../config/api.js";
 import { LayoutGrid, List, AArrowUp, AArrowDown  } from 'lucide-react';
-import { RoutePaths } from "../general/RoutePaths.jsx";
+
+import ListingCard from "../components/ListingCard.jsx";
 
 const BrowseVehicles = () => {
     const [vehicles, setVehicles] = useState([]);
@@ -34,8 +35,9 @@ const BrowseVehicles = () => {
                 modelId: filters.modelId || "",
                 submodelId: filters.submodelId || "",
                 });
-                const res = await fetch(`${API_ENDPOINTS.VEHICLES}?${query}`);
+                const res = await fetch(`${API_ENDPOINTS.VEHICLE_LISTINGS}?${query}`);
                 const data = await res.json();
+                console.log("Fetched vehicles data:", data);
 
                 // The backend returns { data: [...], pagination: {...} } or similar structure
                 const vehiclesData = data.data || data.vehicles || data || [];
@@ -163,13 +165,15 @@ const BrowseVehicles = () => {
                         }`}
                       >
                         {vehicles.map((v) => (
-                          <VehicleResultCard key={v.vehicleId} vehicle={v} variant="grid" size={size} actionPath={RoutePaths.BROWSE_VEHICLE_LISTINGS.replace(":vehicleId", v.vehicleId)} actionText={"View Listings"} />
+                          //<VehicleResultCard key={v.vehicleId} vehicle={v} variant="grid" size={size} actionPath={RoutePaths.BROWSE_VEHICLE_LISTINGS.replace(":vehicleId", v.vehicleId)} actionText={"View Listings"} />
+                          <ListingCard listing={v} variant="grid" size={size} key={v.vehicleId} />
                         ))}
                       </div>
                     ) : (
                       <div className="space-y-4">
                         {vehicles.map((v) => (
-                          <VehicleResultCard key={v.vehicleId} vehicle={v} variant="list" size={size} actionPath={RoutePaths.BROWSE_VEHICLE_LISTINGS.replace(":vehicleId", v.vehicleId)} actionText={"View Listings"} />
+                          //<VehicleResultCard key={v.vehicleId} vehicle={v} variant="list" size={size} actionPath={RoutePaths.BROWSE_VEHICLE_LISTINGS.replace(":vehicleId", v.vehicleId)} actionText={"View Listings"} />
+                          <ListingCard listing={v} variant="list" size={size} key={v.vehicleId} />
                         ))}
                       </div>
                     )}

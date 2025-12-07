@@ -6,7 +6,7 @@ import { useAuth } from "../context/useAuth";
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const { user, cart, updateCart } = useAuth(); // Use cart from AuthProvider
+  const { cart, updateCart } = useAuth(); // Use cart from AuthProvider
   const [listingData, setListingData] = useState([]);
   const [loading, setLoading] = useState(true);
 
