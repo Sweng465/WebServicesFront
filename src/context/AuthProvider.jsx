@@ -30,10 +30,10 @@ export const AuthProvider = ({ children }) => {
   // Logout: clear tokens and user state
   const logout = useCallback(() => {
     localStorage.removeItem("token");
-    setAccessToken(null);
     setUser(null);
+    setAccessToken(null);
     setCart([]);
-    //setLoading(false); // important!
+    setLoading(false);
     // call backend logout to clear refresh token cookie
     fetch('http://localhost:3000/api/auth/logout', {
       method: 'POST',
@@ -62,10 +62,7 @@ export const AuthProvider = ({ children }) => {
 
       return data.accessToken;
     } catch (error) {
-      setUser(null);
-      setAccessToken(null);
-      setCart([]);
-      setLoading(false);
+      logout();
       throw error;
     }
   }, [logout]);
@@ -80,10 +77,7 @@ export const AuthProvider = ({ children }) => {
           const now = Date.now() / 1000;
           return payload.exp < now;
         } catch {
-          setUser(null);
-          setAccessToken(null);
-          setCart([]);
-          setLoading(false);
+          logout();
           return true; // treat errors as expired token
         }
       };
@@ -94,10 +88,7 @@ export const AuthProvider = ({ children }) => {
           try {
             token = await refreshAccessToken();
           } catch {
-            setUser(null);
-            setAccessToken(null);
-            setCart([]);
-            setLoading(false);
+            logout();
             return;
           }
         }
@@ -106,10 +97,7 @@ export const AuthProvider = ({ children }) => {
         try {
           token = await refreshAccessToken();
         } catch {
-          setUser(null);
-          setAccessToken(null);
-          setCart([]);
-          setLoading(false);
+          logout();
           return;
         }
       }
@@ -125,10 +113,7 @@ export const AuthProvider = ({ children }) => {
 
         } catch (e) {
           console.error("Invalid token", e);
-          setUser(null);
-          setAccessToken(null);
-          setCart([]);
-          setLoading(false);
+          logout();
         } finally {
           setLoading(false); // always stop loading
         }
@@ -158,10 +143,7 @@ export const AuthProvider = ({ children }) => {
       try {
         token = await refreshAccessToken();
       } catch {
-        setUser(null);
-        setAccessToken(null);
-        setCart([]);
-        setLoading(false);
+        logout();
         throw new Error("Session expired. Please sign in again.");
       }
     }
@@ -179,10 +161,7 @@ export const AuthProvider = ({ children }) => {
         options.headers.Authorization = `Bearer ${newToken}`;
         response = await fetch(url, options);
       } catch {
-        setUser(null);
-        setAccessToken(null);
-        setCart([]);
-        setLoading(false);
+        logout();
         throw new Error("Session expired. Please sign in again.");
       }
     }
