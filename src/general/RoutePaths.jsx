@@ -14,4 +14,5 @@ export const RoutePaths = {
   REVIEWS: '/businesses/:id/reviews',
   BUSINESSES: '/businesses',
   BUSINESS_DETAILS: '/businesses/:id',
+  VIEWCART: '/view-cart',
 };

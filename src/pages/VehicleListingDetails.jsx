@@ -5,6 +5,9 @@ import Header from "../components/Header.jsx";
 // import Base64Image from "../components/Base64Image";
 import BusinessInfo from "../components/BusinessInfo.jsx";
 import API_ENDPOINTS, { buildVehicleDetailUrl } from "../config/api.js";
+import { getCart, saveCart } from "../utils/cart.js";
+import { RoutePaths } from "../general/RoutePaths.jsx";
+import { useAuth } from "../context/useAuth";
 
 const formatCurrency = (value) => {
   if (typeof value !== "number") return "N/A";
@@ -25,6 +28,7 @@ const VehicleListingDetails = () => {
   const [error, setError] = useState(null);
   const [vehicleInfo, setVehicleInfo] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const { user, cart, updateCart } = useAuth(); // pull in authFetch from context
 
   // NEW: source URL/objectURL for the currently selected image
   const [imageSrc, setImageSrc] = useState(null);
@@ -242,9 +246,28 @@ const VehicleListingDetails = () => {
   // const sellerRating = seller?.rating || seller?.averageRating || null;
   // const sellerReviewCount = seller?.reviewCount || seller?.reviewsCount || null;
 
-  const handleAddToCart = () => {
-    // Placeholder for cart integration
-  };
+const handleAddToCart = () => {
+  if (!listing) return;
+  if (!user) {
+    navigate(RoutePaths.SIGNIN);
+    return;
+  }
+
+  const existing = cart.find((c) => c.listingId === Number(listingId));
+
+  if (existing) {
+    alert("Error: This item is already in your cart.");
+  } else {
+    const updatedCart = [
+      ...cart,
+      { listingId: Number(listingId),
+        listingTypeId: 1,
+      },
+    ];
+    updateCart(updatedCart); // update context and localStorage internally
+    alert("Added to cart!");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-600 to-blue-600">

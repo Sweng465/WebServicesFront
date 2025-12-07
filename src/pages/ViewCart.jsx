@@ -1,0 +1,264 @@
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import API_ENDPOINTS, { buildVehicleDetailUrl, buildPartDetailUrl } from "../config/api";
+import { RoutePaths } from "../general/RoutePaths.jsx";
+import { useAuth } from "../context/useAuth";
+
+const CartPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, cart, updateCart } = useAuth(); // Use cart from AuthProvider
+  const [listingData, setListingData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Determine "continue shopping" target
+  const getContinueShoppingPath = () => {
+    const prevPath = location.state?.from || "";
+    const partPaths = [
+      RoutePaths.BROWSEPARTS, // /browse-parts
+      RoutePaths.PART_LISTING_DETAIL.replace(':listingId', ''), // /listings/part/
+      RoutePaths.BROWSE_PART_LISTINGS.replace(':partId', ''), // /browse-part-listings/
+    ];
+
+    const isPart = partPaths.some((p) => prevPath.includes(p));
+    return isPart ? RoutePaths.BROWSEPARTS : RoutePaths.BROWSECARS;
+  };
+
+  const continueShoppingPath = getContinueShoppingPath();
+
+  // Fetch latest listing data whenever cart changes
+  useEffect(() => {
+    const loadListingDetails = async () => {
+      setLoading(true);
+      const results = [];
+
+      for (const item of cart) {
+        try {
+          const res = await fetch(`${API_ENDPOINTS.LISTINGS}/${item.listingId}`);
+          if (!res.ok) {
+            results.push({
+              listingId: item.listingId,
+              error: true,
+              deleted: res.status === 404,
+            });
+            continue;
+          }
+
+          const data = await res.json();
+          const listing = data?.data ?? data;
+          console.log("Listing response data:", listing);
+
+          if (item.listingTypeId == 1) {
+            const vehicleId = listing.itemId;
+            let vehicleInfo = null;
+
+            if (vehicleId) {
+              try {
+                const vehicleRes = await fetch(buildVehicleDetailUrl(vehicleId));
+                if (vehicleRes.ok) {
+                  const vehicleData = await vehicleRes.json();
+                  vehicleInfo = vehicleData?.data ?? vehicleData;
+                }
+              } catch (e) {
+                console.warn("Failed to fetch vehicle info", e);
+              }
+            }
+
+            if (!listing.title || listing.title === "Untitled") {
+              listing.title = vehicleInfo?.value || "Untitled";
+            }
+          }
+
+          if (item.listingTypeId == 2) {
+            const partId = listing.itemId;
+            let partInfo = null;
+            if (partId) {
+              try {
+                const partRes = await fetch(buildPartDetailUrl(partId));
+                if (partRes.ok) {
+                  const partData = await partRes.json();
+                  partInfo = partData?.data ?? partData;
+                }
+              } catch (e) {
+                console.warn("Failed to fetch part info", e);
+              }
+
+              if (!listing.title || listing.title === "Untitled") {
+                listing.title = partInfo?.value || "Untitled";
+              }
+            }
+          }
+
+          results.push({ listingId: item.listingId, listing });
+        } catch {
+          results.push({ listingId: item.listingId, error: true });
+        }
+      }
+
+      setListingData(results);
+      setLoading(false);
+    };
+
+    if (cart.length > 0) loadListingDetails();
+    else {
+      setListingData([]);
+      setLoading(false);
+    }
+      
+  }, [cart]);
+
+  // Cart operations
+  const removeItem = (id) => {
+    const updated = cart.filter((item) => item.listingId !== id);
+    updateCart(updated);
+  };
+
+  const clearCart = () => {
+    updateCart([]);
+  };
+
+  const total = listingData
+    .filter((i) => i.listing && i.listing.isAvailable !== 0)
+    .reduce((sum, item) => sum + Number(item.listing.price), 0);
+
+  return (
+    <div className="min-h-screen w-full bg-gradient-to-br from-orange-600 to-blue-600 text-gray-900 py-10 px-4">
+      <div className="max-w-3xl mx-auto p-6 bg-white bg-opacity-90 rounded-lg shadow-lg">
+        <button
+          onClick={() => navigate(-1)}
+          className="text-blue-700 hover:underline mb-4"
+        >
+          ← Back
+        </button>
+
+        <h1 className="text-3xl font-bold text-center mb-6">Your Cart</h1>
+
+        {/* Instruction text with conditional "continue shopping" link */}
+        <p className="text-center text-gray-700 mb-6">
+          View/edit your cart and proceed to checkout below, or{" "}
+          <button
+            onClick={() => navigate(continueShoppingPath)}
+            className="text-blue-700 hover:underline"
+          >
+            continue shopping
+          </button>.
+        </p>
+
+        {loading ? (
+          <p className="text-center text-gray-600">Loading cart...</p>
+        ) : listingData.length === 0 ? (
+          <p className="text-center text-gray-500">Your cart is empty.</p>
+        ) : (
+          <>
+            <div className="space-y-4">
+              {listingData.map((item) => {
+                const isDeleted = item.deleted;
+                const listing = item.listing;
+
+                if (isDeleted) {
+                  return (
+                    <div key={item.listingId} className="p-4 bg-red-50 rounded-md shadow-sm">
+                      <p className="font-semibold text-red-600">
+                        Listing #{item.listingId} has been removed.
+                      </p>
+                      <button
+                        className="text-blue-700 mt-2 hover:underline"
+                        onClick={() => removeItem(item.listingId)}
+                      >
+                        Remove from cart
+                      </button>
+                    </div>
+                  );
+                }
+
+                if (item.error || !listing) {
+                  return (
+                    <div key={item.listingId} className="p-4 bg-red-50 rounded-md shadow-sm">
+                      <p className="text-red-600">Error loading listing #{item.listingId}</p>
+                      <button
+                        className="text-blue-700 mt-2 hover:underline"
+                        onClick={() => removeItem(item.listingId)}
+                      >
+                        Remove from cart
+                      </button>
+                    </div>
+                  );
+                }
+
+                const unavailable = listing.isAvailable === 0;
+
+                return (
+                  <div key={item.listingId} className="flex gap-4 p-4 bg-white rounded-md shadow-sm items-center">
+                    <div className="w-24 h-24 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
+                      {listing.images?.[0] ? (
+                        <img
+                          src={`data:image/jpeg;base64,${listing.images[0].imageBase64}`}
+                          alt={listing.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-gray-400 text-sm">No image</span>
+                      )}
+                    </div>
+
+                    <div className="flex-1">
+                      <h2
+                        className="font-semibold text-lg cursor-pointer hover:underline"
+                        onClick={() => {
+                          if (item.listing.listingTypeId === 2) {
+                            // Part listing
+                            navigate(
+                              RoutePaths.PART_LISTING_DETAIL.replace(":listingId", item.listingId)
+                            );
+                          } else {
+                            // Vehicle listing
+                            navigate(
+                              RoutePaths.LISTING_DETAIL.replace(":listingId", item.listingId)
+                            );
+                          }
+                        }}
+                      >
+                        {listing.title || "Untitled"}
+                      </h2>
+                      {unavailable && (
+                        <p className="text-red-600 font-semibold mt-1">This vehicle has been sold</p>
+                      )}
+                      <p className="text-gray-700 mt-1">${Number(listing.price).toLocaleString()}</p>
+                    </div>
+
+                    <button
+                      className="text-red-600 font-medium hover:underline"
+                      onClick={() => removeItem(item.listingId)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 p-4 bg-gray-100 rounded-md shadow-inner">
+              <div className="flex justify-between text-lg font-semibold mb-4">
+                <span>Total</span>
+                <span>${total.toLocaleString()}</span>
+              </div>
+              <div className="flex gap-4 flex-wrap">
+                <button
+                  className="flex-1 bg-gray-200 text-gray-900 py-2 rounded-md hover:bg-gray-300"
+                  onClick={clearCart}
+                >
+                  Clear Cart
+                </button>
+                <button className="flex-1 bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800">
+                  Checkout
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default CartPage;

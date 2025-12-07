@@ -1,8 +1,9 @@
 import { RoutePaths } from "../general/RoutePaths.jsx";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ShoppingCart, Wrench } from 'lucide-react';
+import { getCart } from "../utils/cart.js";
 
 const navItems = [
   { label: "Browse Vehicles", href: RoutePaths.BROWSECARS },
@@ -12,8 +13,12 @@ const navItems = [
 ];
 
 const Header = () => {
-  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, logout, cart } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const cartCount = cart.length;
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white bg-opacity-40 backdrop-blur-sm px-4 sm:px-6 py-3 sm:py-4 shadow-md">
@@ -95,13 +100,21 @@ const Header = () => {
             </Link>
           )}
 
-          <Link
-            to="/cart"
-            className="bg-blue-700 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-md flex items-center gap-1 sm:gap-2 hover:bg-blue-800 text-xs sm:text-sm font-semibold whitespace-nowrap"
+          {/* View Cart Button */}
+          <button
+            onClick={() =>
+              navigate(RoutePaths.VIEWCART, { state: { from: location.pathname } })
+            }
+            className="relative bg-blue-700 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-md flex items-center gap-1 sm:gap-2 hover:bg-blue-800 text-xs sm:text-sm font-semibold whitespace-nowrap"
           >
             <ShoppingCart className="text-base hidden sm:inline" />
             View Cart
-          </Link>
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                {cartCount}
+              </span>
+            )}
+          </button>
         </div>
       </div>
     </header>

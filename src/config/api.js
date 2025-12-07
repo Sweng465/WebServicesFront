@@ -44,6 +44,7 @@ export const API_ENDPOINTS = {
 };
 
 export const buildVehicleDetailUrl = (vehicleId) => `${API_BASE_URL}/api/vehicles/${vehicleId}`;
+export const buildPartDetailUrl = (partId) => `${API_BASE_URL}/api/parts/${partId}`;
 export const buildBusinessDetailUrl = (businessId) => `${API_BASE_URL}/api/businesses/${businessId}`;
 
 export default API_ENDPOINTS;
