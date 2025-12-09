@@ -4,6 +4,7 @@ import Header from "../components/Header.jsx";
 import BusinessInfo from "../components/BusinessInfo.jsx";
 import API_ENDPOINTS, { buildPartDetailUrl } from "../config/api";
 import { useAuth } from "../context/useAuth";
+import { RoutePaths } from "../general/RoutePaths.jsx";
 
 const formatCurrency = (value) => {
   if (typeof value !== "number") return "N/A";

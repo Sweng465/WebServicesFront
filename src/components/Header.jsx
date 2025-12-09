@@ -17,11 +17,14 @@ const Header = () => {
   const location = useLocation();
   const { user, logout, cart } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [cartItems, setCartItems] = useState(() =>
+    Array.isArray(cart) ? cart : getCart(user?.id) ?? []
+  );
 
   useEffect(() => {
-    const cart = getCart(user?.id);
-    setCartItems(cart);
-  }, [user?.id]);
+    const stored = Array.isArray(cart) ? cart : getCart(user?.id);
+    setCartItems(stored ?? []);
+  }, [cart, user?.id]);
 
   const cartCount = cartItems.length;
 

@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { RoutePaths } from "../general/RoutePaths.jsx";
 import Base64Image from "./Base64Image";
 
-export default function ListingCard({ listing = {}, thumbSrc = null }) {
+export default function ListingCard({ listing = {}, thumbSrc = null, variant = "grid", size = "small" }) {
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -123,6 +123,51 @@ export default function ListingCard({ listing = {}, thumbSrc = null }) {
   }
 
   const altText = listing?.title || "Listing Image";
+
+  const listSizes =
+    size === "large"
+      ? { card: "flex gap-4 p-4", img: "w-40 h-28", title: "text-lg", meta: "text-sm", btn: "py-3 text-base" }
+      : { card: "flex gap-3 p-3", img: "w-32 h-24", title: "text-base", meta: "text-xs", btn: "py-2 text-sm" };
+
+  if (variant === "list") {
+    return (
+      <div
+        key={listing.id ?? listing._id ?? listing.listingId}
+        className={`border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow ${listSizes.card}`}
+      >
+        {finalImage ? (
+          <div className={`${listSizes.img} flex-shrink-0`}>
+            <Base64Image
+              value={finalImage}
+              mime="image/jpeg"
+              alt={altText}
+              className="w-full h-full object-cover rounded"
+            />
+          </div>
+        ) : (
+          <div className={`${listSizes.img} bg-gray-200 flex items-center justify-center rounded flex-shrink-0`}>
+            <span className="text-gray-500 text-xs">No Image</span>
+          </div>
+        )}
+
+        <div className="flex-1 min-w-0">
+          <p className={`font-semibold ${listSizes.title} truncate`}>{listing.value ?? listing.title}</p>
+          <p className={`text-blue-600 font-semibold mt-1 ${listSizes.meta}`}>
+            {listing?.price != null ? `$${listing.price}` : ""}
+          </p>
+          <div className="mt-2">
+            <button
+              onClick={handleClick}
+              className={`w-full bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition ${listSizes.btn}`}
+              aria-label="View listing details"
+            >
+              View Details
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

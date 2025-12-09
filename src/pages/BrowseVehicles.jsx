@@ -38,23 +38,6 @@ const BrowseVehicles = () => {
     }
   }, []);
 
-    useEffect(() => {
-        const fetchVehicles = async () => {
-            setLoading(true);
-            
-            try {
-                const query = new URLSearchParams({
-                page,
-                limit: 12,
-                yearId: filters.yearId || "",
-                makeId: filters.makeId || "",
-                modelId: filters.modelId || "",
-                submodelId: filters.submodelId || "",
-                });
-                const res = await fetch(`${API_ENDPOINTS.VEHICLE_LISTINGS}?${query}`);
-                const data = await res.json();
-                console.log("Fetched vehicles data:", data);
-
   // Persist card size changes (skip initial default write until loaded)
   useEffect(() => {
     if (!settingsLoaded) return;
@@ -102,7 +85,7 @@ const BrowseVehicles = () => {
           modelId: filters.modelId || "",
           submodelId: filters.submodelId || "",
         });
-        const res = await fetch(`${API_ENDPOINTS.VEHICLES}?${query}`);
+        const res = await fetch(`${API_ENDPOINTS.VEHICLE_LISTINGS}?${query}`);
         const data = await res.json();
         const vehiclesData = data.data || data.vehicles || data || [];
         setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
@@ -133,6 +116,8 @@ const BrowseVehicles = () => {
     setPage(1);
     try { localStorage.removeItem('vehicleFilters'); } catch (e) {console.warn('Failed to clear persisted filters:', e);}
   };
+
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-600 to-blue-600">
         <Header />
@@ -238,15 +223,13 @@ const BrowseVehicles = () => {
                         }`}
                       >
                         {vehicles.map((v) => (
-                          //<VehicleResultCard key={v.vehicleId} vehicle={v} variant="grid" size={size} actionPath={RoutePaths.BROWSE_VEHICLE_LISTINGS.replace(":vehicleId", v.vehicleId)} actionText={"View Listings"} />
-                          <ListingCard listing={v} variant="grid" size={size} key={v.vehicleId} />
+                          <ListingCard listing={v} variant="grid" size={size} key={v.vehicleId ?? v.id} />
                         ))}
                       </div>
                     ) : (
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         {vehicles.map((v) => (
-                          //<VehicleResultCard key={v.vehicleId} vehicle={v} variant="list" size={size} actionPath={RoutePaths.BROWSE_VEHICLE_LISTINGS.replace(":vehicleId", v.vehicleId)} actionText={"View Listings"} />
-                          <ListingCard listing={v} variant="list" size={size} key={v.vehicleId} />
+                          <ListingCard listing={v} variant="list" size={size} key={v.vehicleId ?? v.id} />
                         ))}
                       </div>
                     )}

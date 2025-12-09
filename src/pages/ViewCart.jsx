@@ -8,7 +8,6 @@ const CartPage = () => {
   const navigate = useNavigate();
   const { cart, updateCart } = useAuth(); // Use cart from AuthProvider
   const location = useLocation();
-  const { user, cart, updateCart } = useAuth(); // Use cart from AuthProvider
   const [listingData, setListingData] = useState([]);
   const [loading, setLoading] = useState(true);
 
