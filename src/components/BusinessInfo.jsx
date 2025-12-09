@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { RoutePaths } from "../general/RoutePaths.jsx";
 import { buildBusinessDetailUrl } from "../config/api.js";
 
 const cleanString = (value) => {
@@ -28,6 +30,9 @@ const BusinessInfo = ({ businessId, fallbackBusiness = null, className = "" }) =
   const [business, setBusiness] = useState(() => fallbackBusiness);
   const [loading, setLoading] = useState(() => Boolean(businessId && !fallbackBusiness));
   const [error, setError] = useState(null);
+
+  // Hooks must be called unconditionally — move useNavigate here
+  const navigate = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
@@ -120,8 +125,40 @@ const BusinessInfo = ({ businessId, fallbackBusiness = null, className = "" }) =
     return null;
   }
 
+  // robustly resolve an id from many possible shapes
+  const targetBusinessId =
+    cleanedBusiness?.businessId ??
+    cleanedBusiness?.id ??
+    cleanedBusiness?.business_id ??
+    businessId ??
+    null;
+
+  const handleNavigate = () => {
+    if (!targetBusinessId) {
+      // helpful debug if navigation doesn't happen
+      console.debug("BusinessInfo: no business id to navigate to", { businessId, cleanedBusiness });
+      return;
+    }
+    const template = RoutePaths?.BUSINESS_DETAIL;
+    const path = template ? template.replace(":businessId", String(targetBusinessId)) : `/businesses/${targetBusinessId}`;
+    navigate(path);
+  };
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+      e.preventDefault();
+      handleNavigate();
+    }
+  };
+
   return (
-    <div className={`bg-gray-50 border border-gray-200 rounded-xl p-4 ${className}`}>
+    <div
+      role="link"
+      tabIndex={0}
+      onClick={handleNavigate}
+      onKeyDown={handleKeyDown}
+      aria-label={cleanedBusiness?.name ? `View business ${cleanedBusiness.name}` : "View business details"}
+      className={`bg-gray-50 border border-gray-200 rounded-xl p-4 ${className} cursor-pointer hover:shadow`}
+    >
       <h3 className="text-sm text-gray-500 uppercase tracking-wide mb-1">Business</h3>
 
       {loading && !cleanedBusiness ? (
@@ -135,7 +172,6 @@ const BusinessInfo = ({ businessId, fallbackBusiness = null, className = "" }) =
               {cleanedBusiness.name || `Business #${cleanedBusiness.businessId ?? businessId ?? "?"}`}
             </p>
 
-            {/* Rating summary as 5 stars with partial fill */}
             {(cleanedBusiness.avgRating !== null || cleanedBusiness.reviewsCount !== null) && (
               <div className="flex items-center gap-3 mt-1">
                 <div className="flex items-center gap-1">
@@ -144,7 +180,6 @@ const BusinessInfo = ({ businessId, fallbackBusiness = null, className = "" }) =
                     const fill = Math.max(0, Math.min(1, avg - i)); // 0..1
                     const percent = Math.round(fill * 100);
                     const clipId = `biz-star-${String(cleanedBusiness.businessId ?? businessId ?? "0")}-${i}`;
-                    // star path (same for both layers)
                     const d = "M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.96a1 1 0 00.95.69h4.165c.969 0 1.371 1.24.588 1.81l-3.37 2.45a1 1 0 00-.364 1.118l1.287 3.96c.3.922-.755 1.688-1.54 1.118L10 15.347l-3.691 2.586c-.785.57-1.84-.196-1.54-1.118l1.286-3.96a1 1 0 00-.364-1.118L2.326 9.387c-.783-.57-.38-1.81.588-1.81h4.165a1 1 0 00.95-.69l1.286-3.96z";
 
                     return (
@@ -155,10 +190,8 @@ const BusinessInfo = ({ businessId, fallbackBusiness = null, className = "" }) =
                           </clipPath>
                         </defs>
 
-                        {/* background (empty) star */}
                         <path d={d} fill="#e5e7eb" />
 
-                        {/* filled portion clipped to percent */}
                         <path d={d} fill="#f59e0b" clipPath={`url(#${clipId})`} />
                       </svg>
                     );

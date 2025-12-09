@@ -284,6 +284,55 @@ const PartListingDetails = () => {
                       <p className="text-gray-700 leading-relaxed whitespace-pre-line">{listing.description}</p>
                     </section>
                   )}
+
+                  {/* Part Specifics */}
+                  <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-md">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Part Specifics</h2>
+                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-700">
+                      {[
+                        {
+                          key: "brand",
+                          label: "Brand",
+                          icon: "🏷️",
+                          value: listing?.brand ?? listing?.part?.manufacturer ?? listing?.brandId,
+                        },
+                        {
+                          key: "category1",
+                          label: "Category 1",
+                          icon: "📂",
+                          value: listing?.category1 ?? listing?.category1Name ?? listing?.category1Id,
+                        },
+                        {
+                          key: "category2",
+                          label: "Category 2",
+                          icon: "📁",
+                          value: listing?.category2 ?? listing?.category2Name ?? listing?.category2Id,
+                        },
+                        {
+                          key: "category3",
+                          label: "Category 3",
+                          icon: "🗂️",
+                          value: listing?.category3 ?? listing?.category3Name ?? listing?.category3Id,
+                        },
+                      ]
+                        .filter((s) => s.value !== null && s.value !== undefined && String(s.value).trim() !== "")
+                        .map(({ key, label, icon, value }) => {
+                          const rendered = typeof value === "object" ? value?.value ?? value?.name ?? String(value) : String(value);
+                          return (
+                            <div key={key} className="flex items-start gap-3 p-3 rounded-md hover:bg-gray-50">
+                              <div className="flex-shrink-0 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-lg">
+                                <span aria-hidden>{icon}</span>
+                              </div>
+
+                              <div className="min-w-0">
+                                <dt className="text-xs text-gray-500 uppercase tracking-wide">{label}</dt>
+                                <dd className="mt-1 text-sm font-medium text-gray-900 truncate">{rendered}</dd>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </dl>
+                  </section>
                 </div>
               )}
             </div>

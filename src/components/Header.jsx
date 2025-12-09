@@ -18,7 +18,12 @@ const Header = () => {
   const { user, logout, cart } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const cartCount = cart.length;
+  useEffect(() => {
+    const cart = getCart(user?.id);
+    setCartItems(cart);
+  }, [user?.id]);
+
+  const cartCount = cartItems.length;
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white bg-opacity-40 backdrop-blur-sm px-4 sm:px-6 py-3 sm:py-4 shadow-md">

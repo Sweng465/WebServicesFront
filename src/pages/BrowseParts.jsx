@@ -7,6 +7,7 @@ import VehicleResultCard from "../components/vehicle/VehicleResultCard";
 import Pagination from "../components/Pagination";
 import API_ENDPOINTS from "../config/api.js";
 
+
 const BrowseParts = () => {
     const [parts, setParts] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -123,7 +124,7 @@ const BrowseParts = () => {
                     modelId: filters.modelId || "",
                     submodelId: filters.submodelId || "",
                 });
-                const res = await fetch(`${API_ENDPOINTS.VEHICLES}?${q}`);
+                const res = await fetch(`${API_ENDPOINTS.PART_LISTINGS}?${q}`);
                 const data = await res.json();
                 if (!cancelled) {
                     const list = data.data || data.vehicles || [];

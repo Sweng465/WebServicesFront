@@ -5,7 +5,7 @@ import Header from "../components/Header.jsx";
 // import Base64Image from "../components/Base64Image";
 import BusinessInfo from "../components/BusinessInfo.jsx";
 import API_ENDPOINTS, { buildVehicleDetailUrl } from "../config/api.js";
-import { getCart, saveCart } from "../utils/cart.js";
+//import { getCart, saveCart } from "../utils/cart.js";
 import { RoutePaths } from "../general/RoutePaths.jsx";
 import { useAuth } from "../context/useAuth";
 
@@ -132,7 +132,8 @@ const VehicleListingDetails = () => {
     const isLikelyBase64 = (s) =>
       typeof s === "string" &&
       // quick heuristic: base64 blobs are long and only contain base64 chars (we check length)
-      s.length > 100 && /^[A-Za-z0-9+/=\s]+$/.test(s.replace(/\s/g, "").slice(0, 200));
+      s.replace(/\s/g, "").length > 100 &&
+      /^[A-Za-z0-9+/=]+$/.test(s.replace(/\s/g, "").slice(0, 200));
 
     const load = async () => {
       setImageSrc(null);
@@ -140,31 +141,37 @@ const VehicleListingDetails = () => {
       if (!primaryImage) return;
 
       // 1) If it's already a data URL, use directly
-      if (isDataUrl(primaryImage)) {
+      if (typeof primaryImage === "string" && isDataUrl(primaryImage)) {
         setImageSrc(primaryImage);
         return;
       }
 
       // 2) If it's a plain URL string, use it directly (browser will request it)
-      if (isLikelyUrl(primaryImage)) {
-        setImageSrc(primaryImage);
+      if (typeof primaryImage === "string" && isLikelyUrl(primaryImage)) {
+        // guard against raw base64 that starts with '/', handle below
+        if (primaryImage.startsWith("/") && isLikelyBase64(primaryImage.slice(1))) {
+          const cleaned = primaryImage.slice(1).replace(/\s/g, "");
+          setImageSrc(`data:image/jpeg;base64,${cleaned}`);
+        } else {
+          setImageSrc(primaryImage);
+        }
         return;
       }
 
       // 3) If it's a raw base64 string (no data: prefix), build a data URL
       if (typeof primaryImage === "string" && isLikelyBase64(primaryImage)) {
         // you can change the mime if server provides it; default to jpeg
-        const dataUrl = `data:image/jpeg;base64,${primaryImage.trim()}`;
+        const dataUrl = `data:image/jpeg;base64,${primaryImage.replace(/\s/g, "")}`;
         setImageSrc(dataUrl);
         return;
       }
 
       // 4) If it's an object with a base64 field, use that
-      if (typeof primaryImage === "object") {
+      if (typeof primaryImage === "object" && primaryImage !== null) {
         const base64 = primaryImage.imageBase64 ?? primaryImage.base64 ?? primaryImage.data ?? null;
         if (base64 && isLikelyBase64(base64)) {
           const mime = primaryImage.mime || primaryImage.contentType || "image/jpeg";
-          setImageSrc(`data:${mime};base64,${base64.trim()}`);
+          setImageSrc(`data:${mime};base64,${base64.replace(/\s/g, "")}`);
           return;
         }
 
@@ -218,7 +225,7 @@ const VehicleListingDetails = () => {
       if (typeof value === "string") return value;
       if (typeof value === "number") return value;
       if (typeof value === "object") {
-        return value.value || value.name || value.label || value.trim || null;
+        return value.value || value.name || value.label || null;
       }
       return null;
     };
@@ -238,8 +245,6 @@ const VehicleListingDetails = () => {
   }, [listing, vehicleInfo]);
 
   const seller = listing?.seller ?? null;
-  // const sellerName = seller?.name || seller?.username || listing?.business?.name || "Seller";
-  // const sellerPhone = seller?.phone || seller?.phoneNumber || listing?.business?.phoneNumber || null;
   const sellerEmail = seller?.email || listing?.business?.email || null;
   const contactUrl = listing?.contactUrl || (sellerEmail ? `mailto:${sellerEmail}` : null);
   // const sellerType = seller?.type || (listing?.business ? "Business Seller" : seller ? "Individual Seller" : null);
@@ -330,11 +335,6 @@ const handleAddToCart = () => {
                               }`}
                               aria-label={`View image ${index + 1}`}
                             >
-                              {/* For thumbnails you can either:
-                                  - use the same fetch->objectURL logic, or
-                                  - reuse an existing Base64Image component if thumbnails may be base64.
-                                For simplicity here we'll just use an img with a small src resolution if available.
-                              */}
                               {typeof img === "string" ? (
                                 <img src={img} alt={`thumb ${index + 1}`} className="h-full w-full object-cover" />
                               ) : img?.url ? (
@@ -354,15 +354,11 @@ const handleAddToCart = () => {
                     <div className="flex flex-col gap-6">
                       {/* Main Listing Info Card */}
                       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-md">
-                        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-                          {vehicleSummary}
-                        </h1>
+                        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">{vehicleSummary}</h1>
 
                         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
                           {vehicleInfo?.year && <span>📅 {vehicleInfo.year}</span>}
-                          {listing.mileage && <span>🛣️ {listing.mileage.toLocaleString()} miles</span>}
-                          {/* Placeholder for distance */}
-                          {/* <span>📍 2.3 miles away</span> */}
+                          {listing.mileage && <span>🛣️ {Number(listing.mileage).toLocaleString()} miles</span>}
                         </div>
 
                         <p className="mt-4 text-3xl font-bold text-gray-900 sm:text-4xl">
@@ -414,24 +410,84 @@ const handleAddToCart = () => {
                     <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-md">
                       <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-semibold text-gray-900">Description</h2>
-                        <p className="text-sm text-gray-500">
-                          Listed on: {formatDate(listing.date)}
-                        </p>
+                        <p className="text-sm text-gray-500">Listed on: {formatDate(listing.date)}</p>
                       </div>
-                      <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                        {listing.description}
-                      </p>
+                      <p className="text-gray-700 leading-relaxed whitespace-pre-line">{listing.description}</p>
                     </section>
                   )}
 
+                  {/* Vehicle Specifics (moved below Description) */}
+                  <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-md">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Vehicle Specifics</h2>
+                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-700">
+                      {[
+                        {
+                          key: "year",
+                          label: "Year",
+                          icon: "📅",
+                          value: vehicleInfo?.year ?? listing?.year ?? listing?.vehicle?.year,
+                        },
+                        {
+                          key: "make",
+                          label: "Make",
+                          icon: "🏷️",
+                          value:
+                            (vehicleInfo?.make && (vehicleInfo.make.value ?? vehicleInfo.make)) ??
+                            listing?.vehicle?.make ??
+                            listing?.make,
+                        },
+                        {
+                          key: "model",
+                          label: "Model",
+                          icon: "🚗",
+                          value:
+                            (vehicleInfo?.model && (vehicleInfo.model.value ?? vehicleInfo.model)) ??
+                            listing?.vehicle?.model ??
+                            listing?.model,
+                        },
+                        {
+                          key: "submodel",
+                          label: "Submodel",
+                          icon: "🔖",
+                          value:
+                            (vehicleInfo?.submodel && (vehicleInfo.submodel.value ?? vehicleInfo.submodel)) ??
+                            listing?.vehicle?.submodel ??
+                            listing?.submodel,
+                        },
+                        {
+                          key: "condition",
+                          label: "Condition",
+                          icon: "⚙️",
+                          value: listing?.condition ?? listing?.vehicle?.condition ?? null,
+                        },
+                      ]
+                        .filter((s) => s.value !== null && s.value !== undefined && String(s.value).trim() !== "")
+                        .map(({ key, label, icon, value }) => {
+                          const rendered =
+                            typeof value === "object" ? value?.value ?? value?.name ?? String(value) : String(value);
+                          return (
+                            <div key={key} className="flex items-start gap-3 p-3 rounded-md hover:bg-gray-50">
+                              <div className="flex-shrink-0 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-lg">
+                                <span aria-hidden>{icon}</span>
+                              </div>
+
+                              <div className="min-w-0">
+                                <dt className="text-xs text-gray-500 uppercase tracking-wide">{label}</dt>
+                                <dd className="mt-1 text-sm font-medium text-gray-900 truncate">{rendered}</dd>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </dl>
+                  </section>
+
                   {/* Available Parts Section (Placeholder) */}
-                  {/* This section can be built out later with its own component and data fetching */}
                   <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-md">
                     <h2 className="text-xl font-semibold text-gray-900 mb-4">Available Parts from this Car</h2>
                     <div className="text-center text-gray-500 py-8">
                       <p>Part listings are not yet implemented.</p>
                     </div>
-                  </section>          
+                  </section>
                 </div>
               )}
             </div>
