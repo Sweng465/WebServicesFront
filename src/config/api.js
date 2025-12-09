@@ -24,9 +24,12 @@ export const API_ENDPOINTS = {
 
   // Listings endpoints
   LISTINGS: `${API_BASE_URL}/api/listings`,
+  VEHICLE_LISTINGS: `${API_BASE_URL}/api/listings/vehicle`,
+  PART_LISTINGS: `${API_BASE_URL}/api/listings/part`,
   // Listings by vehicle id
   LISTINGS_BY_VEHICLE: `${API_BASE_URL}/api/listings/vehicle`,
   CREATE_LISTING: `${API_BASE_URL}/api/listings`,
+  LISTING_BY_BUSINESS: `${API_BASE_URL}/api/listings/business/:businessId`,
 
   // User endpoints
   USERS: `${API_BASE_URL}/api/users`,
@@ -36,11 +39,15 @@ export const API_ENDPOINTS = {
   SELLERS: `${API_BASE_URL}/api/sellers`,
   BUSINESSES: `${API_BASE_URL}/api/businesses`,
 
+  // Reviews endpoints
+  REVIEWS: `${API_BASE_URL}/api/businesses/:id/reviews`,
+
   // Address endpoints
   ADDRESS: `${API_BASE_URL}/api/address`,
 };
 
 export const buildVehicleDetailUrl = (vehicleId) => `${API_BASE_URL}/api/vehicles/${vehicleId}`;
+export const buildPartDetailUrl = (partId) => `${API_BASE_URL}/api/parts/${partId}`;
 export const buildBusinessDetailUrl = (businessId) => `${API_BASE_URL}/api/businesses/${businessId}`;
 
 export default API_ENDPOINTS;

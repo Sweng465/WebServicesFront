@@ -2,22 +2,53 @@ import { useState } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import API_ENDPOINTS from "../config/api.js";
+import FormField from "../components/forms/FormField";
+import { Eye, EyeOff } from "lucide-react";
 
 export const SignIn = () => {
   const navigate = useNavigate();
   const { user, login } = useAuth();
-  
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [formSubmitAttempted, setFormSubmitAttempted] = useState(false);
 
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
+  // Form state
+  const [form, setForm] = useState({
+    username: "",
+    password: "",
+  });
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  const requiredFields = [
+    "username",
+    "password",
+  ];
+
+  const isFormValid = () => { // check if all required fields are filled
+    return requiredFields.every((field) => {
+      const value = form[field];
+      return value !== "" && value !== null && value !== undefined;
+    });
+  };
+
+  const handleChange = (field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormSubmitAttempted(true);
 
-    const payload = { username, password }; // CHANGE BACK TO EMAIL
+    if (!isFormValid()) {
+      return; // fields will turn red
+    }
+
+    const payload = {
+      username: form.username,
+      password: form.password,
+    };
 
     try {
       const response = await fetch(API_ENDPOINTS.SIGN_IN, {
@@ -33,11 +64,8 @@ export const SignIn = () => {
 
       if (response.ok) {
         console.log("Login successful:", data);
-        //localStorage.setItem("token", data.token); // store token locally
-        //localStorage.setItem("user", JSON.stringify({ token: data.token }));
         login(data.user, data.accessToken);  // update auth context state
         navigate("/"); // send user to homepage on successful login
-        //setTimeout(() => navigate("/"), 0);
       } else {
         console.error("Login failed:", data.message);
       }
@@ -45,6 +73,10 @@ export const SignIn = () => {
       console.error("Error connecting to backend:", error);
     }
   };
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-600 to-blue-600 px-4 py-12">
@@ -57,48 +89,48 @@ export const SignIn = () => {
           Sign in to access your account
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Username
-            </label>
-            <input
-              id="username"
-              name="username"
-              type="text" // CHANGE BACK TO EMAIL
-              required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder="burger1983"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-2">
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Password
-            </label>
-            <input
+          {/* Username */}
+          <FormField
+            label="Username"
+            id="username"
+            type="text"
+            required
+            value={form.username}
+            placeHolder="Username"
+            onChange={(e) => handleChange("username", e.target.value)}
+            maxLength={20}
+            error={formSubmitAttempted && !form.username ? "Username is required." : ""}
+          />
+
+          {/* Password */}
+          <div className="relative">
+            <FormField
+              label="Password"
               id="password"
-              name="password"
-              type="password"
+              type={showPassword ? "text" : "password"} 
               required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder="••••••••"
+              value={form.password}
+              placeHolder="Password"
+              onChange={(e) => handleChange("password", e.target.value)}
+              maxLength={30}
+              error={formSubmitAttempted && !form.password ? "Password is required." : ""}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-[calc(50%+2px)] transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
           </div>
 
+
+          {/* Submit Button */}
           <button
             type="submit"
-            className="w-full py-3 rounded-lg bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition duration-200"
+            className="mt-2 w-full py-3 rounded-lg bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition duration-200"
           >
             Sign In
           </button>

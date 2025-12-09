@@ -6,12 +6,14 @@ import API_ENDPOINTS from "../config/api.js";
 import Converter from "../imageConversion/ImageConverter.js";
 import { RoutePaths } from "../general/RoutePaths.jsx";
 import { useNavigate } from "react-router-dom";
-import Collapsible from "../components/forms/Collapsible";
+import FormField from "../components/forms/FormField";
+import CollapsibleToggle from "../components/forms/CollapsibleToggle";
 
 const SellItems = () => {
   const { user, loading, authFetch, accessToken } = useAuth();
   const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
+  const [formSubmitAttempted, setFormSubmitAttempted] = useState(false);
   const borderStyle = `border border-gray-300 rounded-lg shadow-sm 
     focus:outline-none focus:ring-2 focus:ring-blue-700 transition`
 
@@ -27,6 +29,27 @@ const SellItems = () => {
     modelId: "",
     submodelId: "",
   });
+
+  // Keep Listing Info collapsible locked until a vehicle is selected
+  const [infoOpen, setinfoOpen] = useState(true);
+  const [infoLocked, setinfoLocked] = useState(true); // cannot toggle until vehicle selected
+  const toggleInfo = () => {
+    if (!infoLocked) setinfoOpen(!infoOpen);
+  };
+  useEffect(() => {
+    const filtersAreValid = [filters.yearId, filters.makeId, filters.modelId, filters.submodelId].every((v) => {
+      return v !== "" && v !== null && v !== undefined;
+    });
+
+    if (filtersAreValid) {
+      setinfoLocked(false);
+      setinfoOpen(true);
+    } else {
+      setinfoLocked(true);
+      setinfoOpen(false);
+    }
+  }, [filters.yearId, filters.makeId, filters.modelId, filters.submodelId]);
+
   const [conditions, setConditions] = useState([]);
 
   // Image upload state
@@ -90,6 +113,9 @@ const SellItems = () => {
   }, [accessToken, navigate]);
 
 
+  
+
+
   /*
   useEffect(() => {
     if (!user || !accessToken) return; // wait until user & token are loaded
@@ -149,6 +175,7 @@ const SellItems = () => {
   //if (Number(user.roleId) !== 2) return <p>Redirecting...</p>;
   if (!profile) return <p>Loading profile...</p>; // wait for auth state
 
+
   const fetchVehicleId = async (filters) => {
     const query = new URLSearchParams({
       yearId: filters.yearId,
@@ -167,7 +194,7 @@ const SellItems = () => {
     return vehicles[0].vehicleId;
   };
 
-  const PRICE_LIMIT = 18; // maximum digits before decimal (optional)
+  const PRICE_LIMIT = 6; // maximum digits before decimal (optional)
 
   const handlePriceChange = (value) => {
     // Allow only digits and optional decimal point, max 2 decimals
@@ -183,12 +210,48 @@ const SellItems = () => {
     }));
   };
 
+  const MAX_IMAGES = 20;
+  const MAX_FILE_MB = 10;
+  const ACCEPT_TYPES = ["image/jpeg", "image/png", "image/jpg"];
+
   // File input change: convert files to data URLs for preview and for sending
   const handleFileChange = (e) => {
     const chosenFiles = Array.from(e.target.files || []);
     if (chosenFiles.length === 0) return;
 
-    const readers = chosenFiles.map((file) => {
+    // File amount checking
+    // Prevent exceeding limit
+    if (images.length >= MAX_IMAGES) {
+      alert(`You can upload up to ${MAX_IMAGES} photos.`);
+      return;
+    }
+
+    // Trim selected files so total does not exceed MAX_IMAGES
+    const availableSlots = MAX_IMAGES - images.length;
+    const limitedFiles = chosenFiles.slice(0, availableSlots);
+
+    if (limitedFiles.length < chosenFiles.length) {
+      alert(`Only ${availableSlots} more photo(s) can be added (max ${MAX_IMAGES}).`);
+      return;
+    }
+
+    // File size/type checking
+    const validFiles = [];
+    chosenFiles.forEach((file) => {
+      if (file.size > MAX_FILE_MB * 1024 * 1024) {
+        alert(`${file.name} is too large. Max size is ${MAX_FILE_MB}MB`);
+        return;
+      }
+      if (!ACCEPT_TYPES.includes(file.type)) {
+        alert(`${file.name} is not an allowed file type.`);
+        return;
+      }
+      validFiles.push(file);
+    });
+
+    if (validFiles.length === 0) return;
+
+    const readers = validFiles.map((file) => {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => {
@@ -287,6 +350,11 @@ const SellItems = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormSubmitAttempted(true);
+
+    if (!isFormValid() || !isFiltersValid()) {
+      return; // fields will turn red
+    }
 
     try {
       const vehicleId = await fetchVehicleId(filters);
@@ -322,8 +390,18 @@ const SellItems = () => {
         }
       }).filter(Boolean);
 
+      const business = await authFetch(`${API_ENDPOINTS.BUSINESSES}/user/${user.id}`, {
+              method: "GET",
+              headers: { "Content-Type": "application/json" },
+            });
+
+      console.log("Business fetch response:", business);
+      const businessData = await business.json();
+      console.log("Business data:", businessData);
+      const businessInfo = businessData.data;
+
       const payload = {
-        businessId: 1,
+        businessId: businessInfo.businessId,
         date: new Date().toISOString(),
         price: parseFloat(form.price),
         description: form.description,
@@ -349,6 +427,8 @@ const SellItems = () => {
     }
   };
 
+  //const { yearId, makeId, modelId, submodelId } = filters;
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-orange-600 to-blue-600 text-white">
       <Header />
@@ -362,50 +442,54 @@ const SellItems = () => {
             <VehicleSearch filters={filters} setFilters={setFilters} />
           </div>
 
-          <Collapsible title="Listing Information">
-            <div className="space-y-4">
+          <CollapsibleToggle
+            title="Listing Information"
+            isOpen={infoOpen}
+            onToggle={toggleInfo}
+          >
+            <div className="space-y-1">
               {/* Description */}
-              <div>
-                <label className="block mb-1 font-medium">Description</label>
-                <textarea
-                  placeholder="Ex. '02 Ford Ranger, failed inspection x4 due to excessive rust."
-                  maxLength="300"
-                  value={form.description}
-                  onChange={(e) => handleChange("description", e.target.value)}
-                  className={`w-full p-2 ${borderStyle}`}
-                  rows={4}
-                />
-              </div>
+              <FormField
+                label="Description"
+                as="textarea"
+                required
+                value={form.description}
+                onChange={(e) => handleChange("description", e.target.value)}
+                rows={4}
+                maxLength={300}
+                helpText="Max 300 characters"
+                placeHolder="Ex. Silver Ford Ranger '02, heavily rusted frame."
+                error={formSubmitAttempted && !form.description ? "Description is required." : ""}
+              />
+
 
               {/* Condition */}
-              <div>
-                <label className="block mb-1 font-medium">Condition</label>
-                <select
-                  value={form.conditionId}
-                  onChange={(e) => handleChange("conditionId", e.target.value)}
-                  className={`w-full p-2 ${borderStyle}`}
-                  required
-                >
-                  <option value="">Select Condition</option>
-                  {conditions.map(c => <option key={c.conditionId} value={c.conditionId}>{c.value}</option>)}
-                </select>
-              </div>
+              <FormField
+                label="Condition"
+                as="select"
+                required
+                value={form.conditionId}
+                onChange={(e) => handleChange("conditionId", e.target.value)}
+                error={formSubmitAttempted && !form.conditionId ? "Please select a condition." : ""}>
+                <option value="">Select Condition</option>
+                {conditions.map(c => (
+                  <option key={c.conditionId} value={c.conditionId}>
+                    {c.value}
+                  </option>
+                ))}
+              </FormField>
 
               {/* Price */}
-              <div>
-                <label className="block mb-1 font-medium">Price</label>
-                <input
-                  type="number"
-                  placeholder="Ex. 89.99"
-
-                  value={form.price}
-                  onChange={(e) => handlePriceChange(e.target.value)}
-                  className={`w-full p-2 ${borderStyle}`}
-                  inputMode="decimal"
-                  required
-                />
-              </div>
-
+              <FormField
+                label="Price"
+                type="text"
+                inputMode="numeric"
+                required
+                value={form.price}
+                onChange={(e) => handlePriceChange(e.target.value)}
+                placeHolder="$"
+                error={formSubmitAttempted && !form.price ? "Price is required." : ""}
+              />
 
               {/* Hidden file input + styled button with preview */}
               <input
@@ -421,7 +505,7 @@ const SellItems = () => {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full p-2 bg-gray-300 text-gray-800 rounded flex items-center gap-3"
+                  className="w-full p-2 bg-gray-300 hover:bg-gray-200 text-gray-800 rounded flex items-center gap-3"
                 >
                   {images.length > 0 ? (
                     <>
@@ -429,7 +513,10 @@ const SellItems = () => {
                       <span className="font-semibold">{images.length} photo{images.length > 1 ? 's' : ''} selected</span>
                     </>
                   ) : (
-                    <span className="font-semibold">Upload Photos</span>
+                    <div className="w-full flex flex-col items-center leading-tight">
+                      <span className="font-semibold w-full text-center">Upload Photos</span>
+                      <span className="text-xs font-normal gap-y-2 text-gray-600">.png, .jpg, .jpeg (Max {MAX_FILE_MB} MB, max {MAX_IMAGES} photos)</span>
+                    </div>
                   )}
                 </button>
 
@@ -453,7 +540,7 @@ const SellItems = () => {
                 )}
               </div>
             </div>
-          </Collapsible>
+          </CollapsibleToggle>
 
           {/* Create Listing Button */}
           <div className="relative group w-full">

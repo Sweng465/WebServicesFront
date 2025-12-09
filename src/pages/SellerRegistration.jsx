@@ -10,10 +10,13 @@ import CreditEntry from "../components/forms/CreditEntry";
 import BankEntry from "../components/forms/BankEntry";
 import Collapsible from "../components/forms/Collapsible";
 import CollapsibleToggle from "../components/forms/CollapsibleToggle";
+import FormField from "../components/forms/FormField";
+import FormFieldCheckbox from "../components/forms/FormFieldCheckbox";
 
 const SellerRegistration = () => {
   const { user, authFetch } = useAuth();
   const navigate = useNavigate();
+  const [formSubmitAttempted, setFormSubmitAttempted] = useState(false);
 
   const [form, setForm] = useState({
     // seller id verification
@@ -41,8 +44,7 @@ const SellerRegistration = () => {
     accountHolderName: "",
     routingNumber: "",
     accountNumber: "",
-    accountType: "",
-    bankName: "",
+    accountType: "checking",
   });
 
   const requiredFields = [
@@ -61,7 +63,6 @@ const SellerRegistration = () => {
     "routingNumber",
     "accountNumber",
     "accountType",
-    "bankName",
     "phone1",
     "phone2",
     "phone3",
@@ -91,21 +92,21 @@ const SellerRegistration = () => {
     }));
   };
 
+  const MAX_FILE_MB = 1;
+  const ACCEPT_TYPES = ["image/jpeg", "image/png", "image/jpg"];
+
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const validTypes = ["image/png", "image/jpeg", "image/jpg"];
-    const maxSize = 1 * 1024 * 1024; // 1 MB
-
-    if (!validTypes.includes(file.type)) { // validate file type
-      alert("Only .png, .jpg, or .jpeg files are allowed.");
+    if (!ACCEPT_TYPES.includes(file.type)) { // validate file type
+      alert(`${file.name} is not an allowed file type.`);
       e.target.value = "";
       return;
     }
 
-    if (file.size > maxSize) { // validate file size
-      alert("File size must be less than 1 MB.");
+    if (file.size > MAX_FILE_MB * 1024 * 1024) { // validate file size
+      alert(`${file.name} is too large. Max size is ${MAX_FILE_MB}MB`);
       e.target.value = "";
       return;
     }
@@ -124,10 +125,10 @@ const SellerRegistration = () => {
     }, 350);
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    let thisSellerId;
+    setFormSubmitAttempted(true);
 
     if (!isFormValid()) {
       alert("Please fill out all required fields.");
@@ -135,24 +136,6 @@ const SellerRegistration = () => {
     }
 
     try {
-      // create seller
-      const sellerPayload = {
-        userId: user.id,
-        idVerified: form.idVerified,
-      };
-
-      const sellerRes = await authFetch(API_ENDPOINTS.SELLERS, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sellerPayload),
-      });
-      const sellerData = await sellerRes.json();
-
-      if (!sellerRes.ok) throw new Error(sellerData.message || "Error creating seller");
-      thisSellerId = sellerData.data.sellerId;
-      console.log("Seller created:", sellerData);
-
-
       // update user role to seller
       const roleRes = await authFetch(`${API_ENDPOINTS.USERS}/${user.id}`, {
         method: "PUT",
@@ -167,7 +150,8 @@ const SellerRegistration = () => {
 
       // create business
       const businessPayload = {
-        sellerId: thisSellerId,
+        userId: user.id,
+        isVerified: form.idVerified,
         name: form.name,
         phoneNumber: Number(`${form.phone1}${form.phone2}${form.phone3}`),
         isPullYourself: form.isPullYourself,
@@ -273,10 +257,10 @@ const SellerRegistration = () => {
             isOpen={step2Open}
             onToggle={toggleStep2} // disabled until ID uploaded
           >
-            <div className="space-y-4">
+            <div className="space-y-2">
               {/* Address */}
               <Collapsible title="Business Address">
-                <AddressEntry form={form} handleChange={handleChange} />
+                <AddressEntry form={form} handleChange={handleChange} formSubmitAttempted={formSubmitAttempted} />
               </Collapsible>
 
               {/* Billing Information */}
@@ -288,7 +272,7 @@ const SellerRegistration = () => {
                   </p>
                 </label>
               </div>
-                <CreditEntry form={form} handleChange={handleChange} />
+                <CreditEntry form={form} handleChange={handleChange} formSubmitAttempted={formSubmitAttempted} />
               </Collapsible>
 
               {/* Payout Information */}
@@ -300,61 +284,46 @@ const SellerRegistration = () => {
                     </p>
                   </label>
                 </div>
-                <BankEntry form={form} handleChange={handleChange} />
+                <BankEntry form={form} handleChange={handleChange} formSubmitAttempted={formSubmitAttempted} />
               </Collapsible>
 
               {/* Phone Number + Business Type Row */}
               <div className="flex flex-wrap items-start gap-x-8 gap-y-4">
                 {/* Phone Number */}
                 <div className="flex-shrink-0">
-                  <PhoneEntry form={form} handleChange={handleChange} />
+                  <PhoneEntry form={form} handleChange={handleChange} formSubmitAttempted={formSubmitAttempted} />
                 </div>
 
                 {/* Business Type */}
                 <div className="flex items-start flex-1 min-w-[220px]">
                   <div>
                     <label className="block mb-1 font-medium">Type</label>
-                    <div className="flex">
-                      <div className="flex items-center h-5">
-                        <input
-                          id="helper-checkbox"
-                          aria-describedby="helper-checkbox-text"
-                          type="checkbox"
-                          value={form.isPullYourself}
-                          onChange={(e) => handleChange("isPullYourself", e.target.value)}
-                          className="w-4 h-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-700 transition" />
-                      </div>
-                      <div className="ms-2 text-sm">
-                        <label
-                          htmlFor="helper-checkbox"
-                          className="font-medium">
-                          My Business is Pull-It-Yourself
-                        </label>
-                        <p
-                          id="helper-checkbox-text"
-                          className="text-gray-500 text-xs font-normal">
-                          Customers must come to the yard and retrieve their purchased
-                          item(s) themselves.
-                        </p>
-                      </div>
-                    </div>
+                    <FormFieldCheckbox
+                      label="My Business is Pull-It-Yourself"
+                      checked={form.isPullYourself === 1}
+                      onChange={() =>
+                        handleChange("isPullYourself", form.isPullYourself ? 0 : 1)
+                      }
+                      helpText="Customers must come to the yard and retrieve their purchased item(s) themselves."
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Description */}
-              <div>
-                <label className="block mb-1 font-medium">Description</label>
-                <textarea
-                  maxLength="500"
-                  placeholder="Ex. Here at John’s Junk Yard, we value your junk. We treat it like gold. We offer fair prices for all of our items. Beware Billy. (Max 500 characters)"
-                  value={form.description}
-                  onChange={(e) => handleChange("description", e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-700 transition"
-                  rows={4}
-                />
-              </div>
-
+              <FormField
+                label="Description"
+                type="text"
+                as="textarea"
+                required
+                value={form.description}
+                placeholder="Ex. Here at John’s Junk Yard, we value your junk. We treat it like gold. We offer fair prices for all of our items. Beware Billy."
+                onChange={(e) => handleChange("description", e.target.value)}
+                maxLength={500}
+                rows={4}
+                helpText="Max 500 characters."
+                error={formSubmitAttempted && !form.description ? "Description is required." : ""}
+              />
             </div>
           </CollapsibleToggle>
 
