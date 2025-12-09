@@ -49,7 +49,7 @@ const PartResultCard = ({ part }) => {
         {/* View Listings Button */}
         <button 
           onClick={handleViewListings}
-          className="w-full bg-blue-600 text-white py-2 sm:py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
+          className="w-full bg-blue-600 text-white py-2 sm:py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base mt-auto"
         >
           View Listings
         </button>
