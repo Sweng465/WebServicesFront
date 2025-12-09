@@ -10,11 +10,12 @@ import { Eye, EyeOff } from "lucide-react";
 
 const EditProfile = () => {
   const navigate = useNavigate();
-  const { user, authFetch, accessToken } = useAuth(); // pull in authFetch from context
+  const { user, login, authFetch, accessToken } = useAuth(); // pull in authFetch from context
   const [profile, setProfile] = useState(null);
   const [formSubmitAttempted, setFormSubmitAttempted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const regSelVils = ``;
 
   // Form state
@@ -56,140 +57,179 @@ const EditProfile = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setFormSubmitAttempted(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setFormSubmitAttempted(true);
 
-    //const payload = { user, username, email, password };
-    const payload = {
-      userId: user.id,
-      username: form.username || profile.username,
-      email: form.email || profile.email,
-      password: form.password || null,
-    };
+  if (form.password && form.password !== form.passwordConfirm) {
+    alert("Passwords do not match.");
+    return;
+  }
 
-    try {
+  const fieldsToUpdate = {};
+
+  if (form.username && form.username !== profile.username)
+    fieldsToUpdate.username = form.username;
+
+  if (form.email && form.email !== profile.email)
+    fieldsToUpdate.email = form.email;
+
+  if (form.password) fieldsToUpdate.password = form.password;
+
+  try {
+    // Update each field individually
+    for (const [key, value] of Object.entries(fieldsToUpdate)) {
+      const payload = { userId: user.id, [key]: value };
       const response = await fetch(API_ENDPOINTS.UPDATE_LOGIN, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
         credentials: "include",
       });
 
       const data = await response.json();
-      console.log("Update login response data:", data);  // <-- add here
+      console.log(`Update ${key} response:`, data);
 
-      if (response.ok) {
-        console.log("Update login successful:", data);
-        alert("Profile information successfully updated!");
-        //login(data.user, data.accessToken);
-        navigate(RoutePaths.PROFILE);
-      } else {
-        console.error("Update login failed:", data.message);
-        alert("Update login failed: " + data.message);
+      if (!response.ok) {
+        alert(`Failed to update ${key}: ${data.message}`);
+        return; // stop further updates if one fails
       }
-    } catch (error) {
-      console.error("Error connecting to backend:", error);
-      alert("Unable to connect to server.");
+
+      // Update context after each successful change
+      if (key === "username" || key === "email") {
+        login(data.user, data.accessToken);
+      }
     }
-  };
+
+    alert("Profile updated successfully!");
+  } catch (error) {
+    console.error("Error connecting to backend:", error);
+    alert("Unable to connect to server.");
+  }
+};
+
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-orange-600 to-blue-600 flex flex-col items-center">
+    <div className="min-h-screen w-full bg-gradient-to-br from-orange-600 to-blue-600 flex flex-col">
       <Header />
-      <div className="space-y-4 items-center max-w-3xl min-w-100 mx-auto p-6 bg-white rounded-lg shadow-lg mt-6 flex flex-col">
-        <h1 className="text-2xl font-bold mb-4 text-center"> Edit Profile </h1>
 
+      <div className="w-full flex justify-center mt-10 px-4">
+        <div className="w-full max-w-3xl bg-white shadow-lg rounded-lg p-8 space-y-8">
 
-        <form onSubmit={handleSubmit}>
-          {/* Update to get user's icon from database (replace w/ default if null) */}
-          <div>
-            <label className="block mb-1 font-medium">Icon</label>
+          {/* Title */}
+          <h1 className="text-3xl font-bold text-center">Edit Profile</h1>
+
+          {/* Profile Icon */}
+          <div className="flex flex-col items-center">
             <img
               src={defaultIcon}
               alt="User profile picture"
-              className="w-[150px] h-[150px] object-cover rounded-full shadow-md"
+              className="w-36 h-36 rounded-full shadow-md object-cover mb-3"
             />
           </div>
 
-          {/* Username */}
-          <FormField
-            label="New Username"
-            id="username"
-            type="text"
-            value={form.username}
-            placeHolder={profile.username}
-            onChange={(e) => handleChange("username", e.target.value)}
-            maxLength={20}
-            helpText="5-20 characters"
-          />
+          <form onSubmit={handleSubmit} className="w-full space-y-8">
 
-          {/* Email */}
-          <FormField
-            label="New Email Address"
-            id="email"
-            type="email"
-            value={form.email}
-            placeHolder={profile.email}
-            onChange={(e) => handleChange("email", e.target.value)}
-            maxLength={50}
-          />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          {/* Password */}
-          <div className="flex items-center w-full">
-            <FormField
-              label="New Password"
-              id="password"
-              type={showPassword ? "text" : "password"}
-              value={form.password}
-              placeHolder="New Password"
-              onChange={(e) => handleChange("password", e.target.value)}
-              maxLength={30}
-              helpText="8-30 characters"
-              className="flex-1"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="ml-2 text-gray-500 hover:text-gray-700"
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
-          </div>
+              {/* Username + Email */}
+              <div className="space-y-6">
 
-          <div className="flex items-center w-full">
-            <FormField
-              label="Confirm New Password"
-              id="password confirmation"
-              type={showPassword ? "text" : "password"}
-              value={form.passwordConfirm}
-              placeHolder="Retype New Password"
-              onChange={(e) => handleChange("passwordConfirm", e.target.value)}
-              maxLength={30}
-              helpText="8-30 characters"
-              className="flex-1"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="ml-2 text-gray-500 hover:text-gray-700"
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
-          </div>
+                {/* Username */}
+                <FormField
+                  label="New Username"
+                  id="username"
+                  type="text"
+                  value={form.username}
+                  placeHolder={profile.username}
+                  onChange={(e) => handleChange("username", e.target.value)}
+                  maxLength={20}
+                  helpText="5–20 characters"
+                />
 
-          <button
-            type="submit"
-            className="p-2 px-8 mb-4 font-medium text-white rounded-md shadow-md transition bg-blue-700 hover:bg-blue-800"
-          >
-            Apply Changes
-          </button>
-        </form>
+                {/* Email */}
+                <FormField
+                  label="New Email Address"
+                  id="email"
+                  type="email"
+                  value={form.email}
+                  placeHolder={profile.email}
+                  onChange={(e) => handleChange("email", e.target.value)}
+                  maxLength={50}
+                />
+
+              </div>
+
+              {/* Passwords */}
+              <div className="space-y-6">
+
+                {/* New Password */}
+                <div className="relative">
+                  <FormField
+                    label="New Password"
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={form.password}
+                    placeHolder="New Password"
+                    onChange={(e) => handleChange("password", e.target.value)}
+                    maxLength={30}
+                    helpText="8–30 characters"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-10 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? <EyeOff /> : <Eye />}
+                  </button>
+                </div>
+
+                {/* Confirm Password */}
+                <div className="relative">
+                  <FormField
+                    label="Confirm New Password"
+                    id="passwordConfirm"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={form.passwordConfirm}
+                    placeHolder="Retype New Password"
+                    onChange={(e) => handleChange("passwordConfirm", e.target.value)}
+                    maxLength={30}
+                    helpText="Must match new password"
+                    error={
+                      formSubmitAttempted &&
+                      form.password &&
+                      form.password !== form.passwordConfirm
+                        ? "Passwords do not match."
+                        : ""
+                    }
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-10 text-gray-500 hover:text-gray-700"
+                  >
+                    {showConfirmPassword ? <EyeOff /> : <Eye />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-center">
+              <button
+                type="submit"
+                className="px-6 py-2 font-semibold text-white bg-blue-700 rounded-md shadow-md hover:bg-blue-800 transition"
+              >
+                Apply Changes
+              </button>
+            </div>
+
+          </form>
+        </div>
       </div>
     </div>
   );
+
 };
 
 export default EditProfile;
