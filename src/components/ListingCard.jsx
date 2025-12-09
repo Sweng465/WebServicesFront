@@ -143,8 +143,7 @@ export default function ListingCard({ listing = {}, thumbSrc = null }) {
           </div>
         )}
 
-        <p className="text-gray-600 mt-2">{listing.title}</p>
-        <p className="text-gray-600 mt-2">{listing.description}</p>
+        <p className="text-gray-600 font-bold mt-2">{listing.value}</p>
         <p className="text-blue-600 font-semibold mt-2">
           {listing?.price != null ? `$${listing.price}` : ""}
         </p>
