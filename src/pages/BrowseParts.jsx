@@ -124,7 +124,7 @@ const BrowseParts = () => {
                     modelId: filters.modelId || "",
                     submodelId: filters.submodelId || "",
                 });
-                const res = await fetch(`${API_ENDPOINTS.PART_LISTINGS}?${q}`);
+                const res = await fetch(`${API_ENDPOINTS.VEHICLES}?${q}`);
                 const data = await res.json();
                 if (!cancelled) {
                     const list = data.data || data.vehicles || [];

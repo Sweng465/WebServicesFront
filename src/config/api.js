@@ -43,6 +43,7 @@ export const API_ENDPOINTS = {
 
   // Address endpoints
   ADDRESS: `${API_BASE_URL}/api/address`,
+  STATE: `${API_BASE_URL}/api/states`,
 };
 
 export const buildVehicleDetailUrl = (vehicleId) => `${API_BASE_URL}/api/vehicles/${vehicleId}`;
