@@ -1,14 +1,31 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import API_ENDPOINTS, { buildVehicleDetailUrl } from "../config/api";
+import { useNavigate, useLocation } from "react-router-dom";
+import API_ENDPOINTS, { buildVehicleDetailUrl, buildPartDetailUrl } from "../config/api";
 import { RoutePaths } from "../general/RoutePaths.jsx";
 import { useAuth } from "../context/useAuth";
 
 const CartPage = () => {
   const navigate = useNavigate();
   const { cart, updateCart } = useAuth(); // Use cart from AuthProvider
+  const location = useLocation();
+  const { user, cart, updateCart } = useAuth(); // Use cart from AuthProvider
   const [listingData, setListingData] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Determine "continue shopping" target
+  const getContinueShoppingPath = () => {
+    const prevPath = location.state?.from || "";
+    const partPaths = [
+      RoutePaths.BROWSEPARTS, // /browse-parts
+      RoutePaths.PART_LISTING_DETAIL.replace(':listingId', ''), // /listings/part/
+      RoutePaths.BROWSE_PART_LISTINGS.replace(':partId', ''), // /browse-part-listings/
+    ];
+
+    const isPart = partPaths.some((p) => prevPath.includes(p));
+    return isPart ? RoutePaths.BROWSEPARTS : RoutePaths.BROWSECARS;
+  };
+
+  const continueShoppingPath = getContinueShoppingPath();
 
   // Fetch latest listing data whenever cart changes
   useEffect(() => {
@@ -30,25 +47,47 @@ const CartPage = () => {
 
           const data = await res.json();
           const listing = data?.data ?? data;
+          console.log("Listing response data:", listing);
 
-          // Fetch vehicle info to build title
-          const vehicleId = listing.itemId;
-          let vehicleInfo = null;
+          if (item.listingTypeId == 1) {
+            const vehicleId = listing.itemId;
+            let vehicleInfo = null;
 
-          if (vehicleId) {
-            try {
-              const vehicleRes = await fetch(buildVehicleDetailUrl(vehicleId));
-              if (vehicleRes.ok) {
-                const vehicleData = await vehicleRes.json();
-                vehicleInfo = vehicleData?.data ?? vehicleData;
+            if (vehicleId) {
+              try {
+                const vehicleRes = await fetch(buildVehicleDetailUrl(vehicleId));
+                if (vehicleRes.ok) {
+                  const vehicleData = await vehicleRes.json();
+                  vehicleInfo = vehicleData?.data ?? vehicleData;
+                }
+              } catch (e) {
+                console.warn("Failed to fetch vehicle info", e);
               }
-            } catch (e) {
-              console.warn("Failed to fetch vehicle info", e);
+            }
+
+            if (!listing.title || listing.title === "Untitled") {
+              listing.title = vehicleInfo?.value || "Untitled";
             }
           }
 
-          if (!listing.title || listing.title === "Untitled") {
-            listing.title = vehicleInfo?.value || "Untitled";
+          if (item.listingTypeId == 2) {
+            const partId = listing.itemId;
+            let partInfo = null;
+            if (partId) {
+              try {
+                const partRes = await fetch(buildPartDetailUrl(partId));
+                if (partRes.ok) {
+                  const partData = await partRes.json();
+                  partInfo = partData?.data ?? partData;
+                }
+              } catch (e) {
+                console.warn("Failed to fetch part info", e);
+              }
+
+              if (!listing.title || listing.title === "Untitled") {
+                listing.title = partInfo?.value || "Untitled";
+              }
+            }
           }
 
           results.push({ listingId: item.listingId, listing });
@@ -62,7 +101,11 @@ const CartPage = () => {
     };
 
     if (cart.length > 0) loadListingDetails();
-    else setListingData([]);
+    else {
+      setListingData([]);
+      setLoading(false);
+    }
+      
   }, [cart]);
 
   // Cart operations
@@ -90,6 +133,17 @@ const CartPage = () => {
         </button>
 
         <h1 className="text-3xl font-bold text-center mb-6">Your Cart</h1>
+
+        {/* Instruction text with conditional "continue shopping" link */}
+        <p className="text-center text-gray-700 mb-6">
+          View/edit your cart and proceed to checkout below, or{" "}
+          <button
+            onClick={() => navigate(continueShoppingPath)}
+            className="text-blue-700 hover:underline"
+          >
+            continue shopping
+          </button>.
+        </p>
 
         {loading ? (
           <p className="text-center text-gray-600">Loading cart...</p>
@@ -151,9 +205,19 @@ const CartPage = () => {
                     <div className="flex-1">
                       <h2
                         className="font-semibold text-lg cursor-pointer hover:underline"
-                        onClick={() =>
-                          navigate(RoutePaths.LISTING_DETAIL.replace(':listingId', item.listingId))
-                        }
+                        onClick={() => {
+                          if (item.listing.listingTypeId === 2) {
+                            // Part listing
+                            navigate(
+                              RoutePaths.PART_LISTING_DETAIL.replace(":listingId", item.listingId)
+                            );
+                          } else {
+                            // Vehicle listing
+                            navigate(
+                              RoutePaths.LISTING_DETAIL.replace(":listingId", item.listingId)
+                            );
+                          }
+                        }}
                       >
                         {listing.title || "Untitled"}
                       </h2>

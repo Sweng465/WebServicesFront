@@ -247,24 +247,32 @@ const VehicleListingDetails = () => {
   const seller = listing?.seller ?? null;
   const sellerEmail = seller?.email || listing?.business?.email || null;
   const contactUrl = listing?.contactUrl || (sellerEmail ? `mailto:${sellerEmail}` : null);
+  // const sellerType = seller?.type || (listing?.business ? "Business Seller" : seller ? "Individual Seller" : null);
+  // const sellerRating = seller?.rating || seller?.averageRating || null;
+  // const sellerReviewCount = seller?.reviewCount || seller?.reviewsCount || null;
 
-  const handleAddToCart = () => {
-    if (!listing) return;
-    if (!user) {
-      navigate(RoutePaths.SIGNIN);
-      return;
-    }
+const handleAddToCart = () => {
+  if (!listing) return;
+  if (!user) {
+    navigate(RoutePaths.SIGNIN);
+    return;
+  }
 
-    const existing = cart.find((c) => c.listingId === Number(listingId));
+  const existing = cart.find((c) => c.listingId === Number(listingId));
 
-    if (existing) {
-      alert("Error: This item is already in your cart.");
-    } else {
-      const updatedCart = [...cart, { listingId: Number(listingId) }];
-      updateCart(updatedCart); // update context and localStorage internally
-      alert("Added to cart!");
-    }
-  };
+  if (existing) {
+    alert("Error: This item is already in your cart.");
+  } else {
+    const updatedCart = [
+      ...cart,
+      { listingId: Number(listingId),
+        listingTypeId: 1,
+      },
+    ];
+    updateCart(updatedCart); // update context and localStorage internally
+    alert("Added to cart!");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-600 to-blue-600">

@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header.jsx";
 import BusinessInfo from "../components/BusinessInfo.jsx";
-import API_ENDPOINTS from "../config/api.js";
+import API_ENDPOINTS, { buildPartDetailUrl } from "../config/api";
+import { useAuth } from "../context/useAuth";
 
 const formatCurrency = (value) => {
   if (typeof value !== "number") return "N/A";
@@ -23,6 +24,7 @@ const PartListingDetails = () => {
   const [error, setError] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [imageSrc, setImageSrc] = useState(null);
+  const { user, cart, updateCart } = useAuth(); // pull in authFetch from context
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -45,7 +47,27 @@ const PartListingDetails = () => {
 
         const data = await res.json();
         const listingData = data?.data ?? data;
+
+        // get correct title for part listings
+        if (listingData.listingTypeId === 2) {
+          const partId = listingData.itemId;
+          if (partId) {
+            try {
+              const partRes = await fetch(buildPartDetailUrl(partId));
+              if (partRes.ok) {
+                const partData = await partRes.json();
+                const partInfo = partData?.data ?? partData;
+
+                // Always prefer part name for part listings
+                listingData.title = partInfo?.value || listingData.title || "Untitled";
+              }
+            } catch (err) {
+              console.warn("Failed to fetch part info:", err);
+            }
+          }
+        }
         setListing(listingData ?? null);
+        
       } catch (err) {
         console.error("Error fetching listing detail:", err);
         setError(err.message || "Failed to load listing.");
@@ -153,7 +175,26 @@ const PartListingDetails = () => {
   const contactUrl = listing?.contactUrl || (sellerEmail ? `mailto:${sellerEmail}` : null);
 
   const handleAddToCart = () => {
-    // Placeholder for cart integration
+    if (!listing) return;
+    if (!user) {
+      navigate(RoutePaths.SIGNIN);
+      return;
+    }
+
+    const existing = cart.find((c) => c.listingId === Number(listingId));
+
+    if (existing) {
+      alert("Error: This item is already in your cart.");
+    } else {
+      const updatedCart = [
+        ...cart,
+        { listingId: Number(listingId),
+          listingTypeId: 2,
+        },
+      ];
+      updateCart(updatedCart); // update context and localStorage internally
+      alert("Added to cart!");
+    }
   };
 
   return (

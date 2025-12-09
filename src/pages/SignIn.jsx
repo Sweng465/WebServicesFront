@@ -3,6 +3,7 @@ import { Link, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import API_ENDPOINTS from "../config/api.js";
 import FormField from "../components/forms/FormField";
+import { Eye, EyeOff } from "lucide-react";
 
 export const SignIn = () => {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ export const SignIn = () => {
     username: "",
     password: "",
   });
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const requiredFields = [
     "username",
@@ -42,8 +45,8 @@ export const SignIn = () => {
       return; // fields will turn red
     }
 
-    const payload = { 
-      username: form.username, 
+    const payload = {
+      username: form.username,
       password: form.password,
     };
 
@@ -102,17 +105,27 @@ export const SignIn = () => {
           />
 
           {/* Password */}
-          <FormField
-            label="Password"
-            id="password"
-            type="text"
-            required
-            value={form.password}
-            placeHolder="Password"
-            onChange={(e) => handleChange("password", e.target.value)}
-            maxLength={30}
-            error={formSubmitAttempted && !form.password ? "Password is required." : ""}
-          />
+          <div className="relative">
+            <FormField
+              label="Password"
+              id="password"
+              type={showPassword ? "text" : "password"} 
+              required
+              value={form.password}
+              placeHolder="Password"
+              onChange={(e) => handleChange("password", e.target.value)}
+              maxLength={30}
+              error={formSubmitAttempted && !form.password ? "Password is required." : ""}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-[calc(50%+2px)] transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+
 
           {/* Submit Button */}
           <button
