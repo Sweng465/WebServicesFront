@@ -2,17 +2,20 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/useAuth";
 import API_ENDPOINTS from "../config/api.js";
 import defaultIcon from "../assets/default_icon.png";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { RoutePaths } from "../general/RoutePaths.jsx";
 import Header from "../components/Header";
+import FormField from "../components/forms/FormField";
+import { Eye, EyeOff } from "lucide-react";
 
 const EditProfile = () => {
+  const navigate = useNavigate();
   const { user, authFetch, accessToken } = useAuth(); // pull in authFetch from context
   const [profile, setProfile] = useState(null);
-
-  const borderStyle = `border border-gray-300 rounded-lg shadow-sm 
-      focus:outline-none focus:ring-2 focus:ring-blue-700 transition`;
-  const regSelVis = ``;
+  const [formSubmitAttempted, setFormSubmitAttempted] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const regSelVils = ``;
 
   // Form state
   const [form, setForm] = useState({
@@ -22,6 +25,7 @@ const EditProfile = () => {
     email: "",
   });
 
+  // Get user info
   console.log("User from context:", user);
   useEffect(() => {
     if (!user?.id || !accessToken) return;
@@ -54,8 +58,15 @@ const EditProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormSubmitAttempted(true);
 
-    const payload = { user, username, email, password };
+    //const payload = { user, username, email, password };
+    const payload = {
+      userId: user.id,
+      username: form.username || profile.username,
+      email: form.email || profile.email,
+      password: form.password || null,
+    };
 
     try {
       const response = await fetch(API_ENDPOINTS.UPDATE_LOGIN, {
@@ -72,9 +83,9 @@ const EditProfile = () => {
 
       if (response.ok) {
         console.log("Update login successful:", data);
-        //localStorage.setItem("token", data.token);
-        login(data.user, data.accessToken);
-        navigate("/");
+        alert("Profile information successfully updated!");
+        //login(data.user, data.accessToken);
+        navigate(RoutePaths.PROFILE);
       } else {
         console.error("Update login failed:", data.message);
         alert("Update login failed: " + data.message);
@@ -91,83 +102,91 @@ const EditProfile = () => {
       <div className="space-y-4 items-center max-w-3xl min-w-100 mx-auto p-6 bg-white rounded-lg shadow-lg mt-6 flex flex-col">
         <h1 className="text-2xl font-bold mb-4 text-center"> Edit Profile </h1>
 
-        
-        {/* Update to get user's icon from database (replace w/ default if null) */}
-        <div>
-          <label className="block mb-1 font-medium">Icon</label>
-          <img
-            src={defaultIcon}
-            alt="User profile picture"
-            className="w-[150px] h-[150px] object-cover rounded-full shadow-md"
-          />
-        </div>
 
-        <div>
-          <label htmlFor="username" className="block mb-1 font-medium">Change Username</label>
-          <input
+        <form onSubmit={handleSubmit}>
+          {/* Update to get user's icon from database (replace w/ default if null) */}
+          <div>
+            <label className="block mb-1 font-medium">Icon</label>
+            <img
+              src={defaultIcon}
+              alt="User profile picture"
+              className="w-[150px] h-[150px] object-cover rounded-full shadow-md"
+            />
+          </div>
+
+          {/* Username */}
+          <FormField
+            label="New Username"
             id="username"
-            name="username"
             type="text"
-            maxLength="20"
-            placeholder="Username"
-            value={profile.username}
+            value={form.username}
+            placeHolder={profile.username}
             onChange={(e) => handleChange("username", e.target.value)}
-            className={`w-full p-2 ${borderStyle}`}
-            required
+            maxLength={20}
+            helpText="5-20 characters"
           />
-        </div>
 
-        <div>
-          <label htmlFor="email" className="block mb-1 font-medium">Change Email</label>
-          <input
+          {/* Email */}
+          <FormField
+            label="New Email Address"
             id="email"
-            name="email"
             type="email"
-            maxLength="50"
-            placeholder="Email"
-            value={profile.email}
+            value={form.email}
+            placeHolder={profile.email}
             onChange={(e) => handleChange("email", e.target.value)}
-            className={`w-full p-2 ${borderStyle}`}
-            required
+            maxLength={50}
           />
-        </div>
 
-        <div>
-          <label htmlFor="password" className="block mb-1 font-medium">New Password</label>
-          <input
-            id="password"
-            name="password"
-            type="text"
-            maxLength="30"
-            placeholder="Password"
-            value={form.newPassword}
-            onChange={(e) => handleChange("password", e.target.value)}
-            className={`w-full p-2 ${borderStyle}`}
-            required
-          />
-        </div>
+          {/* Password */}
+          <div className="flex items-center w-full">
+            <FormField
+              label="New Password"
+              id="password"
+              type={showPassword ? "text" : "password"}
+              value={form.password}
+              placeHolder="New Password"
+              onChange={(e) => handleChange("password", e.target.value)}
+              maxLength={30}
+              helpText="8-30 characters"
+              className="flex-1"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="ml-2 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
 
-        <div>
-          <label htmlFor="password" className="block mb-1 font-medium">Confirm New Password</label>
-          <input
-            id="passwordConfirmation"
-            name="password"
-            type="text"
-            maxLength="30"
-            placeholder="Password"
-            value={form.newPasswordConfirm}
-            onChange={(e) => handleChange("passwordConfirm", e.target.value)}
-            className={`w-full p-2 ${borderStyle}`}
-            required
-          />
-        </div>
+          <div className="flex items-center w-full">
+            <FormField
+              label="Confirm New Password"
+              id="password confirmation"
+              type={showPassword ? "text" : "password"}
+              value={form.passwordConfirm}
+              placeHolder="Retype New Password"
+              onChange={(e) => handleChange("passwordConfirm", e.target.value)}
+              maxLength={30}
+              helpText="8-30 characters"
+              className="flex-1"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="ml-2 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
 
-        <Link to={RoutePaths.EDITPROFILE}>
-          <button className="p-2 px-8 mb-4 font-medium text-white rounded-md shadow-md transition bg-blue-700 hover:bg-blue-800">
+          <button
+            type="submit"
+            className="p-2 px-8 mb-4 font-medium text-white rounded-md shadow-md transition bg-blue-700 hover:bg-blue-800"
+          >
             Apply Changes
           </button>
-        </Link>
-
+        </form>
       </div>
     </div>
   );
