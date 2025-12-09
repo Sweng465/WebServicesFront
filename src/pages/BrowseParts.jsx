@@ -289,7 +289,7 @@ const BrowseParts = () => {
                                                                 key={v.vehicleId || v.id}
                                                                 vehicle={v}
                                                                 variant="grid"
-                                                                size="small"
+                                                                size="large"
                                                                 onSelect={(veh) => {
                                                                     // When a vehicle is selected, fill any missing vehicle selector fields
                                                                     const yearId = veh?.year?.yearId || veh?.yearId || veh?.year?.id || null;
