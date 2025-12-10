@@ -110,7 +110,7 @@ const Businesses = () => {
       <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12">
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
-          <h2 className="text-2xl font-bold text-white mb-6">Businesses</h2>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-2">Businesses</h1>
         </div>
       </div>
 
