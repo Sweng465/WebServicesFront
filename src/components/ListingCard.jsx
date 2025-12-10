@@ -172,9 +172,9 @@ export default function ListingCard({ listing = {}, thumbSrc = null, variant = "
   return (
     <div
       key={listing.id ?? listing._id ?? listing.listingId}
-      className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+      className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col"
     >
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-1">
         {finalImage ? (
           <Base64Image
             value={finalImage}
@@ -193,7 +193,7 @@ export default function ListingCard({ listing = {}, thumbSrc = null, variant = "
           {listing?.price != null ? `$${listing.price}` : ""}
         </p>
 
-        <div className="mt-4">
+        <div className="mt-auto pt-4">
           <button
             onClick={handleClick}
             className="w-full py-3 px-6 text-lg font-bold bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition ease-in-out duration-150"

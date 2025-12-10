@@ -420,7 +420,7 @@ const handleAddToCart = () => {
                   <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-md">
                     <h2 className="text-xl font-semibold text-gray-900 mb-4">Vehicle Specifics</h2>
                     <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-700">
-                      {[
+                      { [
                         {
                           key: "year",
                           label: "Year",
@@ -459,6 +459,78 @@ const handleAddToCart = () => {
                           label: "Condition",
                           icon: "⚙️",
                           value: listing?.condition ?? listing?.vehicle?.condition ?? null,
+                        },
+                        {
+                          key: "body",
+                          label: "Body Type",
+                          icon: "🚙",
+                          value: listing?.body,
+                        },
+                        {
+                          key: "engine_cc",
+                          label: "Engine (cc)",
+                          icon: "⚡",
+                          value: listing?.engine_cc,
+                        },
+                        {
+                          key: "engine_cyl",
+                          label: "Cylinders",
+                          icon: "🔧",
+                          value: listing?.engine_cyl,
+                        },
+                        {
+                          key: "engine_type",
+                          label: "Engine Type",
+                          icon: "🛢️",
+                          value: listing?.engine_type,
+                        },
+                        {
+                          key: "engine_hp",
+                          label: "Horsepower",
+                          icon: "💪",
+                          value: listing?.engine_hp,
+                        },
+                        {
+                          key: "torque_nm",
+                          label: "Torque (Nm)",
+                          icon: "🔩",
+                          value: listing?.torque,
+                        },
+                        {
+                          key: "drive",
+                          label: "Drive Type",
+                          icon: "🎯",
+                          value: listing?.drive,
+                        },
+                        {
+                          key: "transmission",
+                          label: "Transmission",
+                          icon: "⚙️",
+                          value: listing?.trans,
+                        },
+                        {
+                          key: "doors",
+                          label: "Doors",
+                          icon: "🚪",
+                          value: listing?.doors,
+                        },
+                        {
+                          key: "weight_kg",
+                          label: "Weight (kg)",
+                          icon: "⚖️",
+                          value: listing?.weight,
+                        },
+                        {
+                          key: "mpg_hwy",
+                          label: "MPG (Highway)",
+                          icon: "🛣️",
+                          value: listing?.mpgh,
+                        },
+                        {
+                          key: "mpg_city",
+                          label: "MPG (City)",
+                          icon: "🏙️",
+                          value: listing?.mpgc,
                         },
                       ]
                         .filter((s) => s.value !== null && s.value !== undefined && String(s.value).trim() !== "")

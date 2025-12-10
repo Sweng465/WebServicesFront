@@ -124,7 +124,7 @@ const BrowseParts = () => {
                     modelId: filters.modelId || "",
                     submodelId: filters.submodelId || "",
                 });
-                const res = await fetch(`${API_ENDPOINTS.PART_LISTINGS}?${q}`);
+                const res = await fetch(`${API_ENDPOINTS.VEHICLES}?${q}`);
                 const data = await res.json();
                 if (!cancelled) {
                     const list = data.data || data.vehicles || [];
@@ -289,7 +289,7 @@ const BrowseParts = () => {
                                                                 key={v.vehicleId || v.id}
                                                                 vehicle={v}
                                                                 variant="grid"
-                                                                size="small"
+                                                                size="large"
                                                                 onSelect={(veh) => {
                                                                     // When a vehicle is selected, fill any missing vehicle selector fields
                                                                     const yearId = veh?.year?.yearId || veh?.yearId || veh?.year?.id || null;

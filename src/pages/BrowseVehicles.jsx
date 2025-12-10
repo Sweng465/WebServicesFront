@@ -14,7 +14,7 @@ const BrowseVehicles = () => {
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ totalPages: 1 });
   const [viewMode, setViewMode] = useState("grid"); // 'grid' | 'list'
-  const [size, setSize] = useState("small"); // 'small' | 'large'
+  const [size, setSize] = useState("large"); // 'small' | 'large'
   const VIEW_MODE_KEY = 'vehicleViewMode';
   const CARD_SIZE_KEY = 'vehicleCardSize';
   const [settingsLoaded, setSettingsLoaded] = useState(false);
