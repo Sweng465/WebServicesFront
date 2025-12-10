@@ -67,6 +67,7 @@ export const SignIn = () => {
         login(data.user, data.accessToken);  // update auth context state
         navigate("/"); // send user to homepage on successful login
       } else {
+        alert(`Login failed: ${data.message}`);
         console.error("Login failed:", data.message);
       }
     } catch (error) {
