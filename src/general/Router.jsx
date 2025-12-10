@@ -13,6 +13,7 @@ import PartListingDetails from "../pages/PartListingDetails.jsx";
 import { NotFound } from "./NotFound.jsx";
 import { Layout } from "./Layout.jsx";
 import Profile from "../pages/Profile.jsx";
+import EditProfile from "../pages/EditProfile.jsx";
 import SellItems from "../pages/SellItems.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import SellerRegistration from "../pages/SellerRegistration.jsx";
@@ -53,6 +54,16 @@ export const Router = () => (
         <ProtectedRoute>
           <Layout>
             <Profile />
+          </Layout>
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path={RoutePaths.EDITPROFILE}
+      element={
+        <ProtectedRoute>
+          <Layout>
+            <EditProfile />
           </Layout>
         </ProtectedRoute>
       }
