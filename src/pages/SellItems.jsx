@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../context/useAuth";
 import Header from "../components/Header";
 import VehicleSearch from "../components/vehicle/VehicleSearch";
+import PartSearch from "../components/part/PartSearch";
 import API_ENDPOINTS from "../config/api.js";
 import Converter from "../imageConversion/ImageConverter.js";
 import { RoutePaths } from "../general/RoutePaths.jsx";
@@ -14,6 +15,8 @@ const SellItems = () => {
   const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
   const [formSubmitAttempted, setFormSubmitAttempted] = useState(false);
+  const [sellMode, setSellMode] = useState("vehicle"); // "vehicle" | "part"
+
   const borderStyle = `border border-gray-300 rounded-lg shadow-sm 
     focus:outline-none focus:ring-2 focus:ring-blue-700 transition`
 
@@ -24,10 +27,17 @@ const SellItems = () => {
     price: "",
   });
   const [filters, setFilters] = useState({
+    // vehicle filters
     yearId: "",
     makeId: "",
     modelId: "",
     submodelId: "",
+    // part filters
+    //category1Id: "",
+    //category2Id: "",
+    //category3Id: "",
+    //brandId: "",
+    //vehicleId: "",
   });
 
   // Keep Listing Info collapsible locked until a vehicle is selected
@@ -81,9 +91,8 @@ const SellItems = () => {
     });
   };
 
-  useEffect(() => {
-    if (!accessToken) return;
-
+  useEffect(() => { // get user role for redirect if not a seller
+    if (!user?.id || !accessToken) return;
     const fetchUserProfile = async () => {
       try {
         const res = await fetch(API_ENDPOINTS.USER_PROFILE, {
@@ -92,14 +101,10 @@ const SellItems = () => {
             'Content-Type': 'application/json',
           },
         });
-
         if (!res.ok) throw new Error("Failed to fetch profile");
-
         const data = await res.json();
         const userProfile = data.data;
-
         setProfile(userProfile);
-
         if (Number(userProfile.roleId) !== 2) {
           navigate(RoutePaths.SELLERREGISTRATION);
         }
@@ -108,45 +113,8 @@ const SellItems = () => {
         // Optionally redirect or show an error
       }
     };
-
-    fetchUserProfile();
-  }, [accessToken, navigate]);
-
-
-  
-
-
-  /*
-  useEffect(() => {
-    if (!user || !accessToken) return; // wait until user & token are loaded
-    else {
-      if (Number(user.roleId) !== 2) { // can only be accessed if user is seller
-        navigate(RoutePaths.SELLERREGISTRATION);
-        return;
-      }
-    }
-    const fetchProfile = async () => {
-      try {
-        const res = await authFetch(API_ENDPOINTS.USER_PROFILE);
-        const data = await res.json();
-        setProfile(data.data);
-      } catch (err) {
-        console.error("Failed to fetch profile", err);
-      }
-    };
-
-    if (user?.id) fetchProfile();
-  }, [user, authFetch, accessToken, navigate]);
-
-
-  if (!profile) return <p>Loading profile...</p>;
-  else {
-    if (Number(user.roleId) !== 2) { // can only be accessed if user is seller
-      navigate(RoutePaths.SELLERREGISTRATION);
-      return;
-    }
-  }     */
-
+    if (user?.id) fetchUserProfile();
+  }, [user, accessToken, navigate]);
 
   // Load conditions
   useEffect(() => {
@@ -391,9 +359,9 @@ const SellItems = () => {
       }).filter(Boolean);
 
       const business = await authFetch(`${API_ENDPOINTS.BUSINESSES}/user/${user.id}`, {
-              method: "GET",
-              headers: { "Content-Type": "application/json" },
-            });
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
 
       console.log("Business fetch response:", business);
       const businessData = await business.json();
@@ -432,15 +400,50 @@ const SellItems = () => {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-orange-600 to-blue-600 text-white">
       <Header />
-      <div className="max-w-3xl mx-auto p-6 bg-white bg-opacity-90 text-gray-800 rounded-lg mt-6">
+      <div className="max-w-5xl mx-auto p-6 bg-white bg-opacity-90 text-gray-800 rounded-lg mt-6">
         <h2 className="text-center text-2xl font-bold mb-4">Create Listing</h2>
+
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          {/* Select Vehicle */}
-          <div className={`p-4 ${borderStyle}`}>
-            <h3 className="text-lg font-semibold mb-2">Select Vehicle</h3>
+          {/* Vehicle/Part Toggle */}
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <button
+            type="button"
+            onClick={() => setSellMode("vehicle")}
+            className={`w-25 px-5 py-2 rounded-full font-medium transition
+      ${sellMode === "vehicle"
+                ? "bg-blue-700 text-white hover:bg-blue-800"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+          >
+            Vehicle
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSellMode("part")}
+            className={`w-25 px-5 py-2 rounded-full font-medium transition
+      ${sellMode === "part"
+                ? "bg-blue-700 text-white hover:bg-blue-800"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+          >
+            Part
+          </button>
+        </div>
+
+        {/* Search Box — Vehicle or Part */}
+        <div className={`p-4 ${borderStyle}`}>
+          <h3 className="text-lg font-semibold mb-2">
+            {sellMode === "vehicle" ? "Select Vehicle" : "Select Part"}
+          </h3>
+
+          {sellMode === "vehicle" ? (
             <VehicleSearch filters={filters} setFilters={setFilters} />
-          </div>
+          ) : (
+            <PartSearch filters={filters} setFilters={setFilters} />
+          )}
+        </div>
 
           <CollapsibleToggle
             title="Listing Information"
