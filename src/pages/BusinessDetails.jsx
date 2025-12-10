@@ -7,6 +7,7 @@ import VehicleResultCard from "../components/vehicle/VehicleResultCard";
 import { RoutePaths } from "../general/RoutePaths.jsx";
 import ReviewForm from "../components/ReviewForm.jsx";
 import { useAuth } from "../context/useAuth.js";
+import DealerMap from "../components/DealerMap.jsx";
 
 // Image helper: copied/adapted from BrowseVehicleListings.jsx
 const isDataUrl = (s) => typeof s === "string" && s.startsWith("data:");
@@ -57,6 +58,38 @@ const formatPhoneNumber = (value) => {
     return `+1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
   }
   return value;
+};
+
+// Build a full address string from split address fields
+const buildFullAddress = (business) => {
+  if (!business) return null;
+  
+  // If there's already a full address string, use it
+  if (business.address) return business.address;
+  if (business.location) return business.location;
+  
+  // Build from split fields: line1, line2, city, state, zipcode
+  const parts = [];
+  
+  if (business.line1) parts.push(business.line1);
+  if (business.line2) parts.push(business.line2);
+  
+  // City, State Zip
+  const cityStateZip = [];
+  if (business.city) cityStateZip.push(business.city);
+  
+  // Use state name or abbreviation
+  if (business.state) cityStateZip.push(business.state);
+  
+  if (cityStateZip.length > 0) {
+    let locationPart = cityStateZip.join(", ");
+    if (business.zipcode || business.zip || business.postalCode) {
+      locationPart += " " + (business.zipcode || business.zip || business.postalCode);
+    }
+    parts.push(locationPart);
+  }
+  
+  return parts.length > 0 ? parts.join(", ") : null;
 };
 
 const BusinessDetails = () => {
@@ -581,7 +614,7 @@ const BusinessDetails = () => {
                           {business.isPullYourself !== undefined && (
                             <p><span className="font-semibold">Pull-It-Yourself:</span> {business.isPullYourself ? "Yes" : "No"}</p>
                           )}
-                          {business.address && <p><span className="font-semibold">Address:</span> {business.address}</p>}
+                          {buildFullAddress(business) && <p><span className="font-semibold">Address:</span> {buildFullAddress(business)}</p>}
                         </div>
                       </div>
                     </div>
@@ -594,6 +627,31 @@ const BusinessDetails = () => {
                         <h2 className="text-xl font-semibold text-gray-900">About</h2>
                       </div>
                       <p className="text-gray-700 leading-relaxed whitespace-pre-line">{business.description}</p>
+                    </section>
+                  )}
+
+                  {/* Location Map Section */}
+                  {(business.address || business.location || business.line1 || business.city) && (
+                    <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-md">
+                      <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-semibold text-gray-900">📍 Location</h2>
+                        {buildFullAddress(business) && (
+                          <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(buildFullAddress(business))}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                          >
+                            Open in Google Maps →
+                          </a>
+                        )}
+                      </div>
+                      <DealerMap
+                        address={buildFullAddress(business)}
+                        coordinates={business.coordinates || business.coords || (business.latitude && business.longitude ? { lat: business.latitude, lng: business.longitude } : null)}
+                        businessName={business.name}
+                        height="350px"
+                      />
                     </section>
                   )}
 
