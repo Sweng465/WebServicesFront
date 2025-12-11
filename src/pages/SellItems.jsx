@@ -110,7 +110,7 @@ const SellItems = () => {
         }
       } catch (err) {
         console.error(err);
-        // Optionally redirect or show an error
+        setProfile({});
       }
     };
     if (user?.id) fetchUserProfile();
@@ -461,7 +461,7 @@ const SellItems = () => {
                 rows={4}
                 maxLength={300}
                 helpText="Max 300 characters"
-                placeHolder="Ex. Silver Ford Ranger '02, heavily rusted frame."
+                placeholder="Ex. Silver Ford Ranger '02, heavily rusted frame."
                 error={formSubmitAttempted && !form.description ? "Description is required." : ""}
               />
 
@@ -490,7 +490,7 @@ const SellItems = () => {
                 required
                 value={form.price}
                 onChange={(e) => handlePriceChange(e.target.value)}
-                placeHolder="$"
+                placeholder="$"
                 error={formSubmitAttempted && !form.price ? "Price is required." : ""}
               />
 
