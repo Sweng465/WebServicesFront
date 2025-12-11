@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/useAuth";
 import API_ENDPOINTS from "../config/api.js";
-import defaultIcon from "../assets/default_icon.png";
 import { useNavigate } from "react-router-dom";
 import { RoutePaths } from "../general/RoutePaths.jsx";
 import Header from "../components/Header";

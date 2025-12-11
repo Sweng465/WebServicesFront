@@ -1,4 +1,6 @@
+import { useState, useEffect } from "react";
 import FormField from "./FormField";
+import API_ENDPOINTS from "../../config/api";
 
 const AddressEntry = ({ form, handleChange, formSubmitAttempted }) => {
   /* 
@@ -9,6 +11,38 @@ const AddressEntry = ({ form, handleChange, formSubmitAttempted }) => {
     state: "",
     zipcode: "",
   */
+
+  // Fetch states from API
+  const [states, setStates] = useState([]);
+  const [statesLoading, setStatesLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const res = await fetch(API_ENDPOINTS.STATE);
+        if (!res.ok) throw new Error("Failed to fetch states");
+        const data = await res.json();
+        
+        // Handle common response shapes: array, { data: [] }, { states: [] }
+        const statesArray = Array.isArray(data) 
+          ? data 
+          : Array.isArray(data.data) 
+            ? data.data 
+            : Array.isArray(data.states) 
+              ? data.states 
+              : [];
+        
+        setStates(statesArray);
+      } catch (err) {
+        console.error("Error fetching states:", err);
+        setStates([]);
+      } finally {
+        setStatesLoading(false);
+      }
+    };
+
+    fetchStates();
+  }, []);
 
   return (
     <div className="space-y-1">
@@ -68,18 +102,37 @@ const AddressEntry = ({ form, handleChange, formSubmitAttempted }) => {
           {/* State */}
           <div className="flex items-start space-x-2">
             <span className="font-medium whitespace-nowrap relative top-[10px]">State</span>
-            <div className="flex items-center w-20">
-              <FormField
-                label=""
-                placeholder="Ex. PA"
+            <div className="flex flex-col w-32">
+              <select
                 value={form.state}
                 onChange={(e) => handleChange("state", e.target.value)}
-                type="text"
                 required
-                maxLength={2}
-                className={`text-center`}
-                error={formSubmitAttempted && !form.state ? "State is required." : ""}
-              />
+                disabled={statesLoading}
+                className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  formSubmitAttempted && !form.state 
+                    ? "border-red-500 bg-red-50" 
+                    : "border-gray-300"
+                }`}
+              >
+                <option value="">
+                  {statesLoading ? "Loading..." : "Select"}
+                </option>
+                {states.map((state) => (
+                  <option 
+                    key={state.stateId || state.id || state.abbreviation} 
+                    value={state.stateId || state.id}
+                  >
+                    {state.abbreviation || state.name || state.value}
+                  </option>
+                ))}
+              </select>
+              <div className="min-h-[1rem] mt-1">
+                {formSubmitAttempted && !form.state ? (
+                  <p className="text-xs text-red-500">State is required.</p>
+                ) : (
+                  <p className="text-xs text-gray-600"> </p>
+                )}
+              </div>
             </div>
           </div>
 

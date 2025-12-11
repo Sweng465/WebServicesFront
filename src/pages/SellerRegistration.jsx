@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../context/useAuth";
 import { useNavigate } from "react-router-dom";
 import { RoutePaths } from "../general/RoutePaths.jsx";
@@ -180,7 +180,7 @@ const SellerRegistration = () => {
         line1: form.line1,
         line2: form.line2 || null,
         city: form.city,
-        stateId: 1, // stored procedure should be doing this
+        stateId: Number(form.state), // use selected state ID from dropdown
         zipcode: Number(form.zipcode),
         countryId: 186, // stored procedure should be doing this
         addressTypeId: 3, // stored procedure should be doing this
