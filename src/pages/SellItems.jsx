@@ -16,6 +16,9 @@ const SellItems = () => {
   const navigate = useNavigate();
   const [formSubmitAttempted, setFormSubmitAttempted] = useState(false);
   const [sellMode, setSellMode] = useState("vehicle"); // "vehicle" | "part"
+  const [isGenericPart, setIsGenericPart] = useState(false);
+  const [selectedPart, setSelectedPart] = useState(null); // { partId, name / value / etc }
+
 
   const borderStyle = `border border-gray-300 rounded-lg shadow-sm 
     focus:outline-none focus:ring-2 focus:ring-blue-700 transition`
@@ -91,30 +94,7 @@ const SellItems = () => {
     });
   };
 
-  useEffect(() => { // get user role for redirect if not a seller
-    if (!user?.id || !accessToken) return;
-    const fetchUserProfile = async () => {
-      try {
-        const res = await fetch(API_ENDPOINTS.USER_PROFILE, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        if (!res.ok) throw new Error("Failed to fetch profile");
-        const data = await res.json();
-        const userProfile = data.data;
-        setProfile(userProfile);
-        if (Number(userProfile.roleId) !== 2) {
-          navigate(RoutePaths.SELLERREGISTRATION);
-        }
-      } catch (err) {
-        console.error(err);
-        setProfile({});
-      }
-    };
-    if (user?.id) fetchUserProfile();
-  }, [user, accessToken, navigate]);
+  
 
   // Load conditions
   useEffect(() => {
@@ -138,10 +118,6 @@ const SellItems = () => {
 
     setConditions(fallbackConditions);
   }, []);
-
-  if (!user || loading) return <p>Loading user...</p>; // wait for auth state
-  //if (Number(user.roleId) !== 2) return <p>Redirecting...</p>;
-  if (!profile) return <p>Loading profile...</p>; // wait for auth state
 
 
   const fetchVehicleId = async (filters) => {

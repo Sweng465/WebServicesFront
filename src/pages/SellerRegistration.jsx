@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/useAuth";
 import { useNavigate } from "react-router-dom";
 import { RoutePaths } from "../general/RoutePaths.jsx";
@@ -53,7 +53,8 @@ const stepRequiredFields = { // req fields for each step
 };
 
 const SellerRegistration = () => {
-  const { user, authFetch } = useAuth();
+  const { user, authFetch, accessToken } = useAuth();
+  const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
   const [formSubmitAttempted, setFormSubmitAttempted] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
@@ -87,6 +88,8 @@ const SellerRegistration = () => {
     accountNumber: "",
     accountType: "checking",
   });
+
+
 
   const isFieldFilled = (field) => { // checks if field is filled (for isStepComplete and isFormValid)
     const value = form[field];
