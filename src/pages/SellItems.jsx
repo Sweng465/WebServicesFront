@@ -17,7 +17,6 @@ const SellItems = () => {
   const [formSubmitAttempted, setFormSubmitAttempted] = useState(false);
   const [sellMode, setSellMode] = useState("vehicle"); // "vehicle" | "part"
   const [isGenericPart, setIsGenericPart] = useState(false);
-  const [selectedPart, setSelectedPart] = useState(null); // { partId, name / value / etc }
 
 
   const borderStyle = `border border-gray-300 rounded-lg shadow-sm 
@@ -36,11 +35,11 @@ const SellItems = () => {
     modelId: "",
     submodelId: "",
     // part filters
-    //category1Id: "",
-    //category2Id: "",
-    //category3Id: "",
-    //brandId: "",
-    //vehicleId: "",
+    category1Id: "",
+    category2Id: "",
+    category3Id: "",
+    brandId: "",
+    vehicleId: "",
   });
 
   // Keep Listing Info collapsible locked until a vehicle is selected
@@ -50,18 +49,39 @@ const SellItems = () => {
     if (!infoLocked) setinfoOpen(!infoOpen);
   };
   useEffect(() => {
-    const filtersAreValid = [filters.yearId, filters.makeId, filters.modelId, filters.submodelId].every((v) => {
-      return v !== "" && v !== null && v !== undefined;
-    });
-
-    if (filtersAreValid) {
-      setinfoLocked(false);
-      setinfoOpen(true);
-    } else {
-      setinfoLocked(true);
-      setinfoOpen(false);
+    if (sellMode === "vehicle") {
+      const ok = ["yearId", "makeId", "modelId", "submodelId"].every(f => filters[f]);
+      setinfoLocked(!ok);
+      setinfoOpen(ok);
+      return;
     }
-  }, [filters.yearId, filters.makeId, filters.modelId, filters.submodelId]);
+
+    if (sellMode === "part") {
+      // Generic part
+      if (isGenericPart) {
+        const ok = ["category1Id", "category2Id", "category3Id", "brandId"].every(f => filters[f]);
+        setinfoLocked(!ok);
+        setinfoOpen(ok);
+        return;
+      }
+      // Non-generic part needs vehicle filters
+      const ok = ["yearId", "makeId", "modelId", "submodelId", "category1Id", "category2Id", "category3Id", "brandId"].every(f => filters[f]);
+      setinfoLocked(!ok);
+      setinfoOpen(ok);
+    }
+  }, [
+    sellMode,
+    isGenericPart,
+    filters.yearId,
+    filters.makeId,
+    filters.modelId,
+    filters.submodelId,
+    filters.category1Id,
+    filters.category2Id,
+    filters.category3Id,
+    filters.brandId
+  ]);
+
 
   const [conditions, setConditions] = useState([]);
 
@@ -74,12 +94,13 @@ const SellItems = () => {
     "conditionId",
     "price",
   ];
+  /*
   const requiredFilters = [
     "yearId",
     "makeId",
     "modelId",
     "submodelId",
-  ];
+  ]; */
 
   const isFormValid = () => { // check if all required fields are filled
     return requiredFields.every((field) => {
@@ -87,14 +108,30 @@ const SellItems = () => {
       return value !== "" && value !== null && value !== undefined;
     });
   };
+
+  /*
   const isFiltersValid = () => { // check if all required filters are selected
     return requiredFilters.every((filter) => {
       const value = filters[filter];
       return value !== "" && value !== null && value !== undefined;
     });
+  }; */
+  const isFiltersValid = () => {
+    if (sellMode === "vehicle") {
+      return ["yearId", "makeId", "modelId", "submodelId"].every(f => filters[f]);
+    }
+
+    if (sellMode === "part") {
+      // Generic part vehicle filters not required
+      if (isGenericPart) return ["category1Id", "category2Id", "category3Id", "brandId"].every(f => filters[f]);
+
+      // Non-generic part must choose vehicle filters
+      return ["yearId", "makeId", "modelId", "submodelId", "category1Id", "category2Id", "category3Id", "brandId"].every(f => filters[f]);
+    }
+
+    return false;
   };
 
-  
 
   // Load conditions
   useEffect(() => {
@@ -136,6 +173,44 @@ const SellItems = () => {
       throw new Error("No vehicle found for selected combination.");
 
     return vehicles[0].vehicleId;
+  };
+
+  const fetchPartId = async (filters) => {
+    if (isGenericPart) { // won't require vehicle id
+      const query = new URLSearchParams({
+        category1Id: filters.category1Id,
+        category2Id: filters.category2Id,
+        category3Id: filters.category3Id,
+        brandId: filters.brandId,
+      });
+      const res = await fetch(`${API_ENDPOINTS.PARTS}?${query}`);
+      const data = await res.json();
+
+      const parts = data.data || data.parts || data || [];
+      if (!Array.isArray(parts) || parts.length === 0)
+        throw new Error("No generic part found for selected combination.");
+
+      return parts[0].partId;
+    } 
+    else { // requires vehicle id
+      const vehicleId = await fetchVehicleId(filters);
+      const query = new URLSearchParams({
+        category1Id: filters.category1Id,
+        category2Id: filters.category2Id,
+        category3Id: filters.category3Id,
+        brandId: filters.brandId,
+        vehicleId,
+      });
+      const res = await fetch(`${API_ENDPOINTS.PARTS}?${query}`);
+      const data = await res.json();
+
+      const parts = data.data || data.parts || data || [];
+      if (!Array.isArray(parts) || parts.length === 0)
+        throw new Error("No branded part found for selected combination.");
+
+      return parts[0].partId;
+    }
+  
   };
 
   const PRICE_LIMIT = 6; // maximum digits before decimal (optional)
@@ -301,7 +376,22 @@ const SellItems = () => {
     }
 
     try {
-      const vehicleId = await fetchVehicleId(filters);
+      //const vehicleId = await fetchVehicleId(filters);
+      let itemId = null;
+      let listingTypeId = null;
+
+      // VEHICLE LISTING
+      if (sellMode === "vehicle") {
+        itemId = await fetchVehicleId(filters);
+        listingTypeId = 1;
+      }
+
+      // PART LISTING
+      if (sellMode === "part") {
+        itemId = await fetchPartId(filters);
+        listingTypeId = 2;
+      }
+
 
       // RESIZE SETTINGS
       const MAX_DIMENSION = 1024; // max width or height in pixels
@@ -352,8 +442,8 @@ const SellItems = () => {
         isAvailable: 1,
         conditionId: parseInt(form.conditionId),
         disabled: 0,
-        listingTypeId: 1,
-        itemId: vehicleId,
+        listingTypeId,
+        itemId,
         images: imagesPayload,
       };
 
@@ -414,10 +504,44 @@ const SellItems = () => {
             {sellMode === "vehicle" ? "Select Vehicle" : "Select Part"}
           </h3>
 
+              
+
+
+
           {sellMode === "vehicle" ? (
             <VehicleSearch filters={filters} setFilters={setFilters} />
           ) : (
-            <PartSearch filters={filters} setFilters={setFilters} />
+             <div className="space-y-3"> 
+              {/* Generic checkbox */}
+              <label className="flex items-center gap-2 font-medium">
+                <input
+                  type="checkbox"
+                  checked={isGenericPart}
+                  onChange={(e) => setIsGenericPart(e.target.checked)}
+                />
+                Generic Part (Not for a specific vehicle)
+              </label>
+
+              {/* Vehicle filters (only shown if not generic) */}
+              {!isGenericPart && (
+                <VehicleSearch filters={filters} setFilters={setFilters} />
+              )}
+
+              {/* Part filters */}
+              <PartSearch
+                filters={{
+                  category1Id: filters.category1Id,
+                  category2Id: filters.category2Id,
+                  category3Id: filters.category3Id,
+                  brandId: filters.brandId,
+                  vehicleId: !isGenericPart ? filters.vehicleId : null
+                }}
+                setFilters={(newPartial) =>
+                  setFilters((prev) => ({ ...prev, ...newPartial }))
+                }
+              />
+
+            </div>
           )}
         </div>
 

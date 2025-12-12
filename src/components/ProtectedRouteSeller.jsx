@@ -5,35 +5,31 @@ import API_ENDPOINTS from "../config/api.js";
 import { RoutePaths } from "../general/RoutePaths.jsx";
 
 const ProtectedRouteSeller = ({ children }) => {
-  const { user, loading, accessToken } = useAuth();
+  const { user, loading, accessToken, authFetch } = useAuth();
   const [roleLoading, setRoleLoading] = useState(true);
   const [isSeller, setIsSeller] = useState(null);
 
   useEffect(() => {
     const verifyRole = async () => {
       try {
-        const res = await fetch(API_ENDPOINTS.USER_PROFILE, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-
+        const res = await authFetch(API_ENDPOINTS.USER_PROFILE);
         const data = await res.json();
-
         if (Number(data?.data?.roleId) === 2) {
           setIsSeller(true);
         } else {
           setIsSeller(false);
         }
       } catch (error) {
+        console.log(error);
         setIsSeller(false);
       }
-
       setRoleLoading(false);
     };
 
     if (user && accessToken) {
       verifyRole();
     }
-  }, [user, accessToken]);
+  }, [user, accessToken, authFetch]);
 
   // If auth still loading
   if (loading) return <>{children}</>; // keep current page UI
