@@ -180,8 +180,11 @@ const SellItems = () => {
       const data = await res.json();
 
       const parts = data.data || data.parts || data || [];
-      if (!Array.isArray(parts) || parts.length === 0)
+      if (!Array.isArray(parts) || parts.length === 0) {
+        alert("Error: Part not found.");
         throw new Error("No generic part found for selected combination.");
+      }
+        
 
       return parts[0].partId;
     }
@@ -199,8 +202,10 @@ const SellItems = () => {
       const data = await res.json();
 
       const parts = data.data || data.parts || data || [];
-      if (!Array.isArray(parts) || parts.length === 0)
+      if (!Array.isArray(parts) || parts.length === 0) {
+        alert("Error: Part not found.");
         throw new Error("No branded part found for selected combination.");
+      }
 
       return parts[0].partId;
     }
