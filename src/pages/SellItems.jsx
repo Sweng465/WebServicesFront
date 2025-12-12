@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../context/useAuth";
 import Header from "../components/Header";
 import VehicleSearch from "../components/vehicle/VehicleSearch";
+import PartSearch from "../components/part/PartSearch";
 import API_ENDPOINTS from "../config/api.js";
 import Converter from "../imageConversion/ImageConverter.js";
 import { RoutePaths } from "../general/RoutePaths.jsx";
@@ -9,26 +10,70 @@ import { useNavigate } from "react-router-dom";
 import FormField from "../components/forms/FormField";
 import CollapsibleToggle from "../components/forms/CollapsibleToggle";
 
+const DEFAULT_FILTERS = {
+  yearId: "",
+  makeId: "",
+  modelId: "",
+  submodelId: "",
+  category1Id: "",
+  category2Id: "",
+  category3Id: "",
+  brandId: "",
+  vehicleId: "",
+};
+
+const DEFAULT_FORM = {
+  description: "",
+  conditionId: "",
+  price: "",
+};
+
+const FALLBACK_CONDITIONS = [
+  { conditionId: 6, value: "Burnt" },
+  { conditionId: 7, value: "Bent Frame" },
+  { conditionId: 8, value: "Dent" },
+  { conditionId: 9, value: "Scratched" },
+  { conditionId: 10, value: "Flood Damage" },
+  { conditionId: 11, value: "Hail Damage" },
+  { conditionId: 12, value: "Rust" },
+  { conditionId: 13, value: "Engine Damage" },
+  { conditionId: 14, value: "Transmission Damage" },
+  { conditionId: 15, value: "Electrical Damage" },
+  { conditionId: 16, value: "Interior Damage" },
+  { conditionId: 17, value: "Broken Glass" },
+  { conditionId: 18, value: "Missing Parts" },
+  { conditionId: 19, value: "Suspension Damage" },
+  { conditionId: 20, value: "Totaled" },
+];
+
+const borderStyle = `border border-gray-300 rounded-lg shadow-sm \
+    focus:outline-none focus:ring-2 focus:ring-blue-700 transition`;
+
 const SellItems = () => {
-  const { user, loading, authFetch, accessToken } = useAuth();
-  const [profile, setProfile] = useState(null);
+  const { user, authFetch } = useAuth();
   const navigate = useNavigate();
   const [formSubmitAttempted, setFormSubmitAttempted] = useState(false);
-  const borderStyle = `border border-gray-300 rounded-lg shadow-sm 
-    focus:outline-none focus:ring-2 focus:ring-blue-700 transition`
+  const [sellMode, setSellMode] = useState("vehicle"); // "vehicle" | "part"
+  const [isGenericPart, setIsGenericPart] = useState(false);
+
+  const [conditions, setConditions] = useState([]);
+
+  // Image upload state
+  const [images, setImages] = useState([]); // { name, dataUrl, file }
+  const fileInputRef = useRef(null);
 
   // Form state
-  const [form, setForm] = useState({
-    description: "",
-    conditionId: "",
-    price: "",
-  });
-  const [filters, setFilters] = useState({
-    yearId: "",
-    makeId: "",
-    modelId: "",
-    submodelId: "",
-  });
+  const [form, setForm] = useState(DEFAULT_FORM);
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+
+  const requiredFields = [
+    "description",
+    "conditionId",
+    "price",
+  ];
+
+  // Helper to check a list of filter keys are populated
+  const allFilled = (keys) => keys.every((k) => !!filters[k]);
 
   // Keep Listing Info collapsible locked until a vehicle is selected
   const [infoOpen, setinfoOpen] = useState(true);
@@ -37,143 +82,77 @@ const SellItems = () => {
     if (!infoLocked) setinfoOpen(!infoOpen);
   };
   useEffect(() => {
-    const filtersAreValid = [filters.yearId, filters.makeId, filters.modelId, filters.submodelId].every((v) => {
-      return v !== "" && v !== null && v !== undefined;
-    });
-
-    if (filtersAreValid) {
-      setinfoLocked(false);
-      setinfoOpen(true);
-    } else {
-      setinfoLocked(true);
-      setinfoOpen(false);
-    }
-  }, [filters.yearId, filters.makeId, filters.modelId, filters.submodelId]);
-
-  const [conditions, setConditions] = useState([]);
-
-  // Image upload state
-  const [images, setImages] = useState([]); // { name, dataUrl, file }
-  const fileInputRef = useRef(null);
-
-  const requiredFields = [
-    "description",
-    "conditionId",
-    "price",
-  ];
-  const requiredFilters = [
-    "yearId",
-    "makeId",
-    "modelId",
-    "submodelId",
-  ];
-
-  const isFormValid = () => { // check if all required fields are filled
-    return requiredFields.every((field) => {
-      const value = form[field];
-      return value !== "" && value !== null && value !== undefined;
-    });
-  };
-  const isFiltersValid = () => { // check if all required filters are selected
-    return requiredFilters.every((filter) => {
-      const value = filters[filter];
-      return value !== "" && value !== null && value !== undefined;
-    });
-  };
-
-  useEffect(() => {
-    if (!accessToken) return;
-
-    const fetchUserProfile = async () => {
-      try {
-        const res = await fetch(API_ENDPOINTS.USER_PROFILE, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!res.ok) throw new Error("Failed to fetch profile");
-
-        const data = await res.json();
-        const userProfile = data.data;
-
-        setProfile(userProfile);
-
-        if (Number(userProfile.roleId) !== 2) {
-          navigate(RoutePaths.SELLERREGISTRATION);
-        }
-      } catch (err) {
-        console.error(err);
-        // Optionally redirect or show an error
-      }
-    };
-
-    fetchUserProfile();
-  }, [accessToken, navigate]);
-
-
-  
-
-
-  /*
-  useEffect(() => {
-    if (!user || !accessToken) return; // wait until user & token are loaded
-    else {
-      if (Number(user.roleId) !== 2) { // can only be accessed if user is seller
-        navigate(RoutePaths.SELLERREGISTRATION);
-        return;
-      }
-    }
-    const fetchProfile = async () => {
-      try {
-        const res = await authFetch(API_ENDPOINTS.USER_PROFILE);
-        const data = await res.json();
-        setProfile(data.data);
-      } catch (err) {
-        console.error("Failed to fetch profile", err);
-      }
-    };
-
-    if (user?.id) fetchProfile();
-  }, [user, authFetch, accessToken, navigate]);
-
-
-  if (!profile) return <p>Loading profile...</p>;
-  else {
-    if (Number(user.roleId) !== 2) { // can only be accessed if user is seller
-      navigate(RoutePaths.SELLERREGISTRATION);
+    if (sellMode === "vehicle") {
+      const ok = allFilled(["yearId", "makeId", "modelId", "submodelId"]);
+      setinfoLocked(!ok);
+      setinfoOpen(ok);
       return;
     }
-  }     */
+
+    if (sellMode === "part") {
+      if (isGenericPart) {
+        const ok = allFilled(["category1Id", "category2Id", "category3Id", "brandId"]);
+        setinfoLocked(!ok);
+        setinfoOpen(ok);
+        return;
+      }
+      const ok = allFilled(["yearId", "makeId", "modelId", "submodelId", "category1Id", "category2Id", "category3Id", "brandId"]);
+      setinfoLocked(!ok);
+      setinfoOpen(ok);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sellMode, isGenericPart, filters.yearId, filters.makeId, filters.modelId, filters.submodelId, filters.category1Id, filters.category2Id, filters.category3Id, filters.brandId]);
+
+  // auto-fetch vehicleId whenever full selection is made
+  useEffect(() => {
+    if (!allFilled(["yearId", "makeId", "modelId", "submodelId"])) {
+      // clear vehicleId if incomplete
+      setFilters((prev) => ({ ...prev, vehicleId: "" }));
+      return;
+    }
+
+    // fetch vehicle ID automatically
+    fetchVehicleId(filters)
+      .then((vehicleId) => setFilters((prev) => ({ ...prev, vehicleId })))
+      .catch(() => setFilters((prev) => ({ ...prev, vehicleId: "" })));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.yearId, filters.makeId, filters.modelId, filters.submodelId]);
+
+  useEffect(() => {
+    // When vehicle changes, reset part filters
+    setFilters((prev) => ({ ...prev, category1Id: "", category2Id: "", category3Id: "", brandId: "" }));
+  }, [filters.vehicleId]);
+
+
+  const isFormValid = () => requiredFields.every((field) => {
+    const value = form[field];
+    return value !== "" && value !== null && value !== undefined;
+  });
+
+  const isFiltersValid = () => {
+    if (sellMode === "vehicle") return allFilled(["yearId", "makeId", "modelId", "submodelId"]);
+    if (sellMode === "part") return isGenericPart ? allFilled(["category1Id", "category2Id", "category3Id", "brandId"]) : allFilled(["yearId", "makeId", "modelId", "submodelId", "category1Id", "category2Id", "category3Id", "brandId"]);
+    return false;
+  };
 
 
   // Load conditions
   useEffect(() => {
-    const fallbackConditions = [
-      { conditionId: 6, value: "Burnt" },
-      { conditionId: 7, value: "Bent Frame" },
-      { conditionId: 8, value: "Dent" },
-      { conditionId: 9, value: "Scratched" },
-      { conditionId: 10, value: "Flood Damage" },
-      { conditionId: 11, value: "Hail Damage" },
-      { conditionId: 12, value: "Rust" },
-      { conditionId: 13, value: "Engine Damage" },
-      { conditionId: 14, value: "Transmission Damage" },
-      { conditionId: 15, value: "Electrical Damage" },
-      { conditionId: 16, value: "Interior Damage" },
-      { conditionId: 17, value: "Broken Glass" },
-      { conditionId: 18, value: "Missing Parts" },
-      { conditionId: 19, value: "Suspension Damage" },
-      { conditionId: 20, value: "Totaled" },
-    ];
-
-    setConditions(fallbackConditions);
+    fetch(API_ENDPOINTS.CONDITIONS)
+      .then((res) => res.json())
+      .then((data) => {
+        const arr = Array.isArray(data) ? data : (data && data.data) ? data.data : [];
+        if (arr && arr.length) {
+          setConditions(arr);
+        } else {
+          setConditions(FALLBACK_CONDITIONS);
+        }
+      })
+      .catch((err) => {
+        console.error("Error loading conditions:", err);
+        setConditions(FALLBACK_CONDITIONS);
+      });
   }, []);
-
-  if (!user || loading) return <p>Loading user...</p>; // wait for auth state
-  //if (Number(user.roleId) !== 2) return <p>Redirecting...</p>;
-  if (!profile) return <p>Loading profile...</p>; // wait for auth state
 
 
   const fetchVehicleId = async (filters) => {
@@ -192,6 +171,50 @@ const SellItems = () => {
       throw new Error("No vehicle found for selected combination.");
 
     return vehicles[0].vehicleId;
+  };
+
+  const fetchPartId = async (filters) => {
+    if (isGenericPart) { // won't require vehicle id
+      const query = new URLSearchParams({
+        category1Id: filters.category1Id,
+        category2Id: filters.category2Id,
+        category3Id: filters.category3Id,
+        brandId: filters.brandId,
+      });
+      const res = await fetch(`${API_ENDPOINTS.PARTS}?${query}`);
+      const data = await res.json();
+
+      const parts = data.data || data.parts || data || [];
+      if (!Array.isArray(parts) || parts.length === 0) {
+        alert("Error: Part not found.");
+        throw new Error("No generic part found for selected combination.");
+      }
+        
+
+      return parts[0].partId;
+    }
+    else { // requires vehicle id
+      const vehicleId = await fetchVehicleId(filters);
+      setFilters(prev => ({ ...prev, vehicleId }));
+      const query = new URLSearchParams({
+        category1Id: filters.category1Id,
+        category2Id: filters.category2Id,
+        category3Id: filters.category3Id,
+        brandId: filters.brandId,
+        vehicleId,
+      });
+      const res = await fetch(`${API_ENDPOINTS.PARTS}?${query}`);
+      const data = await res.json();
+
+      const parts = data.data || data.parts || data || [];
+      if (!Array.isArray(parts) || parts.length === 0) {
+        alert("Error: Part not found.");
+        throw new Error("No branded part found for selected combination.");
+      }
+
+      return parts[0].partId;
+    }
+
   };
 
   const PRICE_LIMIT = 6; // maximum digits before decimal (optional)
@@ -357,7 +380,22 @@ const SellItems = () => {
     }
 
     try {
-      const vehicleId = await fetchVehicleId(filters);
+      //const vehicleId = await fetchVehicleId(filters);
+      let itemId = null;
+      let listingTypeId = null;
+
+      // VEHICLE LISTING
+      if (sellMode === "vehicle") {
+        itemId = await fetchVehicleId(filters);
+        listingTypeId = 1;
+      }
+
+      // PART LISTING
+      if (sellMode === "part") {
+        itemId = await fetchPartId(filters);
+        listingTypeId = 2;
+      }
+
 
       // RESIZE SETTINGS
       const MAX_DIMENSION = 1024; // max width or height in pixels
@@ -391,9 +429,9 @@ const SellItems = () => {
       }).filter(Boolean);
 
       const business = await authFetch(`${API_ENDPOINTS.BUSINESSES}/user/${user.id}`, {
-              method: "GET",
-              headers: { "Content-Type": "application/json" },
-            });
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
 
       console.log("Business fetch response:", business);
       const businessData = await business.json();
@@ -408,8 +446,8 @@ const SellItems = () => {
         isAvailable: 1,
         conditionId: parseInt(form.conditionId),
         disabled: 0,
-        listingTypeId: 1,
-        itemId: vehicleId,
+        listingTypeId,
+        itemId,
         images: imagesPayload,
       };
 
@@ -421,7 +459,11 @@ const SellItems = () => {
 
       const data = await res.json();
       console.log("Listing created:", data);
-      navigate(RoutePaths.LISTING_DETAIL.replace(":listingId", data.listingInfoId));
+      if (sellMode === "vehicle") {
+        navigate(RoutePaths.LISTING_DETAIL.replace(":listingId", data.listingInfoId));
+      } else {
+        navigate(RoutePaths.PART_LISTING_DETAIL.replace(":listingId", data.listingInfoId));
+      }
     } catch (err) {
       console.error("Failed to create listing:", err);
     }
@@ -432,14 +474,73 @@ const SellItems = () => {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-orange-600 to-blue-600 text-white">
       <Header />
-      <div className="max-w-3xl mx-auto p-6 bg-white bg-opacity-90 text-gray-800 rounded-lg mt-6">
+      <div className="max-w-5xl mx-auto p-6 bg-white bg-opacity-90 text-gray-800 rounded-lg mt-6">
         <h2 className="text-center text-2xl font-bold mb-4">Create Listing</h2>
+
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          {/* Select Vehicle */}
+          {/* Vehicle/Part Toggle */}
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <button
+              type="button"
+              onClick={() => setSellMode("vehicle")}
+              className={`w-25 px-5 py-2 rounded-full font-medium transition
+      ${sellMode === "vehicle"
+                  ? "bg-blue-700 text-white hover:bg-blue-800"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+            >
+              Vehicle
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSellMode("part")}
+              className={`w-25 px-5 py-2 rounded-full font-medium transition
+      ${sellMode === "part"
+                  ? "bg-blue-700 text-white hover:bg-blue-800"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+            >
+              Part
+            </button>
+          </div>
+
+          {/* Search Box — Vehicle or Part */}
           <div className={`p-4 ${borderStyle}`}>
-            <h3 className="text-lg font-semibold mb-2">Select Vehicle</h3>
-            <VehicleSearch filters={filters} setFilters={setFilters} />
+            <h3 className="text-lg font-semibold mb-2">
+              {sellMode === "vehicle" ? "Select Vehicle" : "Select Part"}
+            </h3>
+
+            {sellMode === "vehicle" ? ( // Vehicle search
+              <VehicleSearch filters={filters} setFilters={setFilters} />
+            ) : ( // part searcg
+              <div className="space-y-3">
+                {/* Generic checkbox */}
+                <label className="flex items-center gap-2 font-medium">
+                  <input
+                    type="checkbox"
+                    checked={isGenericPart}
+                    onChange={(e) => setIsGenericPart(e.target.checked)}
+                  />
+                  Generic Part (Not for a specific vehicle)
+                </label>
+
+                {!isGenericPart && ( // non-generic = show vehicle option
+                  <VehicleSearch filters={filters} setFilters={setFilters} />)}
+
+                <PartSearch
+                  filters={filters} // pass the entire state object
+                  setFilters={setFilters}
+                  vehicleId={isGenericPart ? null : filters.vehicleId}
+                  requireVehicle={!isGenericPart}
+                />
+
+
+
+
+              </div>
+            )}
           </div>
 
           <CollapsibleToggle
@@ -458,7 +559,7 @@ const SellItems = () => {
                 rows={4}
                 maxLength={300}
                 helpText="Max 300 characters"
-                placeHolder="Ex. Silver Ford Ranger '02, heavily rusted frame."
+                placeholder="Ex. Silver Ford Ranger '02, heavily rusted frame."
                 error={formSubmitAttempted && !form.description ? "Description is required." : ""}
               />
 
@@ -487,7 +588,7 @@ const SellItems = () => {
                 required
                 value={form.price}
                 onChange={(e) => handlePriceChange(e.target.value)}
-                placeHolder="$"
+                placeholder="$"
                 error={formSubmitAttempted && !form.price ? "Price is required." : ""}
               />
 

@@ -1,6 +1,6 @@
+
 import { useState } from "react";
 import { useAuth } from "../context/useAuth";
-import { useNavigate } from "react-router-dom";
 import { RoutePaths } from "../general/RoutePaths.jsx";
 import API_ENDPOINTS from "../config/api.js";
 import Header from "../components/Header";
@@ -10,6 +10,7 @@ import CreditEntry from "../components/forms/CreditEntry";
 import BankEntry from "../components/forms/BankEntry";
 import FormField from "../components/forms/FormField";
 import FormFieldCheckbox from "../components/forms/FormFieldCheckbox";
+import { useNavigate } from "react-router-dom";
 
 // Constants for id upload
 const MAX_FILE_MB = 1;
@@ -53,8 +54,8 @@ const stepRequiredFields = { // req fields for each step
 };
 
 const SellerRegistration = () => {
-  const { user, authFetch } = useAuth();
   const navigate = useNavigate();
+  const { user, authFetch } = useAuth();
   const [formSubmitAttempted, setFormSubmitAttempted] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -87,6 +88,8 @@ const SellerRegistration = () => {
     accountNumber: "",
     accountType: "checking",
   });
+
+
 
   const isFieldFilled = (field) => { // checks if field is filled (for isStepComplete and isFormValid)
     const value = form[field];
