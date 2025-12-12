@@ -102,11 +102,14 @@ const PartSearch = ({ filters, setFilters, vehicleId = null, requireVehicle = fa
           disabled={requireVehicle && !vehicleId}
         >
           <option value="">All Categories</option>
-          {category1.map((c, idx) => (
-            <option key={getId(c) ?? idx} value={getId(c)}>
-              {getLabel(c)}
-            </option>
-          ))}
+          {category1.map((c, idx) => {
+            const id = getId(c);
+            return (
+              <option key={`${String(id ?? idx)}-category1-${idx}`} value={id ?? ""}>
+                {getLabel(c)}
+              </option>
+            );
+          })}
         </select>
 
         {/* Category 2 */}
@@ -117,11 +120,14 @@ const PartSearch = ({ filters, setFilters, vehicleId = null, requireVehicle = fa
           disabled={ (requireVehicle && !vehicleId) || !filters.category1Id }
         >
           <option value="">All Subcategories</option>
-          {category2.map((c, idx) => (
-            <option key={getId(c) ?? idx} value={getId(c)}>
-              {getLabel(c)}
-            </option>
-          ))}
+          {category2.map((c, idx) => {
+            const id = getId(c);
+            return (
+              <option key={`${String(id ?? idx)}-category2-${idx}`} value={id ?? ""}>
+                {getLabel(c)}
+              </option>
+            );
+          })}
         </select>
 
         {/* Category 3 */}
@@ -132,11 +138,14 @@ const PartSearch = ({ filters, setFilters, vehicleId = null, requireVehicle = fa
           disabled={ (requireVehicle && !vehicleId) || !filters.category2Id }
         >
           <option value="">All Sub-Subcategories</option>
-          {category3.map((c, idx) => (
-            <option key={getId(c) ?? idx} value={getId(c)}>
-              {getLabel(c)}
-            </option>
-          ))}
+          {category3.map((c, idx) => {
+            const id = getId(c);
+            return (
+              <option key={`${String(id ?? idx)}-category3-${idx}`} value={id ?? ""}>
+                {getLabel(c)}
+              </option>
+            );
+          })}
         </select>
 
         {/* Brand */}
@@ -147,11 +156,14 @@ const PartSearch = ({ filters, setFilters, vehicleId = null, requireVehicle = fa
           disabled={requireVehicle && !vehicleId}
         >
           <option value="">All Brands</option>
-          {brands.map((b, idx) => (
-            <option key={getId(b) ?? idx} value={getId(b)}>
-              {getLabel(b)}
-            </option>
-          ))}
+          {brands.map((b, idx) => {
+            const id = getId(b);
+            return (
+              <option key={`${String(id ?? idx)}-brand-${idx}`} value={id ?? ""}>
+                {getLabel(b)}
+              </option>
+            );
+          })}
         </select>
       </div>
     </div>
