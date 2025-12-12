@@ -141,12 +141,17 @@ const SellItems = () => {
     fetch(API_ENDPOINTS.CONDITIONS)
       .then((res) => res.json())
       .then((data) => {
-        //const arr = Array.isArray(data) ? data : (data.data || []);
-        //setConditions(arr);
+        const arr = Array.isArray(data) ? data : (data && data.data) ? data.data : [];
+        if (arr && arr.length) {
+          setConditions(arr);
+        } else {
+          setConditions(FALLBACK_CONDITIONS);
+        }
       })
-      .catch((err) => console.error("Error loading conditions:", err));
-
-    setConditions(FALLBACK_CONDITIONS);
+      .catch((err) => {
+        console.error("Error loading conditions:", err);
+        setConditions(FALLBACK_CONDITIONS);
+      });
   }, []);
 
 
@@ -454,7 +459,11 @@ const SellItems = () => {
 
       const data = await res.json();
       console.log("Listing created:", data);
-      navigate(RoutePaths.LISTING_DETAIL.replace(":listingId", data.listingInfoId));
+      if (sellMode === "vehicle") {
+        navigate(RoutePaths.LISTING_DETAIL.replace(":listingId", data.listingInfoId));
+      } else {
+        navigate(RoutePaths.PART_LISTING_DETAIL.replace(":listingId", data.listingInfoId));
+      }
     } catch (err) {
       console.error("Failed to create listing:", err);
     }

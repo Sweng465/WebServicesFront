@@ -7,9 +7,16 @@ const PartSearch = ({ filters, setFilters, vehicleId = null, requireVehicle = fa
   const [category2, setCategory2] = useState([]);
   const [category3, setCategory3] = useState([]);
 
-  // Helper to extract id and label from items with differing shapes
-  const getId = (item) => item.brandId ?? item.category1Id ?? item.category2Id ?? item.category3Id ?? item.id ?? item.valueId ?? item.key ?? item.name ?? item.value;
-  const getLabel = (item) => item.value ?? item.name ?? item.label ?? String(getId(item));
+  // Prefer specific category ids (category3Id -> category2Id -> category1Id) and explicit `id`/`partId` fields
+  const getId = (item) => {
+    if (!item) return undefined;
+    const candidates = [item.id, item.partId, item.category3Id, item.category2Id, item.category1Id, item.brandId, item.valueId, item.key];
+    for (const c of candidates) {
+      if (c !== undefined && c !== null && (typeof c === 'string' || typeof c === 'number')) return c;
+    }
+    return undefined;
+  };
+  const getLabel = (item) => item.value ?? item.name ?? item.label ?? String(getId(item) ?? "");
 
   // Load all brands
   useEffect(() => {
@@ -46,6 +53,7 @@ const PartSearch = ({ filters, setFilters, vehicleId = null, requireVehicle = fa
         setCategory2(arr);
       })
       .catch((err) => console.error("Error loading category2:", err));
+      console.log("Loaded category2 for category1Id:", filters.category1Id);
   }, [filters.category1Id]);
 
   // Load category3 when category2 changes
@@ -54,6 +62,7 @@ const PartSearch = ({ filters, setFilters, vehicleId = null, requireVehicle = fa
       setCategory3([]);
       return;
     }
+    console.log("Loading category3 for category2Id:", filters.category2Id);
     fetch(`${API_ENDPOINTS.CATEGORY3}?category2Id=${filters.category2Id}`)
       .then((res) => res.json())
       .then((data) => {
