@@ -10,7 +10,7 @@ import CreditEntry from "../components/forms/CreditEntry";
 import BankEntry from "../components/forms/BankEntry";
 import FormField from "../components/forms/FormField";
 import FormFieldCheckbox from "../components/forms/FormFieldCheckbox";
-import { navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // Constants for id upload
 const MAX_FILE_MB = 1;
@@ -54,6 +54,7 @@ const stepRequiredFields = { // req fields for each step
 };
 
 const SellerRegistration = () => {
+  const navigate = useNavigate();
   const { user, authFetch } = useAuth();
   const [formSubmitAttempted, setFormSubmitAttempted] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
