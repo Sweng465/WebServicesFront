@@ -16,6 +16,7 @@ import Profile from "../pages/Profile.jsx";
 import EditProfile from "../pages/EditProfile.jsx";
 import SellItems from "../pages/SellItems.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
+import ProtectedRouteUser from "../components/ProtectedRouteUser.jsx";
 import ProtectedRouteSeller from "../components/ProtectedRouteSeller.jsx";
 import ProtectedRouteBuyer from "../components/ProtectedRouteBuyer.jsx";
 import SellerRegistration from "../pages/SellerRegistration.jsx";
@@ -37,17 +38,21 @@ export const Router = () => (
     <Route
       path={RoutePaths.SIGNIN}
       element={
-        <Layout>
-          <SignIn />
-        </Layout>
+        <ProtectedRouteUser>
+          <Layout>
+            <SignIn />
+          </Layout>
+        </ProtectedRouteUser>
       }
     />
     <Route
       path={RoutePaths.SIGNUP}
       element={
-        <Layout>
-          <SignUp />
-        </Layout>
+        <ProtectedRouteUser>
+          <Layout>
+            <SignUp />
+          </Layout>
+        </ProtectedRouteUser>
       }
     />
     <Route
