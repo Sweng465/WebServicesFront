@@ -557,7 +557,7 @@ const handleAddToCart = () => {
                   <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-md">
                     <h2 className="text-xl font-semibold text-gray-900 mb-4">Available Parts from this Car</h2>
                     <div className="text-center text-gray-500 py-8">
-                      <p>Part listings are not yet implemented.</p>
+                      <p>No part listings are available for this vehicle.</p>
                     </div>
                   </section>
                 </div>
