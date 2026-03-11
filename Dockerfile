@@ -9,6 +9,10 @@ WORKDIR /workspace/app
 # Pre cache packages
 COPY --chown=node:node . /workspace/app
 
+# Accept build-time API URL (Vite bakes env vars into the bundle at build time)
+ARG VITE_API_URL=http://localhost:3000
+ENV VITE_API_URL=${VITE_API_URL}
+
 RUN npm install && npm run build
 
 FROM node:22.20.0

@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useCallback } from "react";
 import { getCart, saveCart } from "../utils/cart.js";
+import API_ENDPOINTS from "../config/api.js";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -31,7 +32,7 @@ export const AuthProvider = ({ children }) => {
     setCart([]);
     setLoading(false);
     // call backend logout to clear refresh token cookie
-    fetch('http://localhost:3000/api/auth/logout', {
+    fetch(API_ENDPOINTS.LOGOUT, {
       method: 'POST',
       credentials: 'include',
     });
@@ -39,7 +40,7 @@ export const AuthProvider = ({ children }) => {
 
   const refreshAccessToken = useCallback(async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/auth/refresh", {
+      const res = await fetch(API_ENDPOINTS.REFRESH, {
         method: "POST",
         credentials: "include",
       });
