@@ -1,11 +1,13 @@
 // Centralized API Configuration
-const API_BASE_URL = import.meta.env.REACT_APP_API_URL || "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export const API_ENDPOINTS = {
   // Authentication endpoints
   SIGN_UP: `${API_BASE_URL}/api/auth/signup`,
   SIGN_IN: `${API_BASE_URL}/api/auth/signin`,
   UPDATE_LOGIN: `${API_BASE_URL}/api/auth/updatelogin`,
+  REFRESH: `${API_BASE_URL}/api/auth/refresh`,
+  LOGOUT: `${API_BASE_URL}/api/auth/logout`,
 
   // Vehicle endpoints
   VEHICLES: `${API_BASE_URL}/api/vehicles`,
